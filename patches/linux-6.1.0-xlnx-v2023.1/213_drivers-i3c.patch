@@ -1,0 +1,33 @@
+--- linux-6.1.0/drivers/i3c/master/dw-i3c-master.c	2023-07-05 08:37:25.008170000 +0900
++++ linux-xlnx-2023.1/drivers/i3c/master/dw-i3c-master.c	2023-07-05 08:33:21.904957100 +0900
+@@ -201,6 +201,10 @@
+ 
+ #define XFER_TIMEOUT (msecs_to_jiffies(1000))
+ 
++static unsigned int scl_timing_quirk_spp = 0;
++module_param(scl_timing_quirk_spp, uint, 0644);
++MODULE_PARM_DESC(scl_timing_quirk_spp, "Override the scl timings");
++
+ struct dw_i3c_master_caps {
+ 	u8 cmdfifodepth;
+ 	u8 datafifodepth;
+@@ -536,6 +540,9 @@
+ 		lcnt = SCL_I3C_TIMING_CNT_MIN;
+ 
+ 	scl_timing = SCL_I3C_TIMING_HCNT(hcnt) | SCL_I3C_TIMING_LCNT(lcnt);
++	if (scl_timing_quirk_spp)
++		scl_timing = 0x50005;
++
+ 	writel(scl_timing, master->regs + SCL_I3C_PP_TIMING);
+ 
+ 	if (!(readl(master->regs + DEVICE_CTRL) & DEV_CTRL_I2C_SLAVE_PRESENT))
+@@ -543,6 +550,9 @@
+ 
+ 	lcnt = DIV_ROUND_UP(I3C_BUS_TLOW_OD_MIN_NS, core_period);
+ 	scl_timing = SCL_I3C_TIMING_HCNT(hcnt) | SCL_I3C_TIMING_LCNT(lcnt);
++	if (scl_timing_quirk_spp)
++		scl_timing = 0x200020;
++
+ 	writel(scl_timing, master->regs + SCL_I3C_OD_TIMING);
+ 
+ 	lcnt = DIV_ROUND_UP(core_rate, I3C_BUS_SDR1_SCL_RATE) - hcnt;

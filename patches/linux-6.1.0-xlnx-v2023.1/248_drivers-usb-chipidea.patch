@@ -1,0 +1,103 @@
+--- linux-6.1.0/drivers/usb/chipidea/ci_hdrc_usb2.c	2023-07-05 08:37:35.598415300 +0900
++++ linux-xlnx-2023.1/drivers/usb/chipidea/ci_hdrc_usb2.c	2023-07-05 08:33:32.688737400 +0900
+@@ -65,6 +65,10 @@
+ 	if (match && match->data) {
+ 		/* struct copy */
+ 		*ci_pdata = *(struct ci_hdrc_platform_data *)match->data;
++		ci_pdata->usb_phy = devm_usb_get_phy_by_phandle(dev, "usb-phy",
++					 0);
++		if (IS_ERR(ci_pdata->usb_phy))
++			return PTR_ERR(ci_pdata->usb_phy);
+ 	}
+ 
+ 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+--- linux-6.1.0/drivers/usb/chipidea/core.c	2023-07-05 08:37:35.598415300 +0900
++++ linux-xlnx-2023.1/drivers/usb/chipidea/core.c	2023-07-05 08:33:32.688737400 +0900
+@@ -326,7 +326,8 @@
+ 
+ 		ret = phy_power_on(ci->phy);
+ 		if (ret) {
+-			phy_exit(ci->phy);
++			if (phy_exit(ci->phy) < 0)
++				dev_dbg(ci->dev, "phy exit failed\r\n");
+ 			return ret;
+ 		}
+ 	} else {
+@@ -343,12 +344,20 @@
+  */
+ static void ci_usb_phy_exit(struct ci_hdrc *ci)
+ {
++	int ret;
++
+ 	if (ci->platdata->flags & CI_HDRC_OVERRIDE_PHY_CONTROL)
+ 		return;
+ 
+ 	if (ci->phy) {
+-		phy_power_off(ci->phy);
+-		phy_exit(ci->phy);
++		ret = phy_power_off(ci->phy);
++		if (ret < 0)
++			dev_dbg(ci->dev, "phy poweroff failed\r\n");
++
++		ret = phy_exit(ci->phy);
++		if (ret < 0)
++			dev_dbg(ci->dev, "phy exit failed\r\n");
++
+ 	} else {
+ 		usb_phy_shutdown(ci->usb_phy);
+ 	}
+@@ -711,13 +720,16 @@
+ 	if (usb_get_maximum_speed(dev) == USB_SPEED_FULL)
+ 		platdata->flags |= CI_HDRC_FORCE_FULLSPEED;
+ 
+-	of_property_read_u32(dev->of_node, "phy-clkgate-delay-us",
+-				     &platdata->phy_clkgate_delay_us);
++	if (of_property_read_u32(dev->of_node, "phy-clkgate-delay-us",
++				 &platdata->phy_clkgate_delay_us))
++		dev_dbg(dev, "Missing phy-clkgate-delay-us property\n");
+ 
+ 	platdata->itc_setting = 1;
+ 
+-	of_property_read_u32(dev->of_node, "itc-setting",
+-					&platdata->itc_setting);
++	if (of_property_read_u32(dev->of_node, "itc-setting",
++				 &platdata->itc_setting))
++		dev_dbg(dev, "Missing itc-setting property\n");
++
+ 
+ 	ret = of_property_read_u32(dev->of_node, "ahb-burst-config",
+ 				&platdata->ahb_burst_config);
+--- linux-6.1.0/drivers/usb/chipidea/otg.c	2023-07-05 08:37:35.598415300 +0900
++++ linux-xlnx-2023.1/drivers/usb/chipidea/otg.c	2023-07-05 08:33:32.688737400 +0900
+@@ -168,6 +168,7 @@
+ static void ci_handle_id_switch(struct ci_hdrc *ci)
+ {
+ 	enum ci_role role = ci_otg_role(ci);
++	int ret;
+ 
+ 	if (role != ci->role) {
+ 		dev_dbg(ci->dev, "switching from %s to %s\n",
+@@ -193,7 +194,10 @@
+ 			 */
+ 			hw_wait_vbus_lower_bsv(ci);
+ 
+-		ci_role_start(ci, role);
++		ret = ci_role_start(ci, role);
++		if (ret < 0)
++			dev_dbg(ci->dev, "switching err %d\n", ret);
++
+ 		/* vbus change may have already occurred */
+ 		if (role == CI_ROLE_GADGET)
+ 			ci_handle_vbus_change(ci);
+--- linux-6.1.0/drivers/usb/chipidea/udc.c	2023-07-05 08:37:35.598415300 +0900
++++ linux-xlnx-2023.1/drivers/usb/chipidea/udc.c	2023-07-05 08:33:32.688737400 +0900
+@@ -688,7 +688,8 @@
+ 		if ((TD_STATUS_ACTIVE & tmptoken) != 0) {
+ 			int n = hw_ep_bit(hwep->num, hwep->dir);
+ 
+-			if (ci->rev == CI_REVISION_24)
++			if (ci->rev == CI_REVISION_24 ||
++			    ci->rev == CI_REVISION_22)
+ 				if (!hw_read(ci, OP_ENDPTSTAT, BIT(n)))
+ 					reprime_dtd(ci, hwep, node);
+ 			hwreq->req.status = -EALREADY;

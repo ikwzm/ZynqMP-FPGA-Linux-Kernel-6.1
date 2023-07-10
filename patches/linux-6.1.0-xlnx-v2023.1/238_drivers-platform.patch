@@ -1,0 +1,12 @@
+--- linux-6.1.0/drivers/platform/x86/serial-multi-instantiate.c	2023-07-05 08:37:32.970171000 +0900
++++ linux-xlnx-2023.1/drivers/platform/x86/serial-multi-instantiate.c	2023-07-05 08:33:29.810368600 +0900
+@@ -139,7 +139,8 @@
+ 			goto error;
+ 		}
+ 
+-		dev_dbg(dev, "SPI device %s using chip select %u", name, spi_dev->chip_select);
++		dev_dbg(dev, "SPI device %s using chip select %u", name,
++			spi_get_chipselect(spi_dev, 0));
+ 
+ 		smi->spi_devs[i] = spi_dev;
+ 		smi->spi_num++;

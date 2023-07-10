@@ -1,0 +1,1833 @@
+--- linux-6.1.0/Documentation/userspace-api/media/v4l/biblio.rst	2023-07-05 08:37:08.308541200 +0900
++++ linux-xlnx-2023.1/Documentation/userspace-api/media/v4l/biblio.rst	2023-07-05 08:33:06.186578900 +0900
+@@ -427,3 +427,13 @@
+ :title:     VP9 Bitstream & Decoding Process Specification
+ 
+ :author:    Adrian Grange (Google), Peter de Rivaz (Argon Design), Jonathan Hunt (Argon Design)
++
++.. _itu2100:
++
++ITU BT.2100
++===========
++
++
++:title:     ITU-R Recommendation BT.2100-2 (07/2018) "Image parameter values for high dynamic range television for use in production and international programme exchange"
++
++:author:    International Telecommunication Union (http://www.itu.int)
+--- linux-6.1.0/Documentation/userspace-api/media/v4l/colorspaces-defs.rst	2023-07-05 08:37:08.308541200 +0900
++++ linux-xlnx-2023.1/Documentation/userspace-api/media/v4l/colorspaces-defs.rst	2023-07-05 08:33:06.202200200 +0900
+@@ -99,6 +99,8 @@
+       - Use the DCI-P3 transfer function.
+     * - ``V4L2_XFER_FUNC_SMPTE2084``
+       - Use the SMPTE 2084 transfer function. See :ref:`xf-smpte-2084`.
++    * - ``V4L2_XFER_FUNC_HLG``
++      - Use the Hybrid Log Gamma(HLG) transfer function. See :ref:`xf-hlg`.
+ 
+ 
+ 
+--- linux-6.1.0/Documentation/userspace-api/media/v4l/colorspaces-details.rst	2023-07-05 08:37:08.308541200 +0900
++++ linux-xlnx-2023.1/Documentation/userspace-api/media/v4l/colorspaces-details.rst	2023-07-05 08:33:06.202200200 +0900
+@@ -773,3 +773,34 @@
+ 
+ There are better methods, see e.g. :ref:`colimg` for more in-depth information
+ about this.
++
++
++.. _xf-hlg:
++
++Transfer Function HLG (V4L2_XFER_FUNC_HLG)
++=======================================================
++
++The :ref:`itu2100` defines the transfer function used.
++
++Constants:
++
++.. math::
++    a = 0.17883277
++
++    b = 1 - 4 * a = 0.28466892
++
++    c = 0.5 - a * \ln (4 * a) = 0.55991073
++
++Transfer function:
++
++.. math::
++
++     E' = \begin{cases}\sqrt(3 * E) & 0 \leq E \leq \frac{1}{12}
++     \\ a * \ln(12 * E - b) + c & \frac{1}{12} \le E \leq 1\end{cases}
++
++Inverse Transfer function:
++
++.. math::
++
++     x' =\begin{cases}x^{2} / 3  & 0 \leq x \leq \frac{1}{12}
++     \\(exp((x - c) / a) + b) / 12 & \frac{1}{12} \le x \leq 1\end{cases}
+--- linux-6.1.0/Documentation/userspace-api/media/v4l/subdev-formats.rst	2023-07-05 08:37:08.371026200 +0900
++++ linux-xlnx-2023.1/Documentation/userspace-api/media/v4l/subdev-formats.rst	2023-07-05 08:33:06.270695200 +0900
+@@ -1677,6 +1677,43 @@
+       - b\ :sub:`2`
+       - b\ :sub:`1`
+       - b\ :sub:`0`
++    * .. _MEDIA-BUS-FMT-RBG101010-1X30:
++
++      - MEDIA_BUS_FMT_RBG101010_1X30
++      - 0x1100
++      -
++      - 0
++      - 0
++      - r\ :sub:`9`
++      - r\ :sub:`8`
++      - r\ :sub:`7`
++      - r\ :sub:`6`
++      - r\ :sub:`5`
++      - r\ :sub:`4`
++      - r\ :sub:`3`
++      - r\ :sub:`2`
++      - r\ :sub:`1`
++      - r\ :sub:`0`
++      - b\ :sub:`9`
++      - b\ :sub:`8`
++      - b\ :sub:`7`
++      - b\ :sub:`6`
++      - b\ :sub:`5`
++      - b\ :sub:`4`
++      - b\ :sub:`3`
++      - b\ :sub:`2`
++      - b\ :sub:`1`
++      - b\ :sub:`0`
++      - g\ :sub:`9`
++      - g\ :sub:`8`
++      - g\ :sub:`7`
++      - g\ :sub:`6`
++      - g\ :sub:`5`
++      - g\ :sub:`4`
++      - g\ :sub:`3`
++      - g\ :sub:`2`
++      - g\ :sub:`1`
++      - g\ :sub:`0`
+ 
+ .. raw:: latex
+ 
+@@ -1866,6 +1903,47 @@
+       - b\ :sub:`2`
+       - b\ :sub:`1`
+       - b\ :sub:`0`
++    * .. _MEDIA-BUS-FMT-RBG121212-1X36:
++
++      - MEDIA_BUS_FMT_RBG121212_1X36
++      - 0x1101
++      -
++      - r\ :sub:`11`
++      - r\ :sub:`10`
++      - r\ :sub:`9`
++      - r\ :sub:`8`
++      - r\ :sub:`7`
++      - r\ :sub:`6`
++      - r\ :sub:`5`
++      - r\ :sub:`4`
++      - r\ :sub:`3`
++      - r\ :sub:`2`
++      - r\ :sub:`1`
++      - r\ :sub:`0`
++      - b\ :sub:`11`
++      - b\ :sub:`10`
++      - b\ :sub:`9`
++      - b\ :sub:`8`
++      - b\ :sub:`7`
++      - b\ :sub:`6`
++      - b\ :sub:`5`
++      - b\ :sub:`4`
++      - b\ :sub:`3`
++      - b\ :sub:`2`
++      - b\ :sub:`1`
++      - b\ :sub:`0`
++      - g\ :sub:`11`
++      - g\ :sub:`10`
++      - g\ :sub:`9`
++      - g\ :sub:`8`
++      - g\ :sub:`7`
++      - g\ :sub:`6`
++      - g\ :sub:`5`
++      - g\ :sub:`4`
++      - g\ :sub:`3`
++      - g\ :sub:`2`
++      - g\ :sub:`1`
++      - g\ :sub:`0`
+ 
+ .. raw:: latex
+ 
+@@ -2035,6 +2113,78 @@
+       - b\ :sub:`2`
+       - b\ :sub:`1`
+       - b\ :sub:`0`
++    * .. _MEDIA-BUS-FMT-RBG161616-1X48:
++
++      - MEDIA_BUS_FMT_RBG161616_1X48
++      - 0x1102
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - r\ :sub:`15`
++      - r\ :sub:`14`
++      - r\ :sub:`13`
++      - r\ :sub:`12`
++      - r\ :sub:`11`
++      - r\ :sub:`10`
++      - r\ :sub:`9`
++      - r\ :sub:`8`
++      - r\ :sub:`7`
++      - r\ :sub:`6`
++      - r\ :sub:`5`
++      - r\ :sub:`4`
++      - r\ :sub:`3`
++      - r\ :sub:`2`
++      - r\ :sub:`1`
++      - r\ :sub:`0`
++    * -
++      -
++      -
++      - b\ :sub:`15`
++      - b\ :sub:`14`
++      - b\ :sub:`13`
++      - b\ :sub:`12`
++      - b\ :sub:`11`
++      - b\ :sub:`10`
++      - b\ :sub:`9`
++      - b\ :sub:`8`
++      - b\ :sub:`7`
++      - b\ :sub:`6`
++      - b\ :sub:`5`
++      - b\ :sub:`4`
++      - b\ :sub:`3`
++      - b\ :sub:`2`
++      - b\ :sub:`1`
++      - b\ :sub:`0`
++      - g\ :sub:`15`
++      - g\ :sub:`14`
++      - g\ :sub:`13`
++      - g\ :sub:`12`
++      - g\ :sub:`11`
++      - g\ :sub:`10`
++      - g\ :sub:`9`
++      - g\ :sub:`8`
++      - g\ :sub:`7`
++      - g\ :sub:`6`
++      - g\ :sub:`5`
++      - g\ :sub:`4`
++      - g\ :sub:`3`
++      - g\ :sub:`2`
++      - g\ :sub:`1`
++      - g\ :sub:`0`
+ 
+ .. raw:: latex
+ 
+@@ -5415,6 +5565,148 @@
+       - u\ :sub:`2`
+       - u\ :sub:`1`
+       - u\ :sub:`0`
++    * .. _MEDIA-BUS-FMT-VYYUYY10_4X20:
++
++      - MEDIA_BUS_FMT_VYYUYY10_4X20
++      - 0x2101
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - u\ :sub:`9`
++      - u\ :sub:`8`
++      - u\ :sub:`7`
++      - u\ :sub:`6`
++      - u\ :sub:`5`
++      - u\ :sub:`4`
++      - u\ :sub:`3`
++      - u\ :sub:`2`
++      - u\ :sub:`1`
++      - u\ :sub:`0`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++    * -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - v\ :sub:`9`
++      - v\ :sub:`8`
++      - v\ :sub:`7`
++      - v\ :sub:`6`
++      - v\ :sub:`5`
++      - v\ :sub:`4`
++      - v\ :sub:`3`
++      - v\ :sub:`2`
++      - v\ :sub:`1`
++      - v\ :sub:`0`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++    * -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++    * -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
+     * .. _MEDIA-BUS-FMT-Y12-1X12:
+ 
+       - MEDIA_BUS_FMT_Y12_1X12
+@@ -7209,6 +7501,185 @@
+       - u\ :sub:`2`
+       - u\ :sub:`1`
+       - u\ :sub:`0`
++    * .. _MEDIA-BUS-FMT-UYYVYY12-4X24:
++
++      - MEDIA_BUS_FMT_UYYVYY12_4X24
++      - 0x2103
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - u\ :sub:`11`
++      - u\ :sub:`10`
++      - u\ :sub:`9`
++      - u\ :sub:`8`
++      - u\ :sub:`7`
++      - u\ :sub:`6`
++      - u\ :sub:`5`
++      - u\ :sub:`4`
++      - u\ :sub:`3`
++      - u\ :sub:`2`
++      - u\ :sub:`1`
++      - u\ :sub:`0`
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++    * -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - v\ :sub:`11`
++      - v\ :sub:`10`
++      - v\ :sub:`9`
++      - v\ :sub:`8`
++      - v\ :sub:`7`
++      - v\ :sub:`6`
++      - v\ :sub:`5`
++      - v\ :sub:`4`
++      - v\ :sub:`3`
++      - v\ :sub:`2`
++      - v\ :sub:`1`
++      - v\ :sub:`0`
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++    * -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++    * -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++    * .. _MEDIA-BUS-FMT-VYYUYY8-1X24:
++
++      - MEDIA_BUS_FMT_VYYUYY8_1X24
++      - 0x2100
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - v\ :sub:`3`
++      - v\ :sub:`2`
++      - v\ :sub:`1`
++      - v\ :sub:`0`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++      - u\ :sub:`3`
++      - u\ :sub:`2`
++      - u\ :sub:`1`
++      - u\ :sub:`0`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
+     * .. _MEDIA-BUS-FMT-YUV10-1X30:
+ 
+       - MEDIA_BUS_FMT_YUV10_1X30
+@@ -7246,6 +7717,43 @@
+       - v\ :sub:`2`
+       - v\ :sub:`1`
+       - v\ :sub:`0`
++    * .. _MEDIA-BUS-FMT-VUY10-1X30:
++
++      - MEDIA_BUS_FMT_VUY10_1X30
++      - 0x2102
++      -
++      -
++      -
++      - v\ :sub:`9`
++      - v\ :sub:`8`
++      - v\ :sub:`7`
++      - v\ :sub:`6`
++      - v\ :sub:`5`
++      - v\ :sub:`4`
++      - v\ :sub:`3`
++      - v\ :sub:`2`
++      - v\ :sub:`1`
++      - v\ :sub:`0`
++      - u\ :sub:`9`
++      - u\ :sub:`8`
++      - u\ :sub:`7`
++      - u\ :sub:`6`
++      - u\ :sub:`5`
++      - u\ :sub:`4`
++      - u\ :sub:`3`
++      - u\ :sub:`2`
++      - u\ :sub:`1`
++      - u\ :sub:`0`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
+     * .. _MEDIA-BUS-FMT-UYYVYY10-0-5X30:
+ 
+       - MEDIA_BUS_FMT_UYYVYY10_0_5X30
+@@ -7318,6 +7826,43 @@
+       - y\ :sub:`2`
+       - y\ :sub:`1`
+       - y\ :sub:`0`
++    * .. _MEDIA-BUS-FMT-Y16-1X16:
++
++      - MEDIA_BUS_FMT_Y16_1X16
++      - 0x2105
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - y\ :sub:`15`
++      - y\ :sub:`14`
++      - y\ :sub:`13`
++      - y\ :sub:`12`
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
+     * .. _MEDIA-BUS-FMT-AYUV8-1X32:
+ 
+       - MEDIA_BUS_FMT_AYUV8_1X32
+@@ -7355,6 +7900,220 @@
+       - v\ :sub:`2`
+       - v\ :sub:`1`
+       - v\ :sub:`0`
++    * .. _MEDIA-BUS-FMT-UYYVYY16-4X32:
++
++      - MEDIA_BUS_FMT_UYYVYY16_4X32
++      - 0x2106
++      -
++      - u\ :sub:`15`
++      - u\ :sub:`14`
++      - u\ :sub:`13`
++      - u\ :sub:`12`
++      - u\ :sub:`11`
++      - u\ :sub:`10`
++      - u\ :sub:`9`
++      - u\ :sub:`8`
++      - u\ :sub:`7`
++      - u\ :sub:`6`
++      - u\ :sub:`5`
++      - u\ :sub:`4`
++      - u\ :sub:`3`
++      - u\ :sub:`2`
++      - u\ :sub:`1`
++      - u\ :sub:`0`
++      - y\ :sub:`15`
++      - y\ :sub:`14`
++      - y\ :sub:`13`
++      - y\ :sub:`12`
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++    * -
++      -
++      -
++      - v\ :sub:`15`
++      - v\ :sub:`14`
++      - v\ :sub:`13`
++      - v\ :sub:`12`
++      - v\ :sub:`11`
++      - v\ :sub:`10`
++      - v\ :sub:`9`
++      - v\ :sub:`8`
++      - v\ :sub:`7`
++      - v\ :sub:`6`
++      - v\ :sub:`5`
++      - v\ :sub:`4`
++      - v\ :sub:`3`
++      - v\ :sub:`2`
++      - v\ :sub:`1`
++      - v\ :sub:`0`
++      - y\ :sub:`15`
++      - y\ :sub:`14`
++      - y\ :sub:`13`
++      - y\ :sub:`12`
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++    * -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - y\ :sub:`15`
++      - y\ :sub:`14`
++      - y\ :sub:`13`
++      - y\ :sub:`12`
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++    * -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - y\ :sub:`15`
++      - y\ :sub:`14`
++      - y\ :sub:`13`
++      - y\ :sub:`12`
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++    * .. _MEDIA-BUS-FMT-UYVY16-2X32:
++
++      - MEDIA_BUS_FMT_UYVY16_2X32
++      - 0x2108
++      -
++      - u\ :sub:`15`
++      - u\ :sub:`14`
++      - u\ :sub:`13`
++      - u\ :sub:`12`
++      - u\ :sub:`11`
++      - u\ :sub:`10`
++      - u\ :sub:`9`
++      - u\ :sub:`8`
++      - u\ :sub:`7`
++      - u\ :sub:`6`
++      - u\ :sub:`5`
++      - u\ :sub:`4`
++      - u\ :sub:`3`
++      - u\ :sub:`2`
++      - u\ :sub:`1`
++      - u\ :sub:`0`
++      - y\ :sub:`15`
++      - y\ :sub:`14`
++      - y\ :sub:`13`
++      - y\ :sub:`12`
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
++    * -
++      -
++      -
++      - v\ :sub:`15`
++      - v\ :sub:`14`
++      - v\ :sub:`13`
++      - v\ :sub:`12`
++      - v\ :sub:`11`
++      - v\ :sub:`10`
++      - v\ :sub:`9`
++      - v\ :sub:`8`
++      - v\ :sub:`7`
++      - v\ :sub:`6`
++      - v\ :sub:`5`
++      - v\ :sub:`4`
++      - v\ :sub:`3`
++      - v\ :sub:`2`
++      - v\ :sub:`1`
++      - v\ :sub:`0`
++      - y\ :sub:`15`
++      - y\ :sub:`14`
++      - y\ :sub:`13`
++      - y\ :sub:`12`
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
+ 
+ 
+ .. raw:: latex
+@@ -7543,6 +8302,47 @@
+       - v\ :sub:`2`
+       - v\ :sub:`1`
+       - v\ :sub:`0`
++    * .. _MEDIA-BUS-FMT-VUY12-1X36:
++
++      - MEDIA_BUS_FMT_VUY12_1X36
++      - 0x2104
++      -
++      - v\ :sub:`11`
++      - v\ :sub:`10`
++      - v\ :sub:`9`
++      - v\ :sub:`8`
++      - v\ :sub:`7`
++      - v\ :sub:`6`
++      - v\ :sub:`5`
++      - v\ :sub:`4`
++      - v\ :sub:`3`
++      - v\ :sub:`2`
++      - v\ :sub:`1`
++      - v\ :sub:`0`
++      - u\ :sub:`11`
++      - u\ :sub:`10`
++      - u\ :sub:`9`
++      - u\ :sub:`8`
++      - u\ :sub:`7`
++      - u\ :sub:`6`
++      - u\ :sub:`5`
++      - u\ :sub:`4`
++      - u\ :sub:`3`
++      - u\ :sub:`2`
++      - u\ :sub:`1`
++      - u\ :sub:`0`
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`9`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
+ 
+ 
+ .. raw:: latex
+@@ -7713,6 +8513,78 @@
+       - v\ :sub:`2`
+       - v\ :sub:`1`
+       - v\ :sub:`0`
++    * .. _MEDIA-BUS-FMT-VUY16-1X48:
++
++      - MEDIA_BUS_FMT_VUY16_1X48
++      - 0x2107
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      -
++      - v\ :sub:`15`
++      - v\ :sub:`14`
++      - v\ :sub:`13`
++      - v\ :sub:`12`
++      - v\ :sub:`11`
++      - v\ :sub:`10`
++      - v\ :sub:`9`
++      - v\ :sub:`8`
++      - v\ :sub:`7`
++      - v\ :sub:`6`
++      - v\ :sub:`5`
++      - v\ :sub:`4`
++      - v\ :sub:`3`
++      - v\ :sub:`2`
++      - v\ :sub:`1`
++      - v\ :sub:`0`
++    * -
++      -
++      -
++      - u\ :sub:`15`
++      - u\ :sub:`14`
++      - u\ :sub:`13`
++      - u\ :sub:`12`
++      - u\ :sub:`11`
++      - u\ :sub:`10`
++      - u\ :sub:`9`
++      - u\ :sub:`8`
++      - u\ :sub:`7`
++      - u\ :sub:`6`
++      - u\ :sub:`5`
++      - u\ :sub:`4`
++      - u\ :sub:`3`
++      - u\ :sub:`2`
++      - u\ :sub:`1`
++      - u\ :sub:`0`
++      - y\ :sub:`15`
++      - y\ :sub:`14`
++      - y\ :sub:`13`
++      - y\ :sub:`12`
++      - y\ :sub:`11`
++      - y\ :sub:`10`
++      - y\ :sub:`8`
++      - y\ :sub:`8`
++      - y\ :sub:`7`
++      - y\ :sub:`6`
++      - y\ :sub:`5`
++      - y\ :sub:`4`
++      - y\ :sub:`3`
++      - y\ :sub:`2`
++      - y\ :sub:`1`
++      - y\ :sub:`0`
+     * .. _MEDIA-BUS-FMT-UYYVYY16-0-5X48:
+ 
+       - MEDIA_BUS_FMT_UYYVYY16_0_5X48
+--- linux-6.1.0/Documentation/userspace-api/media/v4l/vidioc-queryctrl.rst	2023-07-05 08:37:08.402268100 +0900
++++ linux-xlnx-2023.1/Documentation/userspace-api/media/v4l/vidioc-queryctrl.rst	2023-07-05 08:33:06.306940700 +0900
+@@ -471,6 +471,12 @@
+       - n/a
+       - A struct :c:type:`v4l2_ctrl_h264_decode_params`, containing H264
+ 	decode parameters for stateless video decoders.
++    * - ``V4L2_CTRL_TYPE_HDR``
++      - n/a
++      - n/a
++      - n/a
++      - A struct :c:type:`v4l2_metadata_hdr`, containing HDR
++	metadata.
+     * - ``V4L2_CTRL_TYPE_FWHT_PARAMS``
+       - n/a
+       - n/a
+--- linux-6.1.0/Documentation/userspace-api/media/videodev2.h.rst.exceptions	2023-07-05 08:37:08.402268100 +0900
++++ linux-xlnx-2023.1/Documentation/userspace-api/media/videodev2.h.rst.exceptions	2023-07-05 08:33:06.306940700 +0900
+@@ -82,6 +82,7 @@
+ replace symbol V4L2_XFER_FUNC_SMPTE2084 :c:type:`v4l2_xfer_func`
+ replace symbol V4L2_XFER_FUNC_SMPTE240M :c:type:`v4l2_xfer_func`
+ replace symbol V4L2_XFER_FUNC_SRGB :c:type:`v4l2_xfer_func`
++replace symbol V4L2_XFER_FUNC_HLG :c:type:`v4l2_xfer_func`
+ replace symbol V4L2_XFER_FUNC_LAST :c:type:`v4l2_xfer_func`
+ 
+ # Documented enum v4l2_ycbcr_encoding
+--- linux-6.1.0/drivers/media/v4l2-core/v4l2-common.c	2023-07-05 08:37:27.892833900 +0900
++++ linux-xlnx-2023.1/drivers/media/v4l2-core/v4l2-common.c	2023-07-05 08:33:24.751127200 +0900
+@@ -274,6 +274,7 @@
+ 		{ .format = V4L2_PIX_FMT_YUV420,  .pixel_enc = V4L2_PIXEL_ENC_YUV, .mem_planes = 1, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 2, .vdiv = 2 },
+ 		{ .format = V4L2_PIX_FMT_YVU420,  .pixel_enc = V4L2_PIXEL_ENC_YUV, .mem_planes = 1, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 2, .vdiv = 2 },
+ 		{ .format = V4L2_PIX_FMT_YUV422P, .pixel_enc = V4L2_PIXEL_ENC_YUV, .mem_planes = 1, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 2, .vdiv = 1 },
++		{ .format = V4L2_PIX_FMT_YUV444P, .pixel_enc = V4L2_PIXEL_ENC_YUV, .mem_planes = 1, .comp_planes = 3, .bpp = { 1, 1, 1, 0 }, .hdiv = 1, .vdiv = 1 },
+ 		{ .format = V4L2_PIX_FMT_GREY,    .pixel_enc = V4L2_PIXEL_ENC_YUV, .mem_planes = 1, .comp_planes = 1, .bpp = { 1, 0, 0, 0 }, .hdiv = 1, .vdiv = 1 },
+ 
+ 		/* Tiled YUV formats */
+--- linux-6.1.0/drivers/media/v4l2-core/v4l2-ioctl.c	2023-07-05 08:37:27.892833900 +0900
++++ linux-xlnx-2023.1/drivers/media/v4l2-core/v4l2-ioctl.c	2023-07-05 08:33:24.766773300 +0900
+@@ -16,6 +16,7 @@
+ #include <linux/kernel.h>
+ #include <linux/version.h>
+ 
++#include <linux/v4l2-subdev.h>
+ #include <linux/videodev2.h>
+ 
+ #include <media/media-device.h> /* for media_set_bus_info() */
+@@ -1304,6 +1305,9 @@
+ 	case V4L2_PIX_FMT_BGRX32:	descr = "32-bit XBGR 8-8-8-8"; break;
+ 	case V4L2_PIX_FMT_RGBA32:	descr = "32-bit RGBA 8-8-8-8"; break;
+ 	case V4L2_PIX_FMT_RGBX32:	descr = "32-bit RGBX 8-8-8-8"; break;
++	case V4L2_PIX_FMT_XBGR30:	descr = "32-bit XBGR 2-10-10-10"; break;
++	case V4L2_PIX_FMT_XBGR40:	descr = "40-bit XBGR 4-12-12-12"; break;
++	case V4L2_PIX_FMT_BGR48:	descr = "48-bit BGR 16-16-16"; break;
+ 	case V4L2_PIX_FMT_GREY:		descr = "8-bit Greyscale"; break;
+ 	case V4L2_PIX_FMT_Y4:		descr = "4-bit Greyscale"; break;
+ 	case V4L2_PIX_FMT_Y6:		descr = "6-bit Greyscale"; break;
+@@ -1330,9 +1334,14 @@
+ 	case V4L2_PIX_FMT_UYVY:		descr = "UYVY 4:2:2"; break;
+ 	case V4L2_PIX_FMT_VYUY:		descr = "VYUY 4:2:2"; break;
+ 	case V4L2_PIX_FMT_YUV422P:	descr = "Planar YUV 4:2:2"; break;
++	case V4L2_PIX_FMT_YUV444P:	descr = "3 Planar YUV 4:4:4 8-bit"; break;
+ 	case V4L2_PIX_FMT_YUV411P:	descr = "Planar YUV 4:1:1"; break;
++	case V4L2_PIX_FMT_X403:		descr = "3 Planar YUV 4:4:4 10-bit"; break;
+ 	case V4L2_PIX_FMT_Y41P:		descr = "YUV 4:1:1 (Packed)"; break;
+ 	case V4L2_PIX_FMT_YUV444:	descr = "16-bit A/XYUV 4-4-4-4"; break;
++	case V4L2_PIX_FMT_XVUY32:	descr = "32-bit packed XVUY 8-8-8-8"; break;
++	case V4L2_PIX_FMT_AVUY32:	descr = "32-bit packed AVUY 8-8-8-8"; break;
++	case V4L2_PIX_FMT_VUY24:	descr = "24-bit packed VUY 8-8-8"; break;
+ 	case V4L2_PIX_FMT_YUV555:	descr = "16-bit A/XYUV 1-5-5-5"; break;
+ 	case V4L2_PIX_FMT_YUV565:	descr = "16-bit YUV 5-6-5"; break;
+ 	case V4L2_PIX_FMT_YUV24:	descr = "24-bit YUV 4:4:4 8-8-8"; break;
+@@ -1347,6 +1356,7 @@
+ 	case V4L2_PIX_FMT_YUV420:	descr = "Planar YUV 4:2:0"; break;
+ 	case V4L2_PIX_FMT_HI240:	descr = "8-bit Dithered RGB (BTTV)"; break;
+ 	case V4L2_PIX_FMT_M420:		descr = "YUV 4:2:0 (M420)"; break;
++	case V4L2_PIX_FMT_XVUY10:	descr = "XVUY 2-10-10-10"; break;
+ 	case V4L2_PIX_FMT_NV12:		descr = "Y/CbCr 4:2:0"; break;
+ 	case V4L2_PIX_FMT_NV21:		descr = "Y/CrCb 4:2:0"; break;
+ 	case V4L2_PIX_FMT_NV16:		descr = "Y/CbCr 4:2:2"; break;
+@@ -1358,18 +1368,34 @@
+ 	case V4L2_PIX_FMT_NV12_16L16:	descr = "Y/CbCr 4:2:0 (16x16 Linear)"; break;
+ 	case V4L2_PIX_FMT_NV12_32L32:   descr = "Y/CbCr 4:2:0 (32x32 Linear)"; break;
+ 	case V4L2_PIX_FMT_P010_4L4:	descr = "10-bit Y/CbCr 4:2:0 (4x4 Linear)"; break;
++	case V4L2_PIX_FMT_XV20:		descr = "Y/CrCb 4:2:2 10-bit"; break;
++	case V4L2_PIX_FMT_XV15:		descr = "Y/CrCb 4:2:0 10-bit"; break;
+ 	case V4L2_PIX_FMT_NV12M:	descr = "Y/CbCr 4:2:0 (N-C)"; break;
+ 	case V4L2_PIX_FMT_NV21M:	descr = "Y/CrCb 4:2:0 (N-C)"; break;
+ 	case V4L2_PIX_FMT_NV16M:	descr = "Y/CbCr 4:2:2 (N-C)"; break;
+ 	case V4L2_PIX_FMT_NV61M:	descr = "Y/CrCb 4:2:2 (N-C)"; break;
+ 	case V4L2_PIX_FMT_NV12MT:	descr = "Y/CbCr 4:2:0 (64x32 MB, N-C)"; break;
+ 	case V4L2_PIX_FMT_NV12MT_16X16:	descr = "Y/CbCr 4:2:0 (16x16 MB, N-C)"; break;
++	case V4L2_PIX_FMT_XV20M:        descr = "Y/CrCb 4:2:2 10-bit (N-C)"; break;
++	case V4L2_PIX_FMT_XV15M:        descr = "Y/CrCb 4:2:0 10-bit (N-C)"; break;
+ 	case V4L2_PIX_FMT_YUV420M:	descr = "Planar YUV 4:2:0 (N-C)"; break;
+ 	case V4L2_PIX_FMT_YVU420M:	descr = "Planar YVU 4:2:0 (N-C)"; break;
+ 	case V4L2_PIX_FMT_YUV422M:	descr = "Planar YUV 4:2:2 (N-C)"; break;
+ 	case V4L2_PIX_FMT_YVU422M:	descr = "Planar YVU 4:2:2 (N-C)"; break;
+ 	case V4L2_PIX_FMT_YUV444M:	descr = "Planar YUV 4:4:4 (N-C)"; break;
+ 	case V4L2_PIX_FMT_YVU444M:	descr = "Planar YVU 4:4:4 (N-C)"; break;
++	case V4L2_PIX_FMT_X012:		descr = "Y/CbCr 4:2:0, 4-12-12-12"; break;
++	case V4L2_PIX_FMT_X012M:	descr = "Y/CbCr 4:2:0, 4-12-12-12 (N-C)"; break;
++	case V4L2_PIX_FMT_X212:		descr = "Y/CbCr 4:2:2, 4-12-12-12"; break;
++	case V4L2_PIX_FMT_X212M:	descr = "Y/CbCr 4:2:2, 4-12-12-12 (N-C)"; break;
++	case V4L2_PIX_FMT_X412:		descr = "Y/CbCr 4:4:4, 4-12-12-12"; break;
++	case V4L2_PIX_FMT_X412M:	descr = "Y/CbCr 4:4:4, 4-12-12-12 (N-C)"; break;
++	case V4L2_PIX_FMT_X016:		descr = "Y/CbCr 4:2:0, 16-16-16"; break;
++	case V4L2_PIX_FMT_X016M:	descr = "Y/CbCr 4:2:0, 16-16-16 (N-C)"; break;
++	case V4L2_PIX_FMT_X216:		descr = "Y/CbCr 4:2:2, 16-16-16"; break;
++	case V4L2_PIX_FMT_X216M:	descr = "Y/CbCr 4:2:2, 16-16-16 (N-C)"; break;
++	case V4L2_PIX_FMT_X416:		descr = "Y/CbCr 4:4:4, 16-16-16"; break;
++	case V4L2_PIX_FMT_X416M:	descr = "Y/CbCr 4:4:4, 16-16-16 (N-C)"; break;
+ 	case V4L2_PIX_FMT_SBGGR8:	descr = "8-bit Bayer BGBG/GRGR"; break;
+ 	case V4L2_PIX_FMT_SGBRG8:	descr = "8-bit Bayer GBGB/RGRG"; break;
+ 	case V4L2_PIX_FMT_SGRBG8:	descr = "8-bit Bayer GRGR/BGBG"; break;
+@@ -3129,6 +3155,23 @@
+ 			ret = 1;
+ 		}
+ 		break;
++	}
++
++	case VIDIOC_SUBDEV_G_ROUTING:
++	case VIDIOC_SUBDEV_S_ROUTING: {
++		struct v4l2_subdev_routing *route = parg;
++
++		if (route->num_routes > 0) {
++			if (route->num_routes > 256)
++				return -EINVAL;
++
++			*user_ptr = (void __user *)route->routes;
++			*kernel_ptr = (void *)&route->routes;
++			*array_size = sizeof(struct v4l2_plane)
++				    * route->num_routes;
++			ret = 1;
++		}
++		break;
+ 	}
+ 	case VIDIOC_G_FMT:
+ 	case VIDIOC_S_FMT:
+--- linux-6.1.0/drivers/media/v4l2-core/v4l2-subdev.c	2023-07-05 08:37:27.908456400 +0900
++++ linux-xlnx-2023.1/drivers/media/v4l2-core/v4l2-subdev.c	2023-07-05 08:33:24.766773300 +0900
+@@ -705,6 +705,33 @@
+ 
+ 		return v4l2_subdev_call(sd, video, s_dv_timings, arg);
+ 
++	case VIDIOC_SUBDEV_G_ROUTING:
++		return v4l2_subdev_call(sd, pad, get_routing, arg);
++
++	case VIDIOC_SUBDEV_S_ROUTING: {
++		struct v4l2_subdev_routing *route = arg;
++		unsigned int i;
++
++		if (route->num_routes > sd->entity.num_pads)
++			return -EINVAL;
++
++		for (i = 0; i < route->num_routes; ++i) {
++			unsigned int sink = route->routes[i].sink;
++			unsigned int source = route->routes[i].source;
++			struct media_pad *pads = sd->entity.pads;
++
++			if (sink >= sd->entity.num_pads ||
++			    source >= sd->entity.num_pads)
++				return -EINVAL;
++
++			if (!(pads[sink].flags & MEDIA_PAD_FL_SINK) ||
++			    !(pads[source].flags & MEDIA_PAD_FL_SOURCE))
++				return -EINVAL;
++		}
++
++		return v4l2_subdev_call(sd, pad, set_routing, route);
++	}
++
+ 	case VIDIOC_SUBDEV_G_STD:
+ 		return v4l2_subdev_call(sd, video, g_std, arg);
+ 
+--- /dev/null
++++ linux-xlnx-2023.1/include/media/hdr-ctrls.h	2023-07-05 08:33:36.823472400 +0900
+@@ -0,0 +1,91 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++/*
++ * These are the HDR controls for use with the extended control API.
++ *
++ * It turns out that these structs are not stable yet and will undergo
++ * more changes. So keep them private until they are stable and ready to
++ * become part of the official public API.
++ */
++
++#ifndef _HDR_CTRLS_H_
++#define _HDR_CTRLS_H_
++
++#include <linux/types.h>
++
++#define V4L2_CTRL_CLASS_METADATA 0x00b00000
++
++#define V4L2_CID_METADATA_BASE (V4L2_CTRL_CLASS_METADATA | 0x900)
++#define V4L2_CID_METADATA_CLASS (V4L2_CTRL_CLASS_METADATA | 1)
++
++#define V4L2_CID_METADATA_HDR (V4L2_CID_METADATA_BASE + 1)
++
++enum v4l2_eotf {
++	/*
++	 * EOTF values as per CTA 861.G spec (HDMI/DP).
++	 * If v4l2 driver is being implemented for other connectivity devices,
++	 * a conversion function must be implemented.
++	 */
++	V4L2_EOTF_TRADITIONAL_GAMMA_SDR,
++	V4L2_EOTF_TRADITIONAL_GAMMA_HDR,
++	V4L2_EOTF_SMPTE_ST2084,
++	V4L2_EOTF_BT_2100_HLG,
++};
++
++enum v4l2_hdr_type {
++	/*
++	 * This is for the v4l2_metadata_hdr structure.
++	 * MSB differentiates static (0) or dynamic (1) metadata.
++	 * Other 15 bits represent specific HDR standards.
++	 */
++
++	/* static HDR */
++	V4L2_HDR_TYPE_HDR10     = 0x0000,
++
++	/* dynamic HDR */
++	V4L2_HDR_TYPE_HDR10P    = 1 << 15 | V4L2_HDR_TYPE_HDR10,
++};
++
++/**
++ * struct v4l2_hdr10_payload - HDR Metadata Payload which matches CTA 861.G spec
++ *
++ * @eotf:				Electro-Optical Transfer Function (EOTF)
++ * @metadata_type:			Static_Metadata_Descriptor_ID
++ * @display_primaries:			Color Primaries of the Data
++ * @white_point:			White Point of Colorspace Data
++ * @max_mdl:				Max Mastering Display Luminance
++ * @min_mdl:				Min Mastering Display Luminance
++ * @max_cll:				Max Content Light Level
++ * @max_fall:				Max Frame Average Light Level
++ */
++struct v4l2_hdr10_payload {
++	__u8 eotf;
++	__u8 metadata_type;
++	struct {
++		__u16 x;
++		__u16 y;
++	} display_primaries[3];
++	struct {
++		__u16 x;
++		__u16 y;
++	} white_point;
++	__u16 max_mdl;
++	__u16 min_mdl;
++	__u16 max_cll;
++	__u16 max_fall;
++};
++
++/**
++ * struct v4l2_metadata_hdr - Container for HDR metadata
++ *
++ * @metadata_type:	HDR type
++ * @size:		Size of payload/metadata
++ * @payload:		Actual metadata
++ */
++struct v4l2_metadata_hdr {
++	__u16 metadata_type;
++	__u16 size;
++	/* Currently the largest extended HDR infoframe is 4000 bytes */
++	__u8 payload[4000];
++};
++
++#endif
+--- linux-6.1.0/include/media/media-entity.h	2023-07-05 08:37:39.724765200 +0900
++++ linux-xlnx-2023.1/include/media/media-entity.h	2023-07-05 08:33:36.854713900 +0900
+@@ -245,6 +245,9 @@
+  *			guaranteed to not both be sinks or sources.
+  *			Optional: If the operation isn't implemented all pads
+  *			will be considered as interdependent.
++ * @has_route:		Return whether a route exists inside the entity between
++ *			two given pads. Optional. If the operation isn't
++ *			implemented all pads will be considered as connected.
+  *
+  * .. note::
+  *
+@@ -260,6 +263,8 @@
+ 	int (*link_validate)(struct media_link *link);
+ 	bool (*has_pad_interdep)(struct media_entity *entity, unsigned int pad0,
+ 				 unsigned int pad1);
++	bool (*has_route)(struct media_entity *entity, unsigned int pad0,
++			  unsigned int pad1);
+ };
+ 
+ /**
+@@ -1081,6 +1086,9 @@
+  */
+ void media_graph_walk_cleanup(struct media_graph *graph);
+ 
++bool media_entity_has_route(struct media_entity *entity, unsigned int sink,
++			    unsigned int source);
++
+ /**
+  * media_graph_walk_start - Start walking the media graph at a
+  *	given entity
+--- linux-6.1.0/include/media/v4l2-subdev.h	2023-07-05 08:37:39.740384700 +0900
++++ linux-xlnx-2023.1/include/media/v4l2-subdev.h	2023-07-05 08:33:36.869249700 +0900
+@@ -805,6 +805,10 @@
+ 			      struct v4l2_mbus_frame_desc *fd);
+ 	int (*get_mbus_config)(struct v4l2_subdev *sd, unsigned int pad,
+ 			       struct v4l2_mbus_config *config);
++	int (*get_routing)(struct v4l2_subdev *sd,
++			   struct v4l2_subdev_routing *route);
++	int (*set_routing)(struct v4l2_subdev *sd,
++			   struct v4l2_subdev_routing *route);
+ };
+ 
+ /**
+--- linux-6.1.0/include/uapi/linux/media-bus-format.h	2023-07-05 08:37:40.350872300 +0900
++++ linux-xlnx-2023.1/include/uapi/linux/media-bus-format.h	2023-07-05 08:33:37.563551100 +0900
+@@ -161,6 +161,22 @@
+ /* HSV - next is	0x6002 */
+ #define MEDIA_BUS_FMT_AHSV8888_1X32		0x6001
+ 
++/* RGB: Xilinx Specific - next is        0x1103 */
++#define MEDIA_BUS_FMT_RBG101010_1X30		0x1100
++#define MEDIA_BUS_FMT_RBG121212_1X36		0x1101
++#define MEDIA_BUS_FMT_RBG161616_1X48		0x1102
++
++/* YUV: Xilinx Specific - next is       0x2109 */
++#define MEDIA_BUS_FMT_VYYUYY8_1X24		0x2100
++#define MEDIA_BUS_FMT_VYYUYY10_4X20		0x2101
++#define MEDIA_BUS_FMT_VUY10_1X30		0x2102
++#define MEDIA_BUS_FMT_UYYVYY12_4X24		0x2103
++#define MEDIA_BUS_FMT_VUY12_1X36		0x2104
++#define MEDIA_BUS_FMT_Y16_1X16			0x2105
++#define MEDIA_BUS_FMT_UYYVYY16_4X32		0x2106
++#define MEDIA_BUS_FMT_VUY16_1X48		0x2107
++#define MEDIA_BUS_FMT_UYVY16_2X32		0x2108
++
+ /*
+  * This format should be used when the same driver handles
+  * both sides of the link and the bus format is a fixed
+--- linux-6.1.0/include/uapi/linux/v4l2-mediabus.h	2023-07-05 08:37:40.539332800 +0900
++++ linux-xlnx-2023.1/include/uapi/linux/v4l2-mediabus.h	2023-07-05 08:33:37.765016500 +0900
+@@ -79,6 +79,8 @@
+ 	V4L2_MBUS_FROM_MEDIA_BUS_FMT(RGB888_2X12_BE),
+ 	V4L2_MBUS_FROM_MEDIA_BUS_FMT(RGB888_2X12_LE),
+ 	V4L2_MBUS_FROM_MEDIA_BUS_FMT(ARGB8888_1X32),
++	V4L2_MBUS_FROM_MEDIA_BUS_FMT(RBG888_1X24),
++	V4L2_MBUS_FROM_MEDIA_BUS_FMT(RGB888_1X32_PADHI),
+ 
+ 	V4L2_MBUS_FROM_MEDIA_BUS_FMT(Y8_1X8),
+ 	V4L2_MBUS_FROM_MEDIA_BUS_FMT(UV8_1X8),
+@@ -115,6 +117,7 @@
+ 	V4L2_MBUS_FROM_MEDIA_BUS_FMT(VYUY12_1X24),
+ 	V4L2_MBUS_FROM_MEDIA_BUS_FMT(YUYV12_1X24),
+ 	V4L2_MBUS_FROM_MEDIA_BUS_FMT(YVYU12_1X24),
++	V4L2_MBUS_FROM_MEDIA_BUS_FMT(VUY8_1X24),
+ 
+ 	V4L2_MBUS_FROM_MEDIA_BUS_FMT(SBGGR8_1X8),
+ 	V4L2_MBUS_FROM_MEDIA_BUS_FMT(SGBRG8_1X8),
+--- linux-6.1.0/include/uapi/linux/v4l2-subdev.h	2023-07-05 08:37:40.539332800 +0900
++++ linux-xlnx-2023.1/include/uapi/linux/v4l2-subdev.h	2023-07-05 08:33:37.765016500 +0900
+@@ -188,6 +188,26 @@
+ /* The v4l2 sub-device video device node is registered in read-only mode. */
+ #define V4L2_SUBDEV_CAP_RO_SUBDEV		0x00000001
+ 
++/**
++ * struct v4l2_subdev_route - A signal route inside a subdev
++ * @sink: the sink pad
++ * @source: the source pad
++ */
++struct v4l2_subdev_route {
++	__u32 sink;
++	__u32 source;
++};
++
++/**
++ * struct v4l2_subdev_routing - Routing information
++ * @num_routes: the total number of routes in the routes array
++ * @routes: the routes array
++ */
++struct v4l2_subdev_routing {
++	__u32 num_routes;
++	struct v4l2_subdev_route *routes;
++};
++
+ /* Backwards compatibility define --- to be removed */
+ #define v4l2_subdev_edid v4l2_edid
+ 
+@@ -215,5 +235,7 @@
+ #define VIDIOC_SUBDEV_ENUM_DV_TIMINGS		_IOWR('V', 98, struct v4l2_enum_dv_timings)
+ #define VIDIOC_SUBDEV_QUERY_DV_TIMINGS		_IOR('V', 99, struct v4l2_dv_timings)
+ #define VIDIOC_SUBDEV_DV_TIMINGS_CAP		_IOWR('V', 100, struct v4l2_dv_timings_cap)
++#define VIDIOC_SUBDEV_G_ROUTING			_IOWR('V', 38, struct v4l2_subdev_routing)
++#define VIDIOC_SUBDEV_S_ROUTING			_IOWR('V', 39, struct v4l2_subdev_routing)
+ 
+ #endif
+--- linux-6.1.0/include/uapi/linux/videodev2.h	2023-07-05 08:37:40.539332800 +0900
++++ linux-xlnx-2023.1/include/uapi/linux/videodev2.h	2023-07-05 08:33:37.796288400 +0900
+@@ -291,6 +291,7 @@
+ 	V4L2_XFER_FUNC_NONE        = 5,
+ 	V4L2_XFER_FUNC_DCI_P3      = 6,
+ 	V4L2_XFER_FUNC_SMPTE2084   = 7,
++	V4L2_XFER_FUNC_HLG         = 8,
+ #ifdef __KERNEL__
+ 	/*
+ 	 * Largest supported transfer function value, assigned by the compiler,
+@@ -576,13 +577,18 @@
+ #define V4L2_PIX_FMT_RGBX32  v4l2_fourcc('X', 'B', '2', '4') /* 32  RGBX-8-8-8-8  */
+ #define V4L2_PIX_FMT_ARGB32  v4l2_fourcc('B', 'A', '2', '4') /* 32  ARGB-8-8-8-8  */
+ #define V4L2_PIX_FMT_XRGB32  v4l2_fourcc('B', 'X', '2', '4') /* 32  XRGB-8-8-8-8  */
++#define V4L2_PIX_FMT_XBGR30  v4l2_fourcc('R', 'X', '3', '0') /* 32  XBGR-2-10-10-10 */
++#define V4L2_PIX_FMT_XBGR40  v4l2_fourcc('R', 'X', '4', '0') /* 40  XBGR-4-12-12-12 */
++#define V4L2_PIX_FMT_BGR48   v4l2_fourcc('R', 'G', '4', '8') /* 32  BGR-16-16-16 */
+ 
+ /* Grey formats */
+ #define V4L2_PIX_FMT_GREY    v4l2_fourcc('G', 'R', 'E', 'Y') /*  8  Greyscale     */
+ #define V4L2_PIX_FMT_Y4      v4l2_fourcc('Y', '0', '4', ' ') /*  4  Greyscale     */
+ #define V4L2_PIX_FMT_Y6      v4l2_fourcc('Y', '0', '6', ' ') /*  6  Greyscale     */
+ #define V4L2_PIX_FMT_Y10     v4l2_fourcc('Y', '1', '0', ' ') /* 10  Greyscale     */
++#define V4L2_PIX_FMT_XY10    v4l2_fourcc('X', 'Y', '1', '0') /* 10  Greyscale 2-10-10-10 */
+ #define V4L2_PIX_FMT_Y12     v4l2_fourcc('Y', '1', '2', ' ') /* 12  Greyscale     */
++#define V4L2_PIX_FMT_XY12    v4l2_fourcc('X', 'Y', '1', '2') /* 12  Greyscale 4-12-12-12 */
+ #define V4L2_PIX_FMT_Y14     v4l2_fourcc('Y', '1', '4', ' ') /* 14  Greyscale     */
+ #define V4L2_PIX_FMT_Y16     v4l2_fourcc('Y', '1', '6', ' ') /* 16  Greyscale     */
+ #define V4L2_PIX_FMT_Y16_BE  v4l2_fourcc_be('Y', '1', '6', ' ') /* 16  Greyscale BE  */
+@@ -606,6 +612,9 @@
+ #define V4L2_PIX_FMT_VYUY    v4l2_fourcc('V', 'Y', 'U', 'Y') /* 16  YUV 4:2:2     */
+ #define V4L2_PIX_FMT_Y41P    v4l2_fourcc('Y', '4', '1', 'P') /* 12  YUV 4:1:1     */
+ #define V4L2_PIX_FMT_YUV444  v4l2_fourcc('Y', '4', '4', '4') /* 16  xxxxyyyy uuuuvvvv */
++#define V4L2_PIX_FMT_XVUY32  v4l2_fourcc('X', 'V', '3', '2') /* 32  XVUY 8:8:8:8 */
++#define V4L2_PIX_FMT_AVUY32  v4l2_fourcc('A', 'V', '3', '2') /* 32  AVUY 8:8:8:8 */
++#define V4L2_PIX_FMT_VUY24   v4l2_fourcc('V', 'U', '2', '4') /* 24  VUY 8:8:8 */
+ #define V4L2_PIX_FMT_YUV555  v4l2_fourcc('Y', 'U', 'V', 'O') /* 16  YUV-5-5-5     */
+ #define V4L2_PIX_FMT_YUV565  v4l2_fourcc('Y', 'U', 'V', 'P') /* 16  YUV-5-6-5     */
+ #define V4L2_PIX_FMT_YUV24   v4l2_fourcc('Y', 'U', 'V', '3') /* 24  YUV-8-8-8     */
+@@ -617,6 +626,7 @@
+ #define V4L2_PIX_FMT_YUVA32  v4l2_fourcc('Y', 'U', 'V', 'A') /* 32  YUVA-8-8-8-8  */
+ #define V4L2_PIX_FMT_YUVX32  v4l2_fourcc('Y', 'U', 'V', 'X') /* 32  YUVX-8-8-8-8  */
+ #define V4L2_PIX_FMT_M420    v4l2_fourcc('M', '4', '2', '0') /* 12  YUV 4:2:0 2 lines y, 1 line uv interleaved */
++#define V4L2_PIX_FMT_XVUY10  v4l2_fourcc('X', '4', '1', '0') /* 32  XVUY 2-10-10-10 */
+ 
+ /* two planes -- one Y, one Cr + Cb interleaved  */
+ #define V4L2_PIX_FMT_NV12    v4l2_fourcc('N', 'V', '1', '2') /* 12  Y/CbCr 4:2:0  */
+@@ -626,12 +636,31 @@
+ #define V4L2_PIX_FMT_NV24    v4l2_fourcc('N', 'V', '2', '4') /* 24  Y/CbCr 4:4:4  */
+ #define V4L2_PIX_FMT_NV42    v4l2_fourcc('N', 'V', '4', '2') /* 24  Y/CrCb 4:4:4  */
+ #define V4L2_PIX_FMT_P010    v4l2_fourcc('P', '0', '1', '0') /* 24  Y/CbCr 4:2:0 10-bit per component */
++#define V4L2_PIX_FMT_XV20    v4l2_fourcc('X', 'V', '2', '0') /* 32  XY/UV 4:2:2 10-bit */
++#define V4L2_PIX_FMT_XV15    v4l2_fourcc('X', 'V', '1', '5') /* 32  XY/UV 4:2:0 10-bit */
++#define V4L2_PIX_FMT_X012    v4l2_fourcc('X', '0', '1', '2') /* 40  XY/UV 4:2:0 12-bit 4-12-12-12 */
++#define V4L2_PIX_FMT_X212    v4l2_fourcc('X', '2', '1', '2') /* 40  XY/UV 4:2:2 12-bit 4-12-12-12 */
++#define V4L2_PIX_FMT_X412    v4l2_fourcc('X', '4', '1', '2') /* 40  XY/UV 4:4:4 12-bit 4-12-12-12 */
++#define V4L2_PIX_FMT_X016    v4l2_fourcc('X', '0', '1', '6') /* 32  XY/UV 4:2:0 16-bit */
++#define V4L2_PIX_FMT_X216    v4l2_fourcc('X', '2', '1', '6') /* 32  XY/UV 4:2:2 16-bit */
++#define V4L2_PIX_FMT_X416    v4l2_fourcc('X', '4', '1', '6') /* 32  XY/UV 4:4:4 16-bit */
++#define V4L2_PIX_FMT_HM12    v4l2_fourcc('H', 'M', '1', '2') /*  8  YUV 4:2:0 16x16 macroblocks */
+ 
+ /* two non contiguous planes - one Y, one Cr + Cb interleaved  */
+ #define V4L2_PIX_FMT_NV12M   v4l2_fourcc('N', 'M', '1', '2') /* 12  Y/CbCr 4:2:0  */
+ #define V4L2_PIX_FMT_NV21M   v4l2_fourcc('N', 'M', '2', '1') /* 21  Y/CrCb 4:2:0  */
+ #define V4L2_PIX_FMT_NV16M   v4l2_fourcc('N', 'M', '1', '6') /* 16  Y/CbCr 4:2:2  */
+ #define V4L2_PIX_FMT_NV61M   v4l2_fourcc('N', 'M', '6', '1') /* 16  Y/CrCb 4:2:2  */
++#define V4L2_PIX_FMT_NV12MT  v4l2_fourcc('T', 'M', '1', '2') /* 12  Y/CbCr 4:2:0 64x32 macroblocks */
++#define V4L2_PIX_FMT_XV20M   v4l2_fourcc('X', 'M', '2', '0') /* 32  XY/UV 4:2:2 10-bit */
++#define V4L2_PIX_FMT_XV15M   v4l2_fourcc('X', 'M', '1', '5') /* 32  XY/UV 4:2:0 10-bit */
++#define V4L2_PIX_FMT_X012M   v4l2_fourcc('M', '0', '1', '2') /* 40  XY/UV 4:2:0 12-bit 4-12-12-12 */
++#define V4L2_PIX_FMT_X212M   v4l2_fourcc('M', '2', '1', '2') /* 40  XY/UV 4:2:2 12-bit 4-12-12-12 */
++#define V4L2_PIX_FMT_X412M   v4l2_fourcc('M', '4', '1', '2') /* 40  XY/UV 4:4:4 12-bit 4-12-12-12 */
++#define V4L2_PIX_FMT_X016M   v4l2_fourcc('M', '0', '1', '6') /* 32  XY/UV 4:2:0 16-bit */
++#define V4L2_PIX_FMT_X216M   v4l2_fourcc('M', '2', '1', '6') /* 32  XY/UV 4:2:2 16-bit */
++#define V4L2_PIX_FMT_X416M   v4l2_fourcc('M', '4', '1', '6') /* 32  XY/UV 4:4:4 16-bit */
++#define V4L2_PIX_FMT_NV12MT_16X16 v4l2_fourcc('V', 'M', '1', '2') /* 12  Y/CbCr 4:2:0 16x16 macroblocks */
+ 
+ /* three planes - Y Cb, Cr */
+ #define V4L2_PIX_FMT_YUV410  v4l2_fourcc('Y', 'U', 'V', '9') /*  9  YUV 4:1:0     */
+@@ -640,6 +669,8 @@
+ #define V4L2_PIX_FMT_YUV420  v4l2_fourcc('Y', 'U', '1', '2') /* 12  YUV 4:2:0     */
+ #define V4L2_PIX_FMT_YVU420  v4l2_fourcc('Y', 'V', '1', '2') /* 12  YVU 4:2:0     */
+ #define V4L2_PIX_FMT_YUV422P v4l2_fourcc('4', '2', '2', 'P') /* 16  YVU422 planar */
++#define V4L2_PIX_FMT_YUV444P v4l2_fourcc('4', '4', '4', 'P') /* 24  YUV444 planar */
++#define V4L2_PIX_FMT_X403    v4l2_fourcc('X', '4', '0', '3') /* 32  XYUV 4:4:4 10-bit */
+ 
+ /* three non contiguous planes - Y, Cb, Cr */
+ #define V4L2_PIX_FMT_YUV420M v4l2_fourcc('Y', 'M', '1', '2') /* 12  YUV420 planar */
+@@ -1872,6 +1903,7 @@
+ 	V4L2_CTRL_TYPE_HEVC_SLICE_PARAMS	= 0x0272,
+ 	V4L2_CTRL_TYPE_HEVC_SCALING_MATRIX	= 0x0273,
+ 	V4L2_CTRL_TYPE_HEVC_DECODE_PARAMS	= 0x0274,
++	V4L2_CTRL_TYPE_HDR	     = 0x0400,
+ };
+ 
+ /*  Used in the VIDIOC_QUERYCTRL ioctl for querying controls */
+--- /dev/null
++++ linux-xlnx-2023.1/include/uapi/linux/xilinx-dprxss.h	2023-07-05 08:33:37.827530900 +0900
+@@ -0,0 +1,22 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++
++#ifndef __XILINX_DPRXSS_H__
++#define __XILINX_DPRXSS_H__
++
++#include <linux/types.h>
++
++/**
++ * struct xdprxss_hdcp1x_keys_ioctl - Hdcp1x Keys structure
++ * @size: size of the keys
++ * @keys: Pointer to the keys buffer
++ */
++struct xdprxss_hdcp1x_keys_ioctl {
++	__u32 size;
++	void const *keys;
++};
++
++/* This ioctl is used to set the hdcp1x keys into IP */
++#define XILINX_DPRXSS_HDCP_KEY_WRITE \
++	_IOW('X', BASE_VIDIOC_PRIVATE + 0, struct xdprxss_hdcp1x_keys_ioctl)
++
++#endif
+--- /dev/null
++++ linux-xlnx-2023.1/include/uapi/linux/xilinx-hls.h	2023-07-05 08:33:37.827530900 +0900
+@@ -0,0 +1,23 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++
++#ifndef __UAPI_XILINX_HLS_H__
++#define __UAPI_XILINX_HLS_H__
++
++#include <linux/ioctl.h>
++#include <linux/types.h>
++#include <linux/videodev2.h>
++
++struct xilinx_axi_hls_register {
++	__u32 offset;
++	__u32 value;
++};
++
++struct xilinx_axi_hls_registers {
++	__u32 num_regs;
++	struct xilinx_axi_hls_register *regs;
++};
++
++#define XILINX_AXI_HLS_READ	_IOWR('V', BASE_VIDIOC_PRIVATE+0, struct xilinx_axi_hls_registers)
++#define XILINX_AXI_HLS_WRITE	_IOW('V', BASE_VIDIOC_PRIVATE+1, struct xilinx_axi_hls_registers)
++
++#endif /* __UAPI_XILINX_HLS_H__ */
+--- /dev/null
++++ linux-xlnx-2023.1/include/uapi/linux/xilinx-sdirxss.h	2023-07-05 08:33:37.827530900 +0900
+@@ -0,0 +1,66 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++
++#ifndef __UAPI_XILINX_SDIRXSS_H__
++#define __UAPI_XILINX_SDIRXSS_H__
++
++#include <linux/types.h>
++#include <linux/videodev2.h>
++
++/*
++ * Events
++ *
++ * V4L2_EVENT_XLNXSDIRX_UNDERFLOW: Video in to AXI4 Stream core underflowed
++ * V4L2_EVENT_XLNXSDIRX_OVERFLOW: Video in to AXI4 Stream core overflowed
++ */
++#define V4L2_EVENT_XLNXSDIRX_CLASS	(V4L2_EVENT_PRIVATE_START | 0x200)
++#define V4L2_EVENT_XLNXSDIRX_UNDERFLOW	(V4L2_EVENT_XLNXSDIRX_CLASS | 0x1)
++#define V4L2_EVENT_XLNXSDIRX_OVERFLOW	(V4L2_EVENT_XLNXSDIRX_CLASS | 0x2)
++
++/*
++ * This enum is used to prepare the bitmask
++ * of modes to be detected
++ */
++enum {
++	XSDIRX_MODE_SD_OFFSET = 0,
++	XSDIRX_MODE_HD_OFFSET,
++	XSDIRX_MODE_3G_OFFSET,
++	XSDIRX_MODE_6G_OFFSET,
++	XSDIRX_MODE_12GI_OFFSET,
++	XSDIRX_MODE_12GF_OFFSET,
++	XSDIRX_MODE_NUM_SUPPORTED,
++};
++
++#define XSDIRX_DETECT_ALL_MODES		(BIT(XSDIRX_MODE_SD_OFFSET) | \
++					BIT(XSDIRX_MODE_HD_OFFSET) | \
++					BIT(XSDIRX_MODE_3G_OFFSET) | \
++					BIT(XSDIRX_MODE_6G_OFFSET) | \
++					BIT(XSDIRX_MODE_12GI_OFFSET) | \
++					BIT(XSDIRX_MODE_12GF_OFFSET))
++
++/*
++ * EDH Error Types
++ * ANC - Ancillary Data Packet Errors
++ * FF - Full Field Errors
++ * AP - Active Portion Errors
++ */
++
++#define XSDIRX_EDH_ERRCNT_ANC_EDH_ERR	BIT(0)
++#define XSDIRX_EDH_ERRCNT_ANC_EDA_ERR	BIT(1)
++#define XSDIRX_EDH_ERRCNT_ANC_IDH_ERR	BIT(2)
++#define XSDIRX_EDH_ERRCNT_ANC_IDA_ERR	BIT(3)
++#define XSDIRX_EDH_ERRCNT_ANC_UES_ERR	BIT(4)
++#define XSDIRX_EDH_ERRCNT_FF_EDH_ERR	BIT(5)
++#define XSDIRX_EDH_ERRCNT_FF_EDA_ERR	BIT(6)
++#define XSDIRX_EDH_ERRCNT_FF_IDH_ERR	BIT(7)
++#define XSDIRX_EDH_ERRCNT_FF_IDA_ERR	BIT(8)
++#define XSDIRX_EDH_ERRCNT_FF_UES_ERR	BIT(9)
++#define XSDIRX_EDH_ERRCNT_AP_EDH_ERR	BIT(10)
++#define XSDIRX_EDH_ERRCNT_AP_EDA_ERR	BIT(11)
++#define XSDIRX_EDH_ERRCNT_AP_IDH_ERR	BIT(12)
++#define XSDIRX_EDH_ERRCNT_AP_IDA_ERR	BIT(13)
++#define XSDIRX_EDH_ERRCNT_AP_UES_ERR	BIT(14)
++#define XSDIRX_EDH_ERRCNT_PKT_CHKSUM_ERR	BIT(15)
++
++#define XSDIRX_EDH_ALLERR_MASK		0xFFFF
++
++#endif /* __UAPI_XILINX_SDIRXSS_H__ */
+--- linux-6.1.0/include/uapi/linux/xilinx-v4l2-controls.h	2023-07-05 08:37:40.570577900 +0900
++++ linux-xlnx-2023.1/include/uapi/linux/xilinx-v4l2-controls.h	2023-07-05 08:33:37.827530900 +0900
+@@ -70,5 +70,174 @@
+ #define V4L2_CID_XILINX_TPG_STUCK_PIXEL_THRESH	(V4L2_CID_XILINX_TPG + 16)
+ /* Noise level */
+ #define V4L2_CID_XILINX_TPG_NOISE_GAIN		(V4L2_CID_XILINX_TPG + 17)
++/* Foreground pattern (HLS)*/
++#define V4L2_CID_XILINX_TPG_HLS_FG_PATTERN     (V4L2_CID_XILINX_TPG + 18)
++
++/*
++ * Xilinx CRESAMPLE Video IP
++ */
++
++#define V4L2_CID_XILINX_CRESAMPLE		(V4L2_CID_USER_BASE + 0xc020)
++
++/* The field parity for interlaced video */
++#define V4L2_CID_XILINX_CRESAMPLE_FIELD_PARITY	(V4L2_CID_XILINX_CRESAMPLE + 1)
++/* Specify if the first line of video contains the Chroma information */
++#define V4L2_CID_XILINX_CRESAMPLE_CHROMA_PARITY	(V4L2_CID_XILINX_CRESAMPLE + 2)
++
++/*
++ * Xilinx RGB2YUV Video IPs
++ */
++
++#define V4L2_CID_XILINX_RGB2YUV			(V4L2_CID_USER_BASE + 0xc040)
++
++/* Maximum Luma(Y) value */
++#define V4L2_CID_XILINX_RGB2YUV_YMAX		(V4L2_CID_XILINX_RGB2YUV + 1)
++/* Minimum Luma(Y) value */
++#define V4L2_CID_XILINX_RGB2YUV_YMIN		(V4L2_CID_XILINX_RGB2YUV + 2)
++/* Maximum Cb Chroma value */
++#define V4L2_CID_XILINX_RGB2YUV_CBMAX		(V4L2_CID_XILINX_RGB2YUV + 3)
++/* Minimum Cb Chroma value */
++#define V4L2_CID_XILINX_RGB2YUV_CBMIN		(V4L2_CID_XILINX_RGB2YUV + 4)
++/* Maximum Cr Chroma value */
++#define V4L2_CID_XILINX_RGB2YUV_CRMAX		(V4L2_CID_XILINX_RGB2YUV + 5)
++/* Minimum Cr Chroma value */
++#define V4L2_CID_XILINX_RGB2YUV_CRMIN		(V4L2_CID_XILINX_RGB2YUV + 6)
++/* The offset compensation value for Luma(Y) */
++#define V4L2_CID_XILINX_RGB2YUV_YOFFSET		(V4L2_CID_XILINX_RGB2YUV + 7)
++/* The offset compensation value for Cb Chroma */
++#define V4L2_CID_XILINX_RGB2YUV_CBOFFSET	(V4L2_CID_XILINX_RGB2YUV + 8)
++/* The offset compensation value for Cr Chroma */
++#define V4L2_CID_XILINX_RGB2YUV_CROFFSET	(V4L2_CID_XILINX_RGB2YUV + 9)
++
++/* Y = CA * R + (1 - CA - CB) * G + CB * B */
++
++/* CA coefficient */
++#define V4L2_CID_XILINX_RGB2YUV_ACOEF		(V4L2_CID_XILINX_RGB2YUV + 10)
++/* CB coefficient */
++#define V4L2_CID_XILINX_RGB2YUV_BCOEF		(V4L2_CID_XILINX_RGB2YUV + 11)
++/* CC coefficient */
++#define V4L2_CID_XILINX_RGB2YUV_CCOEF		(V4L2_CID_XILINX_RGB2YUV + 12)
++/* CD coefficient */
++#define V4L2_CID_XILINX_RGB2YUV_DCOEF		(V4L2_CID_XILINX_RGB2YUV + 13)
++
++/*
++ * Xilinx HLS Video IP
++ */
++
++#define V4L2_CID_XILINX_HLS			(V4L2_CID_USER_BASE + 0xc060)
++
++/* The IP model */
++#define V4L2_CID_XILINX_HLS_MODEL		(V4L2_CID_XILINX_HLS + 1)
++
++/*
++ * Xilinx Gamma Correction IP
++ */
++
++/* Base ID */
++#define V4L2_CID_XILINX_GAMMA_CORR		(V4L2_CID_USER_BASE + 0xc0c0)
++/* Adjust Red Gamma */
++#define V4L2_CID_XILINX_GAMMA_CORR_RED_GAMMA	(V4L2_CID_XILINX_GAMMA_CORR + 1)
++/* Adjust Blue Gamma */
++#define V4L2_CID_XILINX_GAMMA_CORR_BLUE_GAMMA	(V4L2_CID_XILINX_GAMMA_CORR + 2)
++/* Adjust Green Gamma */
++#define V4L2_CID_XILINX_GAMMA_CORR_GREEN_GAMMA	(V4L2_CID_XILINX_GAMMA_CORR + 3)
++
++/*
++ * Xilinx Color Space Converter (CSC) VPSS
++ */
++
++/* Base ID */
++#define V4L2_CID_XILINX_CSC			(V4L2_CID_USER_BASE + 0xc0a0)
++/* Adjust Brightness */
++#define V4L2_CID_XILINX_CSC_BRIGHTNESS		(V4L2_CID_XILINX_CSC + 1)
++/* Adjust Contrast */
++#define V4L2_CID_XILINX_CSC_CONTRAST		(V4L2_CID_XILINX_CSC + 2)
++/* Adjust Red Gain */
++#define V4L2_CID_XILINX_CSC_RED_GAIN		(V4L2_CID_XILINX_CSC + 3)
++/* Adjust Green Gain */
++#define V4L2_CID_XILINX_CSC_GREEN_GAIN		(V4L2_CID_XILINX_CSC + 4)
++/* Adjust Blue Gain */
++#define V4L2_CID_XILINX_CSC_BLUE_GAIN		(V4L2_CID_XILINX_CSC + 5)
++
++/*
++ * Xilinx SDI Rx Subsystem
++ */
++
++/* Base ID */
++#define V4L2_CID_XILINX_SDIRX			(V4L2_CID_USER_BASE + 0xc100)
++
++/* Framer Control */
++#define V4L2_CID_XILINX_SDIRX_FRAMER		(V4L2_CID_XILINX_SDIRX + 1)
++/* Video Lock Window Control */
++#define V4L2_CID_XILINX_SDIRX_VIDLOCK_WINDOW	(V4L2_CID_XILINX_SDIRX + 2)
++/* EDH Error Mask Control */
++#define V4L2_CID_XILINX_SDIRX_EDH_ERRCNT_ENABLE	(V4L2_CID_XILINX_SDIRX + 3)
++/* Mode search Control */
++#define V4L2_CID_XILINX_SDIRX_SEARCH_MODES	(V4L2_CID_XILINX_SDIRX + 4)
++/* Get Detected Mode control */
++#define V4L2_CID_XILINX_SDIRX_MODE_DETECT	(V4L2_CID_XILINX_SDIRX + 5)
++/* Get CRC error status */
++#define V4L2_CID_XILINX_SDIRX_CRC		(V4L2_CID_XILINX_SDIRX + 6)
++/* Get EDH error count control */
++#define V4L2_CID_XILINX_SDIRX_EDH_ERRCNT	(V4L2_CID_XILINX_SDIRX + 7)
++/* Get EDH status control */
++#define V4L2_CID_XILINX_SDIRX_EDH_STATUS	(V4L2_CID_XILINX_SDIRX + 8)
++/* Get Transport Interlaced status */
++#define V4L2_CID_XILINX_SDIRX_TS_IS_INTERLACED	(V4L2_CID_XILINX_SDIRX + 9)
++/* Get Active Streams count */
++#define V4L2_CID_XILINX_SDIRX_ACTIVE_STREAMS	(V4L2_CID_XILINX_SDIRX + 10)
++/* Is Mode 3GB */
++#define V4L2_CID_XILINX_SDIRX_IS_3GB		(V4L2_CID_XILINX_SDIRX + 11)
++
++/*
++ * Xilinx VIP
++ */
++
++/* Base ID */
++#define V4L2_CID_XILINX_VIP			(V4L2_CID_USER_BASE + 0xc120)
++
++/* Low latency mode */
++#define V4L2_CID_XILINX_LOW_LATENCY		(V4L2_CID_XILINX_VIP + 1)
++
++/* Control values to enable/disable low latency capture mode */
++#define XVIP_LOW_LATENCY_ENABLE		BIT(1)
++#define XVIP_LOW_LATENCY_DISABLE	BIT(2)
++
++/* Control value to start DMA */
++#define XVIP_START_DMA			BIT(3)
++
++/*
++ * Xilinx SCD
++ */
++
++/* Base ID */
++#define V4L2_CID_XILINX_SCD			(V4L2_CID_USER_BASE + 0xc140)
++
++/*
++ * SCD Threshold
++ * User can pass percentage as an integer to tune threshold value
++ */
++#define V4L2_CID_XILINX_SCD_THRESHOLD		(V4L2_CID_XILINX_SCD + 1)
++
++/*
++ * Xilinx Video ISP Pipeline IP
++ */
++
++/* Base ID */
++#define V4L2_CID_XILINX_ISP			(V4L2_CID_USER_BASE + 0xc160)
++/* Adjust Red Gain */
++#define V4L2_CID_XILINX_ISP_RED_GAIN		(V4L2_CID_XILINX_ISP + 1)
++/* Adjust Blue Gain */
++#define V4L2_CID_XILINX_ISP_BLUE_GAIN		(V4L2_CID_XILINX_ISP + 2)
++/* Adjust AWB */
++#define V4L2_CID_XILINX_ISP_AWB			(V4L2_CID_XILINX_ISP + 3)
++/* Adjust Threshold */
++#define V4L2_CID_XILINX_ISP_THRESHOLD		(V4L2_CID_XILINX_ISP + 4)
++/* Adjust Red Gamma */
++#define V4L2_CID_XILINX_ISP_RED_GAMMA		(V4L2_CID_XILINX_ISP + 5)
++/* Adjust Green Gamma */
++#define V4L2_CID_XILINX_ISP_GREEN_GAMMA		(V4L2_CID_XILINX_ISP + 6)
++/* Adjust Blue Gamma */
++#define V4L2_CID_XILINX_ISP_BLUE_GAMMA		(V4L2_CID_XILINX_ISP + 7)
+ 
+ #endif /* __UAPI_XILINX_V4L2_CONTROLS_H__ */
+--- /dev/null
++++ linux-xlnx-2023.1/include/uapi/linux/xilinx-v4l2-events.h	2023-07-05 08:33:37.827530900 +0900
+@@ -0,0 +1,25 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++
++/*
++ * Xilinx V4L2 SCD Driver
++ *
++ * Copyright (C) 2017-2018 Xilinx, Inc.
++ *
++ * Contacts: Hyun Kwon <hyun.kwon@xilinx.com>
++ *
++ */
++
++#ifndef __UAPI_XILINX_V4L2_EVENTS_H__
++#define __UAPI_XILINX_V4L2_EVENTS_H__
++
++#include <linux/videodev2.h>
++
++/*
++ * Events
++ *
++ * V4L2_EVENT_XLNXSCD: Scene Change Detection
++ */
++#define V4L2_EVENT_XLNXSCD_CLASS	(V4L2_EVENT_PRIVATE_START | 0x300)
++#define V4L2_EVENT_XLNXSCD		(V4L2_EVENT_XLNXSCD_CLASS | 0x1)
++
++#endif /* __UAPI_XILINX_V4L2_EVENTS_H__ */
+--- linux-6.1.0/usr/include/Makefile	2023-07-05 08:37:47.440052100 +0900
++++ linux-xlnx-2023.1/usr/include/Makefile	2023-07-05 08:33:44.808641900 +0900
+@@ -43,6 +43,9 @@
+ no-header-test += linux/v4l2-subdev.h
+ no-header-test += linux/videodev2.h
+ no-header-test += linux/vm_sockets.h
++no-header-test += linux/xilinx-sdirxss.h
++no-header-test += linux/xilinx-hls.h
++no-header-test += linux/xilinx-v4l2-events.h
+ no-header-test += sound/asequencer.h
+ no-header-test += sound/asoc.h
+ no-header-test += sound/asound.h

@@ -1,0 +1,33 @@
+--- linux-6.1.0/drivers/net/wireless/marvell/libertas/if_spi.c	2023-07-05 08:37:31.454840400 +0900
++++ linux-xlnx-2023.1/drivers/net/wireless/marvell/libertas/if_spi.c	2023-07-05 08:33:28.291395400 +0900
+@@ -1051,7 +1051,7 @@
+ 				"spi->max_speed_hz=%d\n",
+ 				card->card_id, card->card_rev,
+ 				card->spi->master->bus_num,
+-				card->spi->chip_select,
++				spi_get_chipselect(card->spi, 0),
+ 				card->spi->max_speed_hz);
+ 		err = if_spi_prog_helper_firmware(card, helper);
+ 		if (err)
+--- linux-6.1.0/drivers/net/wireless/silabs/wfx/bus_spi.c	2023-07-05 08:37:31.909898200 +0900
++++ linux-xlnx-2023.1/drivers/net/wireless/silabs/wfx/bus_spi.c	2023-07-05 08:33:28.765661600 +0900
+@@ -208,7 +208,7 @@
+ 
+ 	/* Trace below is also displayed by spi_setup() if compiled with DEBUG */
+ 	dev_dbg(&func->dev, "SPI params: CS=%d, mode=%d bits/word=%d speed=%d\n",
+-		func->chip_select, func->mode, func->bits_per_word, func->max_speed_hz);
++		spi_get_chipselect(func, 0), func->mode, func->bits_per_word, func->max_speed_hz);
+ 	if (func->bits_per_word != 16 && func->bits_per_word != 8)
+ 		dev_warn(&func->dev, "unusual bits/word value: %d\n", func->bits_per_word);
+ 	if (func->max_speed_hz > 50000000)
+--- linux-6.1.0/drivers/net/wireless/st/cw1200/cw1200_spi.c	2023-07-05 08:37:31.925547300 +0900
++++ linux-xlnx-2023.1/drivers/net/wireless/st/cw1200/cw1200_spi.c	2023-07-05 08:33:28.781283000 +0900
+@@ -378,7 +378,7 @@
+ 	func->mode = SPI_MODE_0;
+ 
+ 	pr_info("cw1200_wlan_spi: Probe called (CS %d M %d BPW %d CLK %d)\n",
+-		func->chip_select, func->mode, func->bits_per_word,
++		spi_get_chipselect(func, 0), func->mode, func->bits_per_word,
+ 		func->max_speed_hz);
+ 
+ 	if (cw1200_spi_on(plat_data)) {

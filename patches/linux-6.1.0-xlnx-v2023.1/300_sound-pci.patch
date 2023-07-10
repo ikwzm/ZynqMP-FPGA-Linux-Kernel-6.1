@@ -1,0 +1,11 @@
+--- linux-6.1.0/sound/pci/hda/cs35l41_hda_spi.c	2023-07-05 08:37:43.362254800 +0900
++++ linux-xlnx-2023.1/sound/pci/hda/cs35l41_hda_spi.c	2023-07-05 08:33:40.621971800 +0900
+@@ -25,7 +25,7 @@
+ 	else
+ 		return -ENODEV;
+ 
+-	return cs35l41_hda_probe(&spi->dev, device_name, spi->chip_select, spi->irq,
++	return cs35l41_hda_probe(&spi->dev, device_name, spi_get_chipselect(spi, 0), spi->irq,
+ 				 devm_regmap_init_spi(spi, &cs35l41_regmap_spi));
+ }
+ 

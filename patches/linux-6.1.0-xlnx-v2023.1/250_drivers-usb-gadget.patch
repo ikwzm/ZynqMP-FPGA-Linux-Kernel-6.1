@@ -1,0 +1,294 @@
+--- linux-6.1.0/drivers/usb/gadget/composite.c	2023-07-05 08:37:35.652284200 +0900
++++ linux-xlnx-2023.1/drivers/usb/gadget/composite.c	2023-07-05 08:33:32.751223300 +0900
+@@ -741,6 +741,17 @@
+ 						      USB_HIGH_SPEED_OPERATION |
+ 						      USB_5GBPS_OPERATION);
+ 		ss_cap->bFunctionalitySupport = USB_LOW_SPEED_OPERATION;
++
++		/* Get Controller configuration */
++		if (cdev->gadget->ops->get_config_params) {
++			cdev->gadget->ops->get_config_params(cdev->gadget,
++				&dcd_config_params);
++		} else {
++			dcd_config_params.bU1devExitLat =
++				USB_DEFAULT_U1_DEV_EXIT_LAT;
++			dcd_config_params.bU2DevExitLat =
++				cpu_to_le16(USB_DEFAULT_U2_DEV_EXIT_LAT);
++		}
+ 		ss_cap->bU1devExitLat = dcd_config_params.bU1devExitLat;
+ 		ss_cap->bU2DevExitLat = dcd_config_params.bU2DevExitLat;
+ 	}
+--- linux-6.1.0/drivers/usb/gadget/function/f_tcm.c	2023-07-05 08:37:35.667905700 +0900
++++ linux-xlnx-2023.1/drivers/usb/gadget/function/f_tcm.c	2023-07-05 08:33:32.766844500 +0900
+@@ -1657,8 +1657,10 @@
+ 
+ CONFIGFS_ATTR(tcm_usbg_tpg_, nexus);
+ 
++static struct configfs_attribute tcm_usbg_tpg_attr_maxburst;
+ static struct configfs_attribute *usbg_base_attrs[] = {
+ 	&tcm_usbg_tpg_attr_nexus,
++	&tcm_usbg_tpg_attr_maxburst,
+ 	NULL,
+ };
+ 
+@@ -1967,6 +1969,32 @@
+ 	NULL,
+ };
+ 
++static ssize_t tcm_usbg_tpg_maxburst_show(struct config_item *item, char *page)
++{
++	return snprintf(page, PAGE_SIZE, "%u\n", uasp_cmd_comp_desc.bMaxBurst);
++}
++
++static ssize_t tcm_usbg_tpg_maxburst_store(struct config_item *item,
++					   const char *page, size_t count)
++{
++	int value;
++	int ret;
++
++	ret = kstrtouint(page, 10, &value);
++	if (ret)
++		return ret;
++
++	uasp_bi_ep_comp_desc.bMaxBurst = value;
++	uasp_bo_ep_comp_desc.bMaxBurst = value;
++	uasp_status_in_ep_comp_desc.bMaxBurst = value;
++	uasp_cmd_comp_desc.bMaxBurst = value;
++	bot_bi_ep_comp_desc.bMaxBurst = value;
++	bot_bo_ep_comp_desc.bMaxBurst = value;
++
++	return count;
++}
++CONFIGFS_ATTR(tcm_usbg_tpg_, maxburst);
++
+ static int tcm_bind(struct usb_configuration *c, struct usb_function *f)
+ {
+ 	struct f_uas		*fu = to_f_uas(f);
+--- linux-6.1.0/drivers/usb/gadget/function/uvc_video.c	2023-07-05 08:37:35.699148200 +0900
++++ linux-xlnx-2023.1/drivers/usb/gadget/function/uvc_video.c	2023-07-05 08:33:32.782465800 +0900
+@@ -430,11 +430,13 @@
+ 			req->no_interrupt = 1;
+ 		}
+ 
+-		/* Queue the USB request */
+-		ret = uvcg_video_ep_queue(video, req);
+ 		spin_unlock_irqrestore(&queue->irqlock, flags);
+ 
++		/* Queue the USB request */
++		ret = uvcg_video_ep_queue(video, req);
+ 		if (ret < 0) {
++			printk(KERN_INFO "Failed to queue request (%d)\n", ret);
++			usb_ep_set_halt(video->ep);
+ 			uvcg_queue_cancel(queue, 0);
+ 			break;
+ 		}
+--- linux-6.1.0/drivers/usb/gadget/legacy/webcam.c	2023-07-05 08:37:35.699148200 +0900
++++ linux-xlnx-2023.1/drivers/usb/gadget/legacy/webcam.c	2023-07-05 08:33:32.798086400 +0900
+@@ -163,7 +163,7 @@
+ 	.bDescriptorType	= USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType	= UVC_VS_FORMAT_UNCOMPRESSED,
+ 	.bFormatIndex		= 1,
+-	.bNumFrameDescriptors	= 2,
++	.bNumFrameDescriptors	= 4,
+ 	.guidFormat		=
+ 		{ 'Y',  'U',  'Y',  '2', 0x00, 0x00, 0x10, 0x00,
+ 		 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71},
+@@ -176,10 +176,10 @@
+ };
+ 
+ DECLARE_UVC_FRAME_UNCOMPRESSED(1);
+-DECLARE_UVC_FRAME_UNCOMPRESSED(3);
++DECLARE_UVC_FRAME_UNCOMPRESSED(5);
+ 
+-static const struct UVC_FRAME_UNCOMPRESSED(3) uvc_frame_yuv_360p = {
+-	.bLength		= UVC_DT_FRAME_UNCOMPRESSED_SIZE(3),
++static const struct UVC_FRAME_UNCOMPRESSED(5) uvc_frame_yuv_360p = {
++	.bLength		= UVC_DT_FRAME_UNCOMPRESSED_SIZE(5),
+ 	.bDescriptorType	= USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType	= UVC_VS_FRAME_UNCOMPRESSED,
+ 	.bFrameIndex		= 1,
+@@ -189,15 +189,17 @@
+ 	.dwMinBitRate		= cpu_to_le32(18432000),
+ 	.dwMaxBitRate		= cpu_to_le32(55296000),
+ 	.dwMaxVideoFrameBufferSize	= cpu_to_le32(460800),
+-	.dwDefaultFrameInterval	= cpu_to_le32(666666),
+-	.bFrameIntervalType	= 3,
+-	.dwFrameInterval[0]	= cpu_to_le32(666666),
+-	.dwFrameInterval[1]	= cpu_to_le32(1000000),
+-	.dwFrameInterval[2]	= cpu_to_le32(5000000),
++	.dwDefaultFrameInterval	= cpu_to_le32(166666),
++	.bFrameIntervalType	= 5,
++	.dwFrameInterval[0]	= cpu_to_le32(166666),
++	.dwFrameInterval[1]	= cpu_to_le32(333333),
++	.dwFrameInterval[2]	= cpu_to_le32(666666),
++	.dwFrameInterval[3]	= cpu_to_le32(1000000),
++	.dwFrameInterval[4]	= cpu_to_le32(5000000),
+ };
+ 
+-static const struct UVC_FRAME_UNCOMPRESSED(1) uvc_frame_yuv_720p = {
+-	.bLength		= UVC_DT_FRAME_UNCOMPRESSED_SIZE(1),
++static const struct UVC_FRAME_UNCOMPRESSED(5) uvc_frame_yuv_720p = {
++	.bLength		= UVC_DT_FRAME_UNCOMPRESSED_SIZE(5),
+ 	.bDescriptorType	= USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType	= UVC_VS_FRAME_UNCOMPRESSED,
+ 	.bFrameIndex		= 2,
+@@ -207,11 +209,54 @@
+ 	.dwMinBitRate		= cpu_to_le32(29491200),
+ 	.dwMaxBitRate		= cpu_to_le32(29491200),
+ 	.dwMaxVideoFrameBufferSize	= cpu_to_le32(1843200),
+-	.dwDefaultFrameInterval	= cpu_to_le32(5000000),
+-	.bFrameIntervalType	= 1,
+-	.dwFrameInterval[0]	= cpu_to_le32(5000000),
++	.dwDefaultFrameInterval	= cpu_to_le32(166666),
++	.bFrameIntervalType	= 5,
++	.dwFrameInterval[0]	= cpu_to_le32(166666),
++	.dwFrameInterval[1]	= cpu_to_le32(333333),
++	.dwFrameInterval[2]	= cpu_to_le32(666666),
++	.dwFrameInterval[3]	= cpu_to_le32(1000000),
++	.dwFrameInterval[4]	= cpu_to_le32(5000000),
+ };
+ 
++static const struct UVC_FRAME_UNCOMPRESSED(5) uvc_frame_yuv_1080p = {
++	.bLength		= UVC_DT_FRAME_UNCOMPRESSED_SIZE(5),
++	.bDescriptorType	= USB_DT_CS_INTERFACE,
++	.bDescriptorSubType	= UVC_VS_FRAME_UNCOMPRESSED,
++	.bFrameIndex		= 3,
++	.bmCapabilities		= 0,
++	.wWidth			= cpu_to_le16(1920),
++	.wHeight		= cpu_to_le16(1080),
++	.dwMinBitRate		= cpu_to_le32(66355200),
++	.dwMaxBitRate		= cpu_to_le32(66355200),
++	.dwMaxVideoFrameBufferSize	= cpu_to_le32(4147200),
++	.dwDefaultFrameInterval	= cpu_to_le32(166666),
++	.bFrameIntervalType	= 5,
++	.dwFrameInterval[0]	= cpu_to_le32(166666),
++	.dwFrameInterval[1]	= cpu_to_le32(333333),
++	.dwFrameInterval[2]	= cpu_to_le32(666666),
++	.dwFrameInterval[3]	= cpu_to_le32(1000000),
++	.dwFrameInterval[4]	= cpu_to_le32(5000000),
++};
++
++static const struct UVC_FRAME_UNCOMPRESSED(5) uvc_frame_yuv_2160p = {
++	.bLength		= UVC_DT_FRAME_UNCOMPRESSED_SIZE(5),
++	.bDescriptorType	= USB_DT_CS_INTERFACE,
++	.bDescriptorSubType	= UVC_VS_FRAME_UNCOMPRESSED,
++	.bFrameIndex		= 4,
++	.bmCapabilities		= 0,
++	.wWidth			= cpu_to_le16(3840),
++	.wHeight		= cpu_to_le16(2160),
++	.dwMinBitRate		= cpu_to_le32(265420800),
++	.dwMaxBitRate		= cpu_to_le32(265420800),
++	.dwMaxVideoFrameBufferSize	= cpu_to_le32(16588800),
++	.dwDefaultFrameInterval	= cpu_to_le32(166666),
++	.bFrameIntervalType	= 5,
++	.dwFrameInterval[0]	= cpu_to_le32(166666),
++	.dwFrameInterval[1]	= cpu_to_le32(333333),
++	.dwFrameInterval[2]	= cpu_to_le32(666666),
++	.dwFrameInterval[3]	= cpu_to_le32(1000000),
++	.dwFrameInterval[4]	= cpu_to_le32(5000000),
++};
+ static const struct uvc_format_mjpeg uvc_format_mjpg = {
+ 	.bLength		= UVC_DT_FORMAT_MJPEG_SIZE,
+ 	.bDescriptorType	= USB_DT_CS_INTERFACE,
+@@ -293,6 +338,8 @@
+ 	(const struct uvc_descriptor_header *) &uvc_format_yuv,
+ 	(const struct uvc_descriptor_header *) &uvc_frame_yuv_360p,
+ 	(const struct uvc_descriptor_header *) &uvc_frame_yuv_720p,
++	(const struct uvc_descriptor_header *) &uvc_frame_yuv_1080p,
++	(const struct uvc_descriptor_header *) &uvc_frame_yuv_2160p,
+ 	(const struct uvc_descriptor_header *) &uvc_format_mjpg,
+ 	(const struct uvc_descriptor_header *) &uvc_frame_mjpg_360p,
+ 	(const struct uvc_descriptor_header *) &uvc_frame_mjpg_720p,
+@@ -305,6 +352,8 @@
+ 	(const struct uvc_descriptor_header *) &uvc_format_yuv,
+ 	(const struct uvc_descriptor_header *) &uvc_frame_yuv_360p,
+ 	(const struct uvc_descriptor_header *) &uvc_frame_yuv_720p,
++	(const struct uvc_descriptor_header *) &uvc_frame_yuv_1080p,
++	(const struct uvc_descriptor_header *) &uvc_frame_yuv_2160p,
+ 	(const struct uvc_descriptor_header *) &uvc_format_mjpg,
+ 	(const struct uvc_descriptor_header *) &uvc_frame_mjpg_360p,
+ 	(const struct uvc_descriptor_header *) &uvc_frame_mjpg_720p,
+@@ -317,6 +366,8 @@
+ 	(const struct uvc_descriptor_header *) &uvc_format_yuv,
+ 	(const struct uvc_descriptor_header *) &uvc_frame_yuv_360p,
+ 	(const struct uvc_descriptor_header *) &uvc_frame_yuv_720p,
++	(const struct uvc_descriptor_header *) &uvc_frame_yuv_1080p,
++	(const struct uvc_descriptor_header *) &uvc_frame_yuv_2160p,
+ 	(const struct uvc_descriptor_header *) &uvc_format_mjpg,
+ 	(const struct uvc_descriptor_header *) &uvc_frame_mjpg_360p,
+ 	(const struct uvc_descriptor_header *) &uvc_frame_mjpg_720p,
+--- linux-6.1.0/drivers/usb/gadget/udc/udc-xilinx.c	2023-07-05 08:37:35.746012100 +0900
++++ linux-xlnx-2023.1/drivers/usb/gadget/udc/udc-xilinx.c	2023-07-05 08:33:32.829329100 +0900
+@@ -192,7 +192,7 @@
+ 	bool dma_enabled;
+ 	struct clk *clk;
+ 
+-	unsigned int (*read_fn)(void __iomem *);
++	unsigned int (*read_fn)(void __iomem *reg);
+ 	void (*write_fn)(void __iomem *, u32, u32);
+ };
+ 
+@@ -499,11 +499,11 @@
+ 		/* Get the Buffer address and copy the transmit data.*/
+ 		eprambase = (u32 __force *)(udc->addr + ep->rambase);
+ 		if (ep->is_in) {
+-			memcpy(eprambase, bufferptr, bytestosend);
++			memcpy_toio(eprambase, bufferptr, bytestosend);
+ 			udc->write_fn(udc->addr, ep->offset +
+ 				      XUSB_EP_BUF0COUNT_OFFSET, bufferlen);
+ 		} else {
+-			memcpy(bufferptr, eprambase, bytestosend);
++			memcpy_toio(bufferptr, eprambase, bytestosend);
+ 		}
+ 		/*
+ 		 * Enable the buffer for transmission.
+@@ -517,11 +517,11 @@
+ 		eprambase = (u32 __force *)(udc->addr + ep->rambase +
+ 			     ep->ep_usb.maxpacket);
+ 		if (ep->is_in) {
+-			memcpy(eprambase, bufferptr, bytestosend);
++			memcpy_toio(eprambase, bufferptr, bytestosend);
+ 			udc->write_fn(udc->addr, ep->offset +
+ 				      XUSB_EP_BUF1COUNT_OFFSET, bufferlen);
+ 		} else {
+-			memcpy(bufferptr, eprambase, bytestosend);
++			memcpy_toio(bufferptr, eprambase, bytestosend);
+ 		}
+ 		/*
+ 		 * Enable the buffer for transmission.
+@@ -1023,7 +1023,7 @@
+ 			   udc->addr);
+ 		length = req->usb_req.actual = min_t(u32, length,
+ 						     EP0_MAX_PACKET);
+-		memcpy(corebuf, req->usb_req.buf, length);
++		memcpy_toio(corebuf, req->usb_req.buf, length);
+ 		udc->write_fn(udc->addr, XUSB_EP_BUF0COUNT_OFFSET, length);
+ 		udc->write_fn(udc->addr, XUSB_BUFFREADY_OFFSET, 1);
+ 	} else {
+@@ -1752,7 +1752,7 @@
+ 
+ 	/* Load up the chapter 9 command buffer.*/
+ 	ep0rambase = (u32 __force *) (udc->addr + XUSB_SETUP_PKT_ADDR_OFFSET);
+-	memcpy(&setup, ep0rambase, 8);
++	memcpy_toio(&setup, ep0rambase, 8);
+ 
+ 	udc->setup = setup;
+ 	udc->setup.wValue = cpu_to_le16(setup.wValue);
+@@ -1839,7 +1839,7 @@
+ 			     (ep0->rambase << 2));
+ 		buffer = req->usb_req.buf + req->usb_req.actual;
+ 		req->usb_req.actual = req->usb_req.actual + bytes_to_rx;
+-		memcpy(buffer, ep0rambase, bytes_to_rx);
++		memcpy_toio(buffer, ep0rambase, bytes_to_rx);
+ 
+ 		if (req->usb_req.length == req->usb_req.actual) {
+ 			/* Data transfer completed get ready for Status stage */
+@@ -1915,7 +1915,7 @@
+ 				     (ep0->rambase << 2));
+ 			buffer = req->usb_req.buf + req->usb_req.actual;
+ 			req->usb_req.actual = req->usb_req.actual + length;
+-			memcpy(ep0rambase, buffer, length);
++			memcpy_toio(ep0rambase, buffer, length);
+ 		}
+ 		udc->write_fn(udc->addr, XUSB_EP_BUF0COUNT_OFFSET, count);
+ 		udc->write_fn(udc->addr, XUSB_BUFFREADY_OFFSET, 1);
