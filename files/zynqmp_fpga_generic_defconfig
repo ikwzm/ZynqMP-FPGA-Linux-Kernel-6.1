@@ -12288,7 +12288,7 @@ CONFIG_XILINX_ZYNQMP_DMA=y
 #####
 ##### Xilinx Framebuffer
 #####
-##### CONFIG_XILINX_FRMBUF=y (if CONFIG_VIDEO_XILINX=y)
+CONFIG_XILINX_FRMBUF=y
 
 #####
 ##### Xilinx PS PCIe DMA support
