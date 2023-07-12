@@ -23,6 +23,8 @@
 #define PWRDEV_DBG		BIT(10)
 #define DBG_REGION_ALL		(BIT(11)-1)
 
+#if defined(WILC_DEBUGFS)
+
 extern atomic_t WILC_DEBUG_REGION;
 
 #define PRINT_D(netdev, region, format, ...) do { \
@@ -45,6 +47,22 @@ extern atomic_t WILC_DEBUG_REGION;
 
 #define PRINT_ER(netdev, format, ...) netdev_err(netdev, "ERR [%s:%d] "format,\
 	__func__, __LINE__, ##__VA_ARGS__)
+
+#else
+
+#define PRINT_NOTHING(netdev, region, format, ...) \
+	({ \
+		if (0) \
+			netdev_printk(KERN_EMERG, netdev, format, ##__VA_ARGS__); \
+		0; \
+	})
+
+#define PRINT_D(netdev, region, format, ...) PRINT_NOTHING(netdev, region, format, ##__VA_ARGS__)
+#define PRINT_INFO(netdev, region, format, ...) PRINT_NOTHING(netdev, region, format, ##__VA_ARGS__)
+#define PRINT_WRN(netdev, region, format, ...) PRINT_NOTHING(netdev, region, format, ##__VA_ARGS__)
+#define PRINT_ER(netdev, format, ...) PRINT_NOTHING(netdev, region, format, ##__VA_ARGS__)
+
+#endif
 
 #ifdef WILC_DEBUGFS
 int wilc_debugfs_init(void);

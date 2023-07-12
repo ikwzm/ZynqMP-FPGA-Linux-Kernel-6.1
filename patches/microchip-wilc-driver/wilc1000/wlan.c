@@ -805,17 +805,20 @@ static void chip_wakeup_wilc3000(struct wilc *wilc, int source)
 	do {
 		hif_func->hif_write_reg(wilc, wakeup_reg, wakeup_reg_val |
 							  wakeup_bit);
+		/* Wait for the chip to stabilize*/
+		usleep_range(1000, 1100);
+
 		/* Check the clock status */
 		hif_func->hif_read_reg(wilc, clk_status_reg,
 				       &clk_status_reg_val);
 
 		/*
 		 * in case of clocks off, wait 1ms, and check it again.
-		 * if still off, wait for another 1ms, for a total wait of 3ms.
+		 * if still off, wait for another 1ms, for a total wait of 6ms.
 		 * If still off, redo the wake up sequence
 		 */
 		while ((clk_status_reg_val & clk_status_bit) == 0 &&
-		       (++trials % 4) != 0) {
+		       (++trials % 6) != 0) {
 			/* Wait for the chip to stabilize*/
 			usleep_range(1000, 1100);
 
@@ -1364,6 +1367,7 @@ int wilc_wlan_firmware_download(struct wilc *wilc, const u8 *buffer,
 	wilc->hif_func->hif_read_reg(wilc, WILC_GLB_RESET_0, &reg);
 	reg &= ~BIT(10);
 	ret = wilc->hif_func->hif_write_reg(wilc, WILC_GLB_RESET_0, reg);
+	msleep(200);
 	wilc->hif_func->hif_read_reg(wilc, WILC_GLB_RESET_0, &reg);
 	if (reg & BIT(10))
 		pr_err("%s: Failed to reset\n", __func__);

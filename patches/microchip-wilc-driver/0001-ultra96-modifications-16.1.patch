@@ -1,0 +1,407 @@
+diff --git a/drivers/net/wireless/microchip/wilc1000/Makefile b/drivers/net/wireless/microchip/wilc1000/Makefile
+index 64c39aac1..ea85e4820 100644
+--- a/drivers/net/wireless/microchip/wilc1000/Makefile
++++ b/drivers/net/wireless/microchip/wilc1000/Makefile
+@@ -1,8 +1,8 @@
+ # SPDX-License-Identifier: GPL-2.0
+-ccflags-y += -I$(src)/ -DWILC_DEBUGFS
++ccflags-y += -I$(src)/
+ 
+ wilc-objs := cfg80211.o netdev.o mon.o \
+-			hif.o wlan_cfg.o wlan.o sysfs.o power.o bt.o debugfs.o
++			hif.o wlan_cfg.o wlan.o sysfs.o power.o bt.o
+ 
+ obj-$(CONFIG_WILC_SDIO) += wilc-sdio.o
+ wilc-sdio-objs += $(wilc-objs)
+diff --git a/drivers/net/wireless/microchip/wilc1000/debugfs.h b/drivers/net/wireless/microchip/wilc1000/debugfs.h
+index 13b0e40d5..bf382544d 100644
+--- a/drivers/net/wireless/microchip/wilc1000/debugfs.h
++++ b/drivers/net/wireless/microchip/wilc1000/debugfs.h
+@@ -23,6 +23,8 @@
+ #define PWRDEV_DBG		BIT(10)
+ #define DBG_REGION_ALL		(BIT(11)-1)
+ 
++#if defined(WILC_DEBUGFS)
++
+ extern atomic_t WILC_DEBUG_REGION;
+ 
+ #define PRINT_D(netdev, region, format, ...) do { \
+@@ -46,6 +48,22 @@ extern atomic_t WILC_DEBUG_REGION;
+ #define PRINT_ER(netdev, format, ...) netdev_err(netdev, "ERR [%s:%d] "format,\
+ 	__func__, __LINE__, ##__VA_ARGS__)
+ 
++#else
++
++#define PRINT_NOTHING(netdev, region, format, ...) \
++	({ \
++		if (0) \
++			netdev_printk(KERN_EMERG, netdev, format, ##__VA_ARGS__); \
++		0; \
++	})
++
++#define PRINT_D(netdev, region, format, ...) PRINT_NOTHING(netdev, region, format, ##__VA_ARGS__)
++#define PRINT_INFO(netdev, region, format, ...) PRINT_NOTHING(netdev, region, format, ##__VA_ARGS__)
++#define PRINT_WRN(netdev, region, format, ...) PRINT_NOTHING(netdev, region, format, ##__VA_ARGS__)
++#define PRINT_ER(netdev, format, ...) PRINT_NOTHING(netdev, region, format, ##__VA_ARGS__)
++
++#endif
++
+ #ifdef WILC_DEBUGFS
+ int wilc_debugfs_init(void);
+ void wilc_debugfs_remove(void);
+diff --git a/drivers/net/wireless/microchip/wilc1000/netdev.c b/drivers/net/wireless/microchip/wilc1000/netdev.c
+index 5cc98adf5..11287c275 100644
+--- a/drivers/net/wireless/microchip/wilc1000/netdev.c
++++ b/drivers/net/wireless/microchip/wilc1000/netdev.c
+@@ -32,9 +32,12 @@
+ static int wilc_mac_open(struct net_device *ndev);
+ static int wilc_mac_close(struct net_device *ndev);
+ 
+-static int debug_running;
+ static int recovery_on;
+ int wait_for_recovery;
++
++#if defined(WILC_DEBUG_THREAD)
++static int debug_running;
++
+ static int debug_thread(void *arg)
+ {
+ 	struct wilc *wl = arg;
+@@ -142,6 +145,7 @@ static int debug_thread(void *arg)
+ 	}
+ 	return 0;
+ }
++#endif
+ 
+ static void wilc_disable_irq(struct wilc *wilc, int wait)
+ {
+@@ -189,6 +193,9 @@ static int init_irq(struct net_device *dev)
+ 	struct wilc_vif *vif = netdev_priv(dev);
+ 	struct wilc *wl = vif->wilc;
+ 
++	// This is no longer supported, the firmware for the WILC3000 does not yank the IRQN line back to the gpio
++	return 0;
++
+ 	if (wl->dev_irq_num <= 0)
+ 		return 0;
+ 
+@@ -627,6 +634,7 @@ static void wlan_deinitialize_threads(struct net_device *dev)
+ 	struct wilc_vif *vif = netdev_priv(dev);
+ 	struct wilc *wl = vif->wilc;
+ 
++#if defined(WILC_DEBUG_THREAD)
+ 	PRINT_INFO(vif->ndev, INIT_DBG, "Deinitializing Threads\n");
+ 	if (!recovery_on) {
+ 		PRINT_INFO(vif->ndev, INIT_DBG, "Deinit debug Thread\n");
+@@ -637,6 +645,7 @@ static void wlan_deinitialize_threads(struct net_device *dev)
+ 			wl->debug_thread = NULL;
+ 		}
+ 	}
++#endif
+ 
+ 	wl->close = 1;
+ 	PRINT_INFO(vif->ndev, INIT_DBG, "Deinitializing Threads\n");
+@@ -714,6 +723,7 @@ static int wlan_initialize_threads(struct net_device *dev)
+ 	}
+ 	wait_for_completion(&wilc->txq_thread_started);
+ 
++#if defined(WILC_DEBUG_THREAD)
+ 	if (!debug_running) {
+ 		PRINT_INFO(vif->ndev, INIT_DBG,
+ 			   "Creating kthread for Debugging\n");
+@@ -728,6 +738,7 @@ static int wlan_initialize_threads(struct net_device *dev)
+ 		debug_running = true;
+ 		wait_for_completion(&wilc->debug_thread_started);
+ 	}
++#endif
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/wireless/microchip/wilc1000/power.c b/drivers/net/wireless/microchip/wilc1000/power.c
+index 6c59e0bd1..69df58a59 100644
+--- a/drivers/net/wireless/microchip/wilc1000/power.c
++++ b/drivers/net/wireless/microchip/wilc1000/power.c
+@@ -57,6 +57,10 @@ int wilc_of_parse_power_pins(struct wilc *wilc)
+  */
+ void wilc_wlan_power(struct wilc *wilc, bool on)
+ {
++	// To late in the game to use these, this will undo the SDIO setup that the Xilinx driver has already done
++	// plus these were moved out of the wilc device tree child node so that pwrseq_simple can properly use them
++	return;
++
+ 	if (!gpio_is_valid(wilc->power.gpios.chip_en) ||
+ 	    !gpio_is_valid(wilc->power.gpios.reset)) {
+ 		/* In case SDIO power sequence driver is used to power this
+diff --git a/drivers/net/wireless/microchip/wilc1000/sdio.c b/drivers/net/wireless/microchip/wilc1000/sdio.c
+index cb340466c..069db50b6 100644
+--- a/drivers/net/wireless/microchip/wilc1000/sdio.c
++++ b/drivers/net/wireless/microchip/wilc1000/sdio.c
+@@ -40,7 +40,6 @@ struct wilc_sdio {
+ 	u32 block_size;
+ 	bool isinit;
+ 	struct wilc *wl;
+-	u8 *cmd53_buf;
+ };
+ 
+ struct sdio_cmd52 {
+@@ -60,7 +59,6 @@ struct sdio_cmd53 {
+ 	u32 count:		9;
+ 	u8 *buffer;
+ 	u32 block_size;
+-	bool use_global_buf;
+ };
+ 
+ static const struct wilc_hif_func wilc_hif_sdio;
+@@ -110,7 +108,6 @@ static int wilc_sdio_cmd53(struct wilc *wilc, struct sdio_cmd53 *cmd)
+ {
+ 	struct sdio_func *func = container_of(wilc->dev, struct sdio_func, dev);
+ 	int size, ret;
+-	struct wilc_sdio *sdio_priv = wilc->bus_data;
+ 	u8 *buf = cmd->buffer;
+ 
+ 	sdio_claim_host(func);
+@@ -122,23 +119,11 @@ static int wilc_sdio_cmd53(struct wilc *wilc, struct sdio_cmd53 *cmd)
+ 	else
+ 		size = cmd->count;
+ 
+-	if (cmd->use_global_buf) {
+-		if (size > sizeof(u32))
+-			return -EINVAL;
+-
+-		buf = sdio_priv->cmd53_buf;
+-	}
+-
+ 	if (cmd->read_write) {  /* write */
+-		if (cmd->use_global_buf)
+-			memcpy(buf, cmd->buffer, size);
+ 
+ 		ret = sdio_memcpy_toio(func, cmd->address, buf, size);
+ 	} else {        /* read */
+ 		ret = sdio_memcpy_fromio(func, buf, cmd->address, size);
+-
+-		if (cmd->use_global_buf)
+-			memcpy(cmd->buffer, buf, size);
+ 	}
+ 
+ 	sdio_release_host(func);
+@@ -149,6 +134,44 @@ static int wilc_sdio_cmd53(struct wilc *wilc, struct sdio_cmd53 *cmd)
+ 	return ret;
+ }
+ 
++static int wilc_sdio_cmd53_read32(struct wilc *wilc, u32 function, u32 addr,
++				  u32 *value)
++{
++	struct sdio_func *func = container_of(wilc->dev, struct sdio_func, dev);
++	int ret;
++
++	sdio_claim_host(func);
++	func->num = function;
++
++	*value = sdio_readl(func, addr, &ret);
++
++	sdio_release_host(func);
++
++	if (ret)
++		dev_err(&func->dev, "%s..failed, err(%d)\n", __func__,  ret);
++
++	return ret;
++}
++
++static int wilc_sdio_cmd53_write32(struct wilc *wilc, u32 function, u32 addr,
++				   u32 value)
++{
++	struct sdio_func *func = container_of(wilc->dev, struct sdio_func, dev);
++	int ret;
++
++	sdio_claim_host(func);
++	func->num = function;
++
++	sdio_writel(func, value, addr, &ret);
++
++	sdio_release_host(func);
++
++	if (ret)
++		dev_err(&func->dev, "%s..failed, err(%d)\n", __func__,  ret);
++
++	return ret;
++}
++
+ static int wilc_sdio_probe(struct sdio_func *func,
+ 			   const struct sdio_device_id *id)
+ {
+@@ -163,12 +186,6 @@ static int wilc_sdio_probe(struct sdio_func *func,
+ 	if (!sdio_priv)
+ 		return -ENOMEM;
+ 
+-	sdio_priv->cmd53_buf = kzalloc(sizeof(u32), GFP_KERNEL);
+-	if (!sdio_priv->cmd53_buf) {
+-		ret = -ENOMEM;
+-		goto free;
+-	}
+-
+ 	if (IS_ENABLED(CONFIG_WILC_HW_OOB_INTR))
+ 		io_type = WILC_HIF_SDIO_GPIO_IRQ;
+ 	else
+@@ -232,7 +249,6 @@ static int wilc_sdio_probe(struct sdio_func *func,
+ 	irq_dispose_mapping(wilc->dev_irq_num);
+ 	wilc_netdev_cleanup(wilc);
+ free:
+-	kfree(sdio_priv->cmd53_buf);
+ 	kfree(sdio_priv);
+ 	return ret;
+ }
+@@ -244,7 +260,6 @@ static void wilc_sdio_remove(struct sdio_func *func)
+ 
+ 	clk_disable_unprepare(wilc->rtc_clk);
+ 	wilc_netdev_cleanup(wilc);
+-	kfree(sdio_priv->cmd53_buf);
+ 	kfree(sdio_priv);
+ 	wilc_bt_deinit();
+ }
+@@ -435,7 +450,6 @@ static int wilc_sdio_set_block_size(struct wilc *wilc, u8 func_num,
+ static int wilc_sdio_write_reg(struct wilc *wilc, u32 addr, u32 data)
+ {
+ 	struct sdio_func *func = dev_to_sdio_func(wilc->dev);
+-	struct wilc_sdio *sdio_priv = wilc->bus_data;
+ 	int ret;
+ 
+ 	cpu_to_le32s(&data);
+@@ -453,8 +467,6 @@ static int wilc_sdio_write_reg(struct wilc *wilc, u32 addr, u32 data)
+ 			dev_err(&func->dev,
+ 				"Failed cmd 52, write reg (%08x) ...\n", addr);
+ 	} else {
+-		struct sdio_cmd53 cmd;
+-
+ 		/**
+ 		 *      set the AHB address
+ 		 **/
+@@ -462,16 +474,7 @@ static int wilc_sdio_write_reg(struct wilc *wilc, u32 addr, u32 data)
+ 		if (ret)
+ 			return ret;
+ 
+-		cmd.read_write = 1;
+-		cmd.function = 0;
+-		cmd.address = WILC_SDIO_FBR_DATA_REG;
+-		cmd.block_mode = 0;
+-		cmd.increment = 1;
+-		cmd.count = sizeof(u32);
+-		cmd.buffer = (u8 *)&data;
+-		cmd.use_global_buf = true;
+-		cmd.block_size = sdio_priv->block_size;
+-		ret = wilc_sdio_cmd53(wilc, &cmd);
++		ret = wilc_sdio_cmd53_write32(wilc, 0, WILC_SDIO_FBR_DATA_REG, data);
+ 		if (ret)
+ 			dev_err(&func->dev,
+ 				"Failed cmd53, write reg (%08x)...\n", addr);
+@@ -507,7 +510,6 @@ static int wilc_sdio_write(struct wilc *wilc, u32 addr, u8 *buf, u32 size)
+ 	nblk = size / block_size;
+ 	nleft = size % block_size;
+ 
+-	cmd.use_global_buf = false;
+ 	if (nblk > 0) {
+ 		cmd.block_mode = 1;
+ 		cmd.increment = 1;
+@@ -557,7 +559,6 @@ static int wilc_sdio_write(struct wilc *wilc, u32 addr, u8 *buf, u32 size)
+ static int wilc_sdio_read_reg(struct wilc *wilc, u32 addr, u32 *data)
+ {
+ 	struct sdio_func *func = dev_to_sdio_func(wilc->dev);
+-	struct wilc_sdio *sdio_priv = wilc->bus_data;
+ 	int ret;
+ 
+ 	if (addr >= 0xf0 && addr <= 0xff) { /* only vendor specific registers */
+@@ -575,23 +576,11 @@ static int wilc_sdio_read_reg(struct wilc *wilc, u32 addr, u32 *data)
+ 		}
+ 		*data = cmd.data;
+ 	} else {
+-		struct sdio_cmd53 cmd;
+-
+ 		ret = wilc_sdio_set_func0_csa_address(wilc, addr);
+ 		if (ret)
+ 			return ret;
+ 
+-		cmd.read_write = 0;
+-		cmd.function = 0;
+-		cmd.address = WILC_SDIO_FBR_DATA_REG;
+-		cmd.block_mode = 0;
+-		cmd.increment = 1;
+-		cmd.count = sizeof(u32);
+-		cmd.buffer = (u8 *)data;
+-		cmd.use_global_buf = true;
+-
+-		cmd.block_size = sdio_priv->block_size;
+-		ret = wilc_sdio_cmd53(wilc, &cmd);
++		ret = wilc_sdio_cmd53_read32(wilc, 0, WILC_SDIO_FBR_DATA_REG, data);
+ 		if (ret) {
+ 			dev_err(&func->dev,
+ 				"Failed cmd53, read reg (%08x)...\n", addr);
+@@ -630,7 +619,6 @@ static int wilc_sdio_read(struct wilc *wilc, u32 addr, u8 *buf, u32 size)
+ 	nblk = size / block_size;
+ 	nleft = size % block_size;
+ 
+-	cmd.use_global_buf = false;
+ 	if (nblk > 0) {
+ 		cmd.block_mode = 1;
+ 		cmd.increment = 1;
+@@ -708,11 +696,7 @@ static int wilc_sdio_init(struct wilc *wilc, bool resume)
+ 		func->card->host->ios.clock);
+ 
+ 	/* Patch for sdio interrupt latency issue */
+-	ret = pm_runtime_get_sync(mmc_dev(func->card->host));
+-	if (ret < 0) {
+-		pm_runtime_put_noidle(mmc_dev(func->card->host));
+-		return ret;
+-	}
++	pm_runtime_get_sync(mmc_dev(func->card->host));
+ 
+ 	init_waitqueue_head(&sdio_intr_waitqueue);
+ 	sdio_priv->irq_gpio = (wilc->io_type == WILC_HIF_SDIO_GPIO_IRQ);
+diff --git a/drivers/net/wireless/microchip/wilc1000/wlan.c b/drivers/net/wireless/microchip/wilc1000/wlan.c
+index 5d46c5c0b..9a9c1e028 100644
+--- a/drivers/net/wireless/microchip/wilc1000/wlan.c
++++ b/drivers/net/wireless/microchip/wilc1000/wlan.c
+@@ -805,17 +805,20 @@ static void chip_wakeup_wilc3000(struct wilc *wilc, int source)
+ 	do {
+ 		hif_func->hif_write_reg(wilc, wakeup_reg, wakeup_reg_val |
+ 							  wakeup_bit);
++		/* Wait for the chip to stabilize*/
++		usleep_range(1000, 1100);
++
+ 		/* Check the clock status */
+ 		hif_func->hif_read_reg(wilc, clk_status_reg,
+ 				       &clk_status_reg_val);
+ 
+ 		/*
+ 		 * in case of clocks off, wait 1ms, and check it again.
+-		 * if still off, wait for another 1ms, for a total wait of 3ms.
++		 * if still off, wait for another 1ms, for a total wait of 6ms.
+ 		 * If still off, redo the wake up sequence
+ 		 */
+ 		while ((clk_status_reg_val & clk_status_bit) == 0 &&
+-		       (++trials % 4) != 0) {
++		       (++trials % 6) != 0) {
+ 			/* Wait for the chip to stabilize*/
+ 			usleep_range(1000, 1100);
+ 
+@@ -1364,6 +1367,7 @@ int wilc_wlan_firmware_download(struct wilc *wilc, const u8 *buffer,
+ 	wilc->hif_func->hif_read_reg(wilc, WILC_GLB_RESET_0, &reg);
+ 	reg &= ~BIT(10);
+ 	ret = wilc->hif_func->hif_write_reg(wilc, WILC_GLB_RESET_0, reg);
++	msleep(200);
+ 	wilc->hif_func->hif_read_reg(wilc, WILC_GLB_RESET_0, &reg);
+ 	if (reg & BIT(10))
+ 		pr_err("%s: Failed to reset\n", __func__);
+diff --git a/drivers/net/wireless/microchip/wilc1000/wlan.h b/drivers/net/wireless/microchip/wilc1000/wlan.h
+index e3b67c967..847c108fd 100644
+--- a/drivers/net/wireless/microchip/wilc1000/wlan.h
++++ b/drivers/net/wireless/microchip/wilc1000/wlan.h
+@@ -244,8 +244,8 @@ static inline bool is_wilc3000(u32 id)
+ #define WILC_RX_BUFF_SIZE	(96 * 1024)
+ #define WILC_TX_BUFF_SIZE	(64 * 1024)
+ 
+-#define GPIO_NUM_CHIP_EN	94
+-#define GPIO_NUM_RESET		60
++#define GPIO_NUM_CHIP_EN	8
++#define GPIO_NUM_RESET		7
+ 
+ #define NQUEUES			4
+ #define AC_BUFFER_SIZE		1000

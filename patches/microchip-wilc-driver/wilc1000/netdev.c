@@ -32,9 +32,12 @@
 static int wilc_mac_open(struct net_device *ndev);
 static int wilc_mac_close(struct net_device *ndev);
 
-static int debug_running;
 static int recovery_on;
 int wait_for_recovery;
+
+#if defined(WILC_DEBUG_THREAD)
+static int debug_running;
+
 static int debug_thread(void *arg)
 {
 	struct wilc *wl = arg;
@@ -142,6 +145,7 @@ static int debug_thread(void *arg)
 	}
 	return 0;
 }
+#endif
 
 static void wilc_disable_irq(struct wilc *wilc, int wait)
 {
@@ -188,6 +192,9 @@ static int init_irq(struct net_device *dev)
 {
 	struct wilc_vif *vif = netdev_priv(dev);
 	struct wilc *wl = vif->wilc;
+
+	// This is no longer supported, the firmware for the WILC3000 does not yank the IRQN line back to the gpio
+	return 0;
 
 	if (wl->dev_irq_num <= 0)
 		return 0;
@@ -627,6 +634,7 @@ static void wlan_deinitialize_threads(struct net_device *dev)
 	struct wilc_vif *vif = netdev_priv(dev);
 	struct wilc *wl = vif->wilc;
 
+#if defined(WILC_DEBUG_THREAD)
 	PRINT_INFO(vif->ndev, INIT_DBG, "Deinitializing Threads\n");
 	if (!recovery_on) {
 		PRINT_INFO(vif->ndev, INIT_DBG, "Deinit debug Thread\n");
@@ -637,6 +645,7 @@ static void wlan_deinitialize_threads(struct net_device *dev)
 			wl->debug_thread = NULL;
 		}
 	}
+#endif
 
 	wl->close = 1;
 	PRINT_INFO(vif->ndev, INIT_DBG, "Deinitializing Threads\n");
@@ -714,6 +723,7 @@ static int wlan_initialize_threads(struct net_device *dev)
 	}
 	wait_for_completion(&wilc->txq_thread_started);
 
+#if defined(WILC_DEBUG_THREAD)
 	if (!debug_running) {
 		PRINT_INFO(vif->ndev, INIT_DBG,
 			   "Creating kthread for Debugging\n");
@@ -728,6 +738,7 @@ static int wlan_initialize_threads(struct net_device *dev)
 		debug_running = true;
 		wait_for_completion(&wilc->debug_thread_started);
 	}
+#endif
 
 	return 0;
 }

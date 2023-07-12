@@ -57,6 +57,10 @@ int wilc_of_parse_power_pins(struct wilc *wilc)
  */
 void wilc_wlan_power(struct wilc *wilc, bool on)
 {
+	// To late in the game to use these, this will undo the SDIO setup that the Xilinx driver has already done
+	// plus these were moved out of the wilc device tree child node so that pwrseq_simple can properly use them
+	return;
+
 	if (!gpio_is_valid(wilc->power.gpios.chip_en) ||
 	    !gpio_is_valid(wilc->power.gpios.reset)) {
 		/* In case SDIO power sequence driver is used to power this
