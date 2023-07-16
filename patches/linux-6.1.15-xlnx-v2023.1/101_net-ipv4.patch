@@ -1,0 +1,24 @@
+diff --git a/net/ipv4/af_inet.c b/net/ipv4/af_inet.c
+index 5b19b77d5..1e76d641e 100644
+--- a/net/ipv4/af_inet.c
++++ b/net/ipv4/af_inet.c
+@@ -120,6 +120,7 @@
+ #include <net/compat.h>
+ 
+ #include <trace/events/sock.h>
++#include <xen/pvcalls.h>
+ 
+ /* The inetsw table contains everything that inet_create needs to
+  * build a new socket.
+@@ -1983,6 +1984,11 @@ static int __init inet_init(void)
+ 	for (r = &inetsw[0]; r < &inetsw[SOCK_MAX]; ++r)
+ 		INIT_LIST_HEAD(r);
+ 
++	if (pvcalls) {
++		pr_info("Enabling pvcalls for AF_INET SOCK_STREAM\n");
++		inetsw_array[0].ops = &pvcalls_stream_ops;
++	}
++
+ 	for (q = inetsw_array; q < &inetsw_array[INETSW_ARRAY_LEN]; ++q)
+ 		inet_register_protosw(q);
+ 

@@ -1,0 +1,4034 @@
+diff --git a/Documentation/devicetree/bindings/dma/xilinx/xilinx_frmbuf.txt b/Documentation/devicetree/bindings/dma/xilinx/xilinx_frmbuf.txt
+new file mode 100644
+index 000000000..27e2d0faf
+--- /dev/null
++++ b/Documentation/devicetree/bindings/dma/xilinx/xilinx_frmbuf.txt
+@@ -0,0 +1,128 @@
++The Xilinx framebuffer DMA engine supports two soft IP blocks: one IP
++block is used for reading video frame data from memory (FB Read) to the device
++and the other IP block is used for writing video frame data from the device
++to memory (FB Write).  Both the FB Read/Write IP blocks are aware of the
++format of the data being written to or read from memory including RGB and
++YUV in packed, planar, and semi-planar formats.  Because the FB Read/Write
++is format aware, only one buffer pointer is needed by the IP blocks even
++when planar or semi-planar format are used.
++
++FB Read Required propertie(s):
++- compatible		: Should be "xlnx,axi-frmbuf-rd-v2.1" or
++			  "xlnx,axi-frmbuf-rd-v2.2". Older string
++			  "xlnx,axi-frmbuf-rd-v2" is now deprecated.
++
++Note: Compatible string "xlnx,axi-frmbuf-rd" and the hardware it
++represented is no longer supported.
++
++FB Write Required propertie(s):
++- compatible		: Should be "xlnx,axi-frmbuf-wr-v2.1" or
++			  "xlnx,axi-frmbuf-wr-v2.2". Older string
++			  "xlnx,axi-frmbuf-wr-v2" is now deprecated.
++
++Note: Compatible string "xlnx,axi-frmbuf-wr" and the hardware it
++represented is no longer supported.
++
++Required Properties Common to both FB Read and FB Write:
++- #dma-cells		: should be 1
++- interrupt-parent	: Interrupt controller the interrupt is routed through
++- interrupts		: Should contain DMA channel interrupt
++- reset-gpios		: Should contain GPIO reset phandle
++- reg			: Memory map for module access
++- xlnx,dma-addr-width	: Size of dma address pointer in IP (either 32 or 64)
++- xlnx,vid-formats	: A list of strings indicating what video memory
++			  formats the IP has been configured to support.
++			  See VIDEO FORMATS table below and examples.
++
++Required Properties Common to both FB Read and FB Write for v2.1:
++- xlnx,pixels-per-clock	: Pixels per clock set in IP (1, 2, 4 or 8)
++- clocks: Reference to the AXI Streaming clock feeding the AP_CLK
++- clock-names: Must have "ap_clk"
++- xlnx,max-height	: Maximum number of lines.
++			  Valid range from 64 to 8640.
++- xlnx,max-width	: Maximum number of pixels in a line.
++			  Valid range from 64 to 15360.
++
++Optional Properties Common to both FB Read and FB Write for v2.1:
++- xlnx,dma-align	: DMA alignment required in bytes.
++			  If absent then dma alignment is calculated as
++			  pixels per clock * 8.
++			  If present it should be power of 2 and at least
++			  pixels per clock * 8.
++			  Minimum is 8, 16, 32 when pixels-per-clock is
++			  1, 2 or 4.
++- xlnx,fid		: Field ID enabled for interlaced video support.
++			  Can be absent for progressive video.
++
++VIDEO FORMATS
++The following table describes the legal string values to be used for
++the xlnx,vid-formats property.  To the left is the string value and the
++two columns to the right describe how this is mapped to an equivalent V4L2
++and DRM fourcc code---respectively---by the driver.
++
++IP FORMAT	DTS String	V4L2 Fourcc		DRM Fourcc
++-------------|----------------|----------------------|---------------------
++RGB8		bgr888		V4L2_PIX_FMT_RGB24	DRM_FORMAT_BGR888
++BGR8		rgb888		V4L2_PIX_FMT_BGR24	DRM_FORMAT_RGB888
++RGBX8		xbgr8888	V4L2_PIX_FMT_BGRX32	DRM_FORMAT_XBGR8888
++RGBA8		abgr8888	<not supported>		DRM_FORMAT_ABGR8888
++BGRA8		argb8888	<not supported>		DRM_FORMAT_ARGB8888
++BGRX8		xrgb8888	V4L2_PIX_FMT_XBGR32	DRM_FORMAT_XRGB8888
++RGBX10		xbgr2101010	V4L2_PIX_FMT_XBGR30	DRM_FORMAT_XBGR2101010
++RGBX12		xbgr2121212	V4L2_PIX_FMT_XBGR40	<not supported>
++RGBX16		rgb16		V4L2_PIX_FMT_BGR40	<not supported>
++YUV8		vuy888		V4L2_PIX_FMT_VUY24	DRM_FORMAT_VUY888
++YUVX8		xvuy8888	V4L2_PIX_FMT_XVUY32	DRM_FORMAT_XVUY8888
++Y_U_V8		y_u_v8		V4L2_PIX_FMT_YUV444P	DRM_FORMAT_YUV444
++Y_U_V8		y_u_v8		V4L2_PIX_FMT_YUV444M	DRM_FORMAT_YUV444
++Y_U_V10		y_u_v10		V4L2_PIX_FMT_X403	DRM_FORMAT_X403
++YUYV8		yuyv		V4L2_PIX_FMT_YUYV	DRM_FORMAT_YUYV
++UYVY8		uyvy		V4L2_PIX_FMT_UYVY	DRM_FORMAT_UYVY
++YUVA8		avuy8888	<not supported>		DRM_FORMAT_AVUY
++YUVX10		yuvx2101010	V4L2_PIX_FMT_XVUY10	DRM_FORMAT_XVUY2101010
++Y8		y8		V4L2_PIX_FMT_GREY	DRM_FORMAT_Y8
++Y10		y10		V4L2_PIX_FMT_XY10	DRM_FORMAT_Y10
++Y_UV8		nv16		V4L2_PIX_FMT_NV16	DRM_FORMAT_NV16
++Y_UV8		nv16		V4L2_PIX_FMT_NV16M	DRM_FORMAT_NV16
++Y_UV8_420	nv12		V4L2_PIX_FMT_NV12	DRM_FORMAT_NV12
++Y_UV8_420	nv12		V4L2_PIX_FMT_NV12M	DRM_FORMAT_NV12
++Y_UV10		xv20		V4L2_PIX_FMT_XV20M	DRM_FORMAT_XV20
++Y_UV10		xv20		V4L2_PIX_FMT_XV20	<not supported>
++Y_UV10_420	xv15		V4L2_PIX_FMT_XV15M	DRM_FORMAT_XV15
++Y_UV10_420	xv15		V4L2_PIX_FMT_XV20	<not supported>
++
++Examples:
++
++FB Read Example:
++++++++++
++v_frmbuf_rd_0: v_frmbuf_rd@80000000 {
++	#dma-cells = <1>;
++	compatible = "xlnx,axi-frmbuf-rd-v2.1";
++	interrupt-parent = <&gic>;
++	interrupts = <0 92 4>;
++	reset-gpios = <&gpio 80 1>;
++	reg = <0x0 0x80000000 0x0 0x10000>;
++	xlnx,dma-addr-width = <32>;
++	xlnx,vid-formats = "bgr888","xbgr8888";
++	xlnx,pixels-per-clock = <1>;
++	xlnx,dma-align = <8>;
++	clocks = <&vid_stream_clk>;
++	clock-names = "ap_clk"
++};
++
++FB Write Example:
++++++++++
++v_frmbuf_wr_0: v_frmbuf_wr@80000000 {
++	#dma-cells = <1>;
++	compatible = "xlnx,axi-frmbuf-wr-v2.1";
++	interrupt-parent = <&gic>;
++	interrupts = <0 92 4>;
++	reset-gpios = <&gpio 80 1>;
++	reg = <0x0 0x80000000 0x0 0x10000>;
++	xlnx,dma-addr-width = <64>;
++	xlnx,vid-formats = "bgr888","yuyv","nv16","nv12";
++	xlnx,pixels-per-clock = <2>;
++	xlnx,dma-align = <16>;
++	clocks = <&vid_stream_clk>;
++	clock-names = "ap_clk"
++};
+diff --git a/Documentation/devicetree/bindings/dma/xilinx/xlnx,axi-dma-test.yaml b/Documentation/devicetree/bindings/dma/xilinx/xlnx,axi-dma-test.yaml
+new file mode 100644
+index 000000000..3f33d00f6
+--- /dev/null
++++ b/Documentation/devicetree/bindings/dma/xilinx/xlnx,axi-dma-test.yaml
+@@ -0,0 +1,42 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/dma/xilinx/xlnx,axi-dma-test.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Xilinx AXI DMA Test client
++
++maintainers:
++  - Radhey Shyam Pandey <radhey.shyam.pandey@amd.com>
++  - Harini Katakam <harini.katakam@amd.com>
++
++properties:
++  compatible:
++    const: xlnx,axi-dma-test-1.00.a
++
++  dmas:
++    description:
++      A list of <[DMA device phandle] [Channel ID]> pairs,
++      where Channel ID is '0' for write/tx and '1' for read/rx
++      channel.
++    maxItems: 2
++
++  dma-names:
++    items:
++      - const: axidma0
++      - const: axidma1
++
++required:
++  - compatible
++  - dmas
++  - dma-names
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    dmatest_0: dmatest {
++      compatible ="xlnx,axi-dma-test-1.00.a";
++      dmas = <&axi_dma_0 0 &axi_dma_0 1>;
++      dma-names = "axidma0", "axidma1";
++    };
+diff --git a/Documentation/devicetree/bindings/dma/xilinx/xlnx,axi-vdma-test.yaml b/Documentation/devicetree/bindings/dma/xilinx/xlnx,axi-vdma-test.yaml
+new file mode 100644
+index 000000000..66a7c64f4
+--- /dev/null
++++ b/Documentation/devicetree/bindings/dma/xilinx/xlnx,axi-vdma-test.yaml
+@@ -0,0 +1,50 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/dma/xilinx/xlnx,axi-vdma-test.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Xilinx Video DMA Test client
++
++maintainers:
++  - Radhey Shyam Pandey <radhey.shyam.pandey@amd.com>
++  - Harini Katakam <harini.katakam@amd.com>
++
++properties:
++  compatible:
++    const: xlnx,axi-vdma-test-1.00.a
++
++  dmas:
++    description:
++      A list of <[DMA device phandle] [Channel ID]> pairs,
++      where Channel ID is '0' for write/tx and '1' for read/rx
++      channel.
++    maxItems: 2
++
++  dma-names:
++    items:
++      - const: vdma0
++      - const: vdma1
++
++  xlnx,num-fstores:
++    description:
++      Should be the number of framebuffers as configured in
++      VDMA device node.
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++required:
++  - compatible
++  - dmas
++  - dma-names
++  - xlnx,num-fstores
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    vdmatest_0: vdmatest {
++      compatible ="xlnx,axi-vdma-test-1.00.a";
++      dmas = <&axi_vdma_0 0 &axi_vdma_0 1>;
++      dma-names = "vdma0", "vdma1";
++      xlnx,num-fstores = <0x8>;
++    };
+diff --git a/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml b/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
+index c0a1408b1..a10019d3a 100644
+--- a/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
++++ b/Documentation/devicetree/bindings/dma/xilinx/xlnx,zynqmp-dma-1.0.yaml
+@@ -13,6 +13,8 @@ description: |
+ 
+ maintainers:
+   - Michael Tretter <m.tretter@pengutronix.de>
++  - Harini Katakam <harini.katakam@amd.com>
++  - Radhey Shyam Pandey <radhey.shyam.pandey@amd.com>
+ 
+ allOf:
+   - $ref: "../dma-controller.yaml#"
+@@ -65,6 +67,7 @@ required:
+   - interrupts
+   - clocks
+   - clock-names
++  - xlnx,bus-width
+ 
+ additionalProperties: false
+ 
+diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+index 7524b62a8..38068672d 100644
+--- a/drivers/dma/Kconfig
++++ b/drivers/dma/Kconfig
+@@ -753,6 +753,12 @@ config XILINX_ZYNQMP_DPDMA
+ 	  driver provides the dmaengine required by the DisplayPort subsystem
+ 	  display driver.
+ 
++config XILINX_FRMBUF
++	tristate "Xilinx Framebuffer"
++	select DMA_ENGINE
++	help
++	 Enable support for Xilinx Framebuffer DMA.
++
+ # driver files
+ source "drivers/dma/bestcomm/Kconfig"
+ 
+@@ -804,4 +810,18 @@ config DMATEST
+ config DMA_ENGINE_RAID
+ 	bool
+ 
++config XILINX_DMATEST
++	tristate "DMA Test client for AXI DMA and MCDMA"
++	depends on XILINX_DMA
++	help
++	  Simple DMA test client. Say N unless you're debugging a
++	  DMA Device driver.
++
++config XILINX_VDMATEST
++	tristate "DMA Test client for VDMA"
++	depends on XILINX_DMA
++	help
++	  Simple xilinx VDMA test client. Say N unless you're debugging a
++	  DMA Device driver.
++
+ endif
+diff --git a/drivers/dma/xilinx/Makefile b/drivers/dma/xilinx/Makefile
+index 767bb45f6..e5c35aa1f 100644
+--- a/drivers/dma/xilinx/Makefile
++++ b/drivers/dma/xilinx/Makefile
+@@ -1,4 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0-only
++obj-$(CONFIG_XILINX_DMATEST) += axidmatest.o
++obj-$(CONFIG_XILINX_VDMATEST) += vdmatest.o
+ obj-$(CONFIG_XILINX_DMA) += xilinx_dma.o
+ obj-$(CONFIG_XILINX_ZYNQMP_DMA) += zynqmp_dma.o
+ obj-$(CONFIG_XILINX_ZYNQMP_DPDMA) += xilinx_dpdma.o
++obj-$(CONFIG_XILINX_FRMBUF) += xilinx_frmbuf.o
+diff --git a/drivers/dma/xilinx/axidmatest.c b/drivers/dma/xilinx/axidmatest.c
+new file mode 100644
+index 000000000..4b30e6433
+--- /dev/null
++++ b/drivers/dma/xilinx/axidmatest.c
+@@ -0,0 +1,698 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * XILINX AXI DMA and MCDMA Engine test module
++ *
++ * Copyright (C) 2010 Xilinx, Inc. All rights reserved.
++ *
++ * Based on Atmel DMA Test Client
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/delay.h>
++#include <linux/dmaengine.h>
++#include <linux/init.h>
++#include <linux/kthread.h>
++#include <linux/module.h>
++#include <linux/of_dma.h>
++#include <linux/platform_device.h>
++#include <linux/random.h>
++#include <linux/slab.h>
++#include <linux/wait.h>
++#include <linux/sched/task.h>
++#include <linux/dma/xilinx_dma.h>
++
++static unsigned int test_buf_size = 16384;
++module_param(test_buf_size, uint, 0444);
++MODULE_PARM_DESC(test_buf_size, "Size of the memcpy test buffer");
++
++static unsigned int iterations = 5;
++module_param(iterations, uint, 0444);
++MODULE_PARM_DESC(iterations,
++		 "Iterations before stopping test (default: infinite)");
++
++/*
++ * Initialization patterns. All bytes in the source buffer has bit 7
++ * set, all bytes in the destination buffer has bit 7 cleared.
++ *
++ * Bit 6 is set for all bytes which are to be copied by the DMA
++ * engine. Bit 5 is set for all bytes which are to be overwritten by
++ * the DMA engine.
++ *
++ * The remaining bits are the inverse of a counter which increments by
++ * one for each byte address.
++ */
++#define PATTERN_SRC		0x80
++#define PATTERN_DST		0x00
++#define PATTERN_COPY		0x40
++#define PATTERN_OVERWRITE	0x20
++#define PATTERN_COUNT_MASK	0x1f
++
++#define XILINX_DMATEST_BD_CNT	11
++
++struct dmatest_slave_thread {
++	struct list_head node;
++	struct task_struct *task;
++	struct dma_chan *tx_chan;
++	struct dma_chan *rx_chan;
++	u8 **srcs;
++	u8 **dsts;
++	enum dma_transaction_type type;
++	bool done;
++};
++
++struct dmatest_chan {
++	struct list_head node;
++	struct dma_chan *chan;
++	struct list_head threads;
++};
++
++/*
++ * These are protected by dma_list_mutex since they're only used by
++ * the DMA filter function callback
++ */
++static DECLARE_WAIT_QUEUE_HEAD(thread_wait);
++static LIST_HEAD(dmatest_channels);
++static unsigned int nr_channels;
++
++static unsigned long long dmatest_persec(s64 runtime, unsigned int val)
++{
++	unsigned long long per_sec = 1000000;
++
++	if (runtime <= 0)
++		return 0;
++
++	/* drop precision until runtime is 32-bits */
++	while (runtime > UINT_MAX) {
++		runtime >>= 1;
++		per_sec <<= 1;
++	}
++
++	per_sec *= val;
++	do_div(per_sec, runtime);
++	return per_sec;
++}
++
++static unsigned long long dmatest_KBs(s64 runtime, unsigned long long len)
++{
++	return dmatest_persec(runtime, len >> 10);
++}
++
++static bool is_threaded_test_run(struct dmatest_chan *tx_dtc,
++				 struct dmatest_chan *rx_dtc)
++{
++	struct dmatest_slave_thread *thread;
++	int ret = false;
++
++	list_for_each_entry(thread, &tx_dtc->threads, node) {
++		if (!thread->done)
++			ret = true;
++	}
++
++	list_for_each_entry(thread, &rx_dtc->threads, node) {
++		if (!thread->done)
++			ret = true;
++	}
++	return ret;
++}
++
++static unsigned long dmatest_random(void)
++{
++	unsigned long buf;
++
++	get_random_bytes(&buf, sizeof(buf));
++	return buf;
++}
++
++static void dmatest_init_srcs(u8 **bufs, unsigned int start, unsigned int len)
++{
++	unsigned int i;
++	u8 *buf;
++
++	for (; (buf = *bufs); bufs++) {
++		for (i = 0; i < start; i++)
++			buf[i] = PATTERN_SRC | (~i & PATTERN_COUNT_MASK);
++		for ( ; i < start + len; i++)
++			buf[i] = PATTERN_SRC | PATTERN_COPY
++				| (~i & PATTERN_COUNT_MASK);
++		for ( ; i < test_buf_size; i++)
++			buf[i] = PATTERN_SRC | (~i & PATTERN_COUNT_MASK);
++	}
++}
++
++static void dmatest_init_dsts(u8 **bufs, unsigned int start, unsigned int len)
++{
++	unsigned int i;
++	u8 *buf;
++
++	for (; (buf = *bufs); bufs++) {
++		for (i = 0; i < start; i++)
++			buf[i] = PATTERN_DST | (~i & PATTERN_COUNT_MASK);
++		for ( ; i < start + len; i++)
++			buf[i] = PATTERN_DST | PATTERN_OVERWRITE
++				| (~i & PATTERN_COUNT_MASK);
++		for ( ; i < test_buf_size; i++)
++			buf[i] = PATTERN_DST | (~i & PATTERN_COUNT_MASK);
++	}
++}
++
++static void dmatest_mismatch(u8 actual, u8 pattern, unsigned int index,
++			     unsigned int counter, bool is_srcbuf)
++{
++	u8 diff = actual ^ pattern;
++	u8 expected = pattern | (~counter & PATTERN_COUNT_MASK);
++	const char *thread_name = current->comm;
++
++	if (is_srcbuf)
++		pr_warn("%s: srcbuf[0x%x] overwritten! Expected %02x, got %02x\n",
++			thread_name, index, expected, actual);
++	else if ((pattern & PATTERN_COPY) &&
++		 (diff & (PATTERN_COPY | PATTERN_OVERWRITE)))
++		pr_warn("%s: dstbuf[0x%x] not copied! Expected %02x, got %02x\n",
++			thread_name, index, expected, actual);
++	else if (diff & PATTERN_SRC)
++		pr_warn("%s: dstbuf[0x%x] was copied! Expected %02x, got %02x\n",
++			thread_name, index, expected, actual);
++	else
++		pr_warn("%s: dstbuf[0x%x] mismatch! Expected %02x, got %02x\n",
++			thread_name, index, expected, actual);
++}
++
++static unsigned int dmatest_verify(u8 **bufs, unsigned int start,
++				   unsigned int end, unsigned int counter,
++				   u8 pattern, bool is_srcbuf)
++{
++	unsigned int i;
++	unsigned int error_count = 0;
++	u8 actual;
++	u8 expected;
++	u8 *buf;
++	unsigned int counter_orig = counter;
++
++	for (; (buf = *bufs); bufs++) {
++		counter = counter_orig;
++		for (i = start; i < end; i++) {
++			actual = buf[i];
++			expected = pattern | (~counter & PATTERN_COUNT_MASK);
++			if (actual != expected) {
++				if (error_count < 32)
++					dmatest_mismatch(actual, pattern, i,
++							 counter, is_srcbuf);
++				error_count++;
++			}
++			counter++;
++		}
++	}
++
++	if (error_count > 32)
++		pr_warn("%s: %u errors suppressed\n",
++			current->comm, error_count - 32);
++
++	return error_count;
++}
++
++static void dmatest_slave_tx_callback(void *completion)
++{
++	complete(completion);
++}
++
++static void dmatest_slave_rx_callback(void *completion)
++{
++	complete(completion);
++}
++
++/* Function for slave transfers
++ * Each thread requires 2 channels, one for transmit, and one for receive
++ */
++static int dmatest_slave_func(void *data)
++{
++	struct dmatest_slave_thread	*thread = data;
++	struct dma_chan *tx_chan;
++	struct dma_chan *rx_chan;
++	const char *thread_name;
++	unsigned int src_off, dst_off, len;
++	unsigned int error_count;
++	unsigned int failed_tests = 0;
++	unsigned int total_tests = 0;
++	dma_cookie_t tx_cookie;
++	dma_cookie_t rx_cookie;
++	enum dma_status status;
++	enum dma_ctrl_flags flags;
++	int ret;
++	int src_cnt;
++	int dst_cnt;
++	int bd_cnt = XILINX_DMATEST_BD_CNT;
++	int i;
++
++	ktime_t	ktime, start, diff;
++	ktime_t	filltime = 0;
++	ktime_t	comparetime = 0;
++	s64 runtime = 0;
++	unsigned long long total_len = 0;
++	thread_name = current->comm;
++	ret = -ENOMEM;
++
++
++	/* Ensure that all previous reads are complete */
++	smp_rmb();
++	tx_chan = thread->tx_chan;
++	rx_chan = thread->rx_chan;
++	dst_cnt = bd_cnt;
++	src_cnt = bd_cnt;
++
++	thread->srcs = kcalloc(src_cnt + 1, sizeof(u8 *), GFP_KERNEL);
++	if (!thread->srcs)
++		goto err_srcs;
++	for (i = 0; i < src_cnt; i++) {
++		thread->srcs[i] = kmalloc(test_buf_size, GFP_KERNEL);
++		if (!thread->srcs[i])
++			goto err_srcbuf;
++	}
++	thread->srcs[i] = NULL;
++
++	thread->dsts = kcalloc(dst_cnt + 1, sizeof(u8 *), GFP_KERNEL);
++	if (!thread->dsts)
++		goto err_dsts;
++	for (i = 0; i < dst_cnt; i++) {
++		thread->dsts[i] = kmalloc(test_buf_size, GFP_KERNEL);
++		if (!thread->dsts[i])
++			goto err_dstbuf;
++	}
++	thread->dsts[i] = NULL;
++
++	set_user_nice(current, 10);
++
++	flags = DMA_CTRL_ACK | DMA_PREP_INTERRUPT;
++
++	ktime = ktime_get();
++	while (!kthread_should_stop() &&
++	       !(iterations && total_tests >= iterations)) {
++		struct dma_device *tx_dev = tx_chan->device;
++		struct dma_device *rx_dev = rx_chan->device;
++		struct dma_async_tx_descriptor *txd = NULL;
++		struct dma_async_tx_descriptor *rxd = NULL;
++		dma_addr_t dma_srcs[XILINX_DMATEST_BD_CNT];
++		dma_addr_t dma_dsts[XILINX_DMATEST_BD_CNT];
++		struct completion rx_cmp;
++		struct completion tx_cmp;
++		unsigned long rx_tmo =
++				msecs_to_jiffies(300000); /* RX takes longer */
++		unsigned long tx_tmo = msecs_to_jiffies(30000);
++		u8 align = 0;
++		struct scatterlist tx_sg[XILINX_DMATEST_BD_CNT];
++		struct scatterlist rx_sg[XILINX_DMATEST_BD_CNT];
++
++		total_tests++;
++
++		/* honor larger alignment restrictions */
++		align = tx_dev->copy_align;
++		if (rx_dev->copy_align > align)
++			align = rx_dev->copy_align;
++
++		if (1 << align > test_buf_size) {
++			pr_err("%u-byte buffer too small for %d-byte alignment\n",
++			       test_buf_size, 1 << align);
++			break;
++		}
++
++		len = dmatest_random() % test_buf_size + 1;
++		len = (len >> align) << align;
++		if (!len)
++			len = 1 << align;
++		src_off = dmatest_random() % (test_buf_size - len + 1);
++		dst_off = dmatest_random() % (test_buf_size - len + 1);
++
++		src_off = (src_off >> align) << align;
++		dst_off = (dst_off >> align) << align;
++
++		start = ktime_get();
++		dmatest_init_srcs(thread->srcs, src_off, len);
++		dmatest_init_dsts(thread->dsts, dst_off, len);
++		diff = ktime_sub(ktime_get(), start);
++		filltime = ktime_add(filltime, diff);
++
++		for (i = 0; i < src_cnt; i++) {
++			u8 *buf = thread->srcs[i] + src_off;
++
++			dma_srcs[i] = dma_map_single(tx_dev->dev, buf, len,
++						     DMA_MEM_TO_DEV);
++		}
++
++		for (i = 0; i < dst_cnt; i++) {
++			dma_dsts[i] = dma_map_single(rx_dev->dev,
++						     thread->dsts[i],
++						     test_buf_size,
++						     DMA_BIDIRECTIONAL);
++		}
++
++		sg_init_table(tx_sg, bd_cnt);
++		sg_init_table(rx_sg, bd_cnt);
++
++		for (i = 0; i < bd_cnt; i++) {
++			sg_dma_address(&tx_sg[i]) = dma_srcs[i];
++			sg_dma_address(&rx_sg[i]) = dma_dsts[i] + dst_off;
++
++			sg_dma_len(&tx_sg[i]) = len;
++			sg_dma_len(&rx_sg[i]) = len;
++			total_len += len;
++		}
++
++		rxd = rx_dev->device_prep_slave_sg(rx_chan, rx_sg, bd_cnt,
++				DMA_DEV_TO_MEM, flags, NULL);
++
++		txd = tx_dev->device_prep_slave_sg(tx_chan, tx_sg, bd_cnt,
++				DMA_MEM_TO_DEV, flags, NULL);
++
++		if (!rxd || !txd) {
++			for (i = 0; i < src_cnt; i++)
++				dma_unmap_single(tx_dev->dev, dma_srcs[i], len,
++						 DMA_MEM_TO_DEV);
++			for (i = 0; i < dst_cnt; i++)
++				dma_unmap_single(rx_dev->dev, dma_dsts[i],
++						 test_buf_size,
++						 DMA_BIDIRECTIONAL);
++			pr_warn("%s: #%u: prep error with src_off=0x%x ",
++				thread_name, total_tests - 1, src_off);
++			pr_warn("dst_off=0x%x len=0x%x\n",
++				dst_off, len);
++			msleep(100);
++			failed_tests++;
++			continue;
++		}
++
++		init_completion(&rx_cmp);
++		rxd->callback = dmatest_slave_rx_callback;
++		rxd->callback_param = &rx_cmp;
++		rx_cookie = rxd->tx_submit(rxd);
++
++		init_completion(&tx_cmp);
++		txd->callback = dmatest_slave_tx_callback;
++		txd->callback_param = &tx_cmp;
++		tx_cookie = txd->tx_submit(txd);
++
++		if (dma_submit_error(rx_cookie) ||
++		    dma_submit_error(tx_cookie)) {
++			pr_warn("%s: #%u: submit error %d/%d with src_off=0x%x ",
++				thread_name, total_tests - 1,
++				rx_cookie, tx_cookie, src_off);
++			pr_warn("dst_off=0x%x len=0x%x\n",
++				dst_off, len);
++			msleep(100);
++			failed_tests++;
++			continue;
++		}
++		dma_async_issue_pending(rx_chan);
++		dma_async_issue_pending(tx_chan);
++
++		tx_tmo = wait_for_completion_timeout(&tx_cmp, tx_tmo);
++
++		status = dma_async_is_tx_complete(tx_chan, tx_cookie,
++						  NULL, NULL);
++
++		if (tx_tmo == 0) {
++			pr_warn("%s: #%u: tx test timed out\n",
++				thread_name, total_tests - 1);
++			failed_tests++;
++			continue;
++		} else if (status != DMA_COMPLETE) {
++			pr_warn("%s: #%u: tx got completion callback, ",
++				thread_name, total_tests - 1);
++			pr_warn("but status is \'%s\'\n",
++				status == DMA_ERROR ? "error" :
++				"in progress");
++			failed_tests++;
++			continue;
++		}
++
++		rx_tmo = wait_for_completion_timeout(&rx_cmp, rx_tmo);
++		status = dma_async_is_tx_complete(rx_chan, rx_cookie,
++						  NULL, NULL);
++
++		if (rx_tmo == 0) {
++			pr_warn("%s: #%u: rx test timed out\n",
++				thread_name, total_tests - 1);
++			failed_tests++;
++			continue;
++		} else if (status != DMA_COMPLETE) {
++			pr_warn("%s: #%u: rx got completion callback, ",
++				thread_name, total_tests - 1);
++			pr_warn("but status is \'%s\'\n",
++				status == DMA_ERROR ? "error" :
++				"in progress");
++			failed_tests++;
++			continue;
++		}
++
++		/* Unmap by myself */
++		for (i = 0; i < dst_cnt; i++)
++			dma_unmap_single(rx_dev->dev, dma_dsts[i],
++					 test_buf_size, DMA_BIDIRECTIONAL);
++
++		error_count = 0;
++		start = ktime_get();
++		pr_debug("%s: verifying source buffer...\n", thread_name);
++		error_count += dmatest_verify(thread->srcs, 0, src_off,
++				0, PATTERN_SRC, true);
++		error_count += dmatest_verify(thread->srcs, src_off,
++				src_off + len, src_off,
++				PATTERN_SRC | PATTERN_COPY, true);
++		error_count += dmatest_verify(thread->srcs, src_off + len,
++				test_buf_size, src_off + len,
++				PATTERN_SRC, true);
++
++		pr_debug("%s: verifying dest buffer...\n",
++			 thread->task->comm);
++		error_count += dmatest_verify(thread->dsts, 0, dst_off,
++				0, PATTERN_DST, false);
++		error_count += dmatest_verify(thread->dsts, dst_off,
++				dst_off + len, src_off,
++				PATTERN_SRC | PATTERN_COPY, false);
++		error_count += dmatest_verify(thread->dsts, dst_off + len,
++				test_buf_size, dst_off + len,
++				PATTERN_DST, false);
++		diff = ktime_sub(ktime_get(), start);
++		comparetime = ktime_add(comparetime, diff);
++
++		if (error_count) {
++			pr_warn("%s: #%u: %u errors with ",
++				thread_name, total_tests - 1, error_count);
++			pr_warn("src_off=0x%x dst_off=0x%x len=0x%x\n",
++				src_off, dst_off, len);
++			failed_tests++;
++		} else {
++			pr_debug("%s: #%u: No errors with ",
++				 thread_name, total_tests - 1);
++			pr_debug("src_off=0x%x dst_off=0x%x len=0x%x\n",
++				 src_off, dst_off, len);
++		}
++	}
++
++	ktime = ktime_sub(ktime_get(), ktime);
++	ktime = ktime_sub(ktime, comparetime);
++	ktime = ktime_sub(ktime, filltime);
++	runtime = ktime_to_us(ktime);
++
++	ret = 0;
++	for (i = 0; thread->dsts[i]; i++)
++		kfree(thread->dsts[i]);
++err_dstbuf:
++	kfree(thread->dsts);
++err_dsts:
++	for (i = 0; thread->srcs[i]; i++)
++		kfree(thread->srcs[i]);
++err_srcbuf:
++	kfree(thread->srcs);
++err_srcs:
++	pr_notice("%s: terminating after %u tests, %u failures %llu iops %llu KB/s (status %d)\n",
++		  thread_name, total_tests, failed_tests,
++		  dmatest_persec(runtime, total_tests),
++		  dmatest_KBs(runtime, total_len), ret);
++
++	thread->done = true;
++	wake_up(&thread_wait);
++
++	return ret;
++}
++
++static void dmatest_cleanup_channel(struct dmatest_chan *dtc)
++{
++	struct dmatest_slave_thread *thread;
++	struct dmatest_slave_thread *_thread;
++	int ret;
++
++	list_for_each_entry_safe(thread, _thread, &dtc->threads, node) {
++		ret = kthread_stop(thread->task);
++		pr_debug("dmatest: thread %s exited with status %d\n",
++			 thread->task->comm, ret);
++		list_del(&thread->node);
++		put_task_struct(thread->task);
++		kfree(thread);
++	}
++	kfree(dtc);
++}
++
++static int dmatest_add_slave_threads(struct dmatest_chan *tx_dtc,
++				     struct dmatest_chan *rx_dtc)
++{
++	struct dmatest_slave_thread *thread;
++	struct dma_chan *tx_chan = tx_dtc->chan;
++	struct dma_chan *rx_chan = rx_dtc->chan;
++	int ret;
++
++	thread = kzalloc(sizeof(struct dmatest_slave_thread), GFP_KERNEL);
++	if (!thread) {
++		pr_warn("dmatest: No memory for slave thread %s-%s\n",
++			dma_chan_name(tx_chan), dma_chan_name(rx_chan));
++	}
++
++	thread->tx_chan = tx_chan;
++	thread->rx_chan = rx_chan;
++	thread->type = (enum dma_transaction_type)DMA_SLAVE;
++
++	/* Ensure that all previous writes are complete */
++	smp_wmb();
++	thread->task = kthread_run(dmatest_slave_func, thread, "%s-%s",
++				   dma_chan_name(tx_chan),
++				   dma_chan_name(rx_chan));
++	ret = PTR_ERR(thread->task);
++	if (IS_ERR(thread->task)) {
++		pr_warn("dmatest: Failed to run thread %s-%s\n",
++			dma_chan_name(tx_chan), dma_chan_name(rx_chan));
++		kfree(thread);
++		return ret;
++	}
++
++	/* srcbuf and dstbuf are allocated by the thread itself */
++	get_task_struct(thread->task);
++	list_add_tail(&thread->node, &tx_dtc->threads);
++
++	/* Added one thread with 2 channels */
++	return 1;
++}
++
++static int dmatest_add_slave_channels(struct dma_chan *tx_chan,
++				      struct dma_chan *rx_chan)
++{
++	struct dmatest_chan *tx_dtc;
++	struct dmatest_chan *rx_dtc;
++	unsigned int thread_count = 0;
++
++	tx_dtc = kmalloc(sizeof(struct dmatest_chan), GFP_KERNEL);
++	if (!tx_dtc) {
++		pr_warn("dmatest: No memory for tx %s\n",
++			dma_chan_name(tx_chan));
++		return -ENOMEM;
++	}
++
++	rx_dtc = kmalloc(sizeof(struct dmatest_chan), GFP_KERNEL);
++	if (!rx_dtc) {
++		pr_warn("dmatest: No memory for rx %s\n",
++			dma_chan_name(rx_chan));
++		return -ENOMEM;
++	}
++
++	tx_dtc->chan = tx_chan;
++	rx_dtc->chan = rx_chan;
++	INIT_LIST_HEAD(&tx_dtc->threads);
++	INIT_LIST_HEAD(&rx_dtc->threads);
++
++	dmatest_add_slave_threads(tx_dtc, rx_dtc);
++	thread_count += 1;
++
++	pr_info("dmatest: Started %u threads using %s %s\n",
++		thread_count, dma_chan_name(tx_chan), dma_chan_name(rx_chan));
++
++	list_add_tail(&tx_dtc->node, &dmatest_channels);
++	list_add_tail(&rx_dtc->node, &dmatest_channels);
++	nr_channels += 2;
++
++	if (iterations)
++		wait_event(thread_wait, !is_threaded_test_run(tx_dtc, rx_dtc));
++
++	return 0;
++}
++
++static int xilinx_axidmatest_probe(struct platform_device *pdev)
++{
++	struct dma_chan *chan, *rx_chan;
++	int err;
++
++	chan = dma_request_chan(&pdev->dev, "axidma0");
++	if (IS_ERR(chan)) {
++		err = PTR_ERR(chan);
++		if (err != -EPROBE_DEFER)
++			pr_err("xilinx_dmatest: No Tx channel\n");
++		return err;
++	}
++
++	rx_chan = dma_request_chan(&pdev->dev, "axidma1");
++	if (IS_ERR(rx_chan)) {
++		err = PTR_ERR(rx_chan);
++		if (err != -EPROBE_DEFER)
++			pr_err("xilinx_dmatest: No Rx channel\n");
++		goto free_tx;
++	}
++
++	err = dmatest_add_slave_channels(chan, rx_chan);
++	if (err) {
++		pr_err("xilinx_dmatest: Unable to add channels\n");
++		goto free_rx;
++	}
++
++	return 0;
++
++free_rx:
++	dma_release_channel(rx_chan);
++free_tx:
++	dma_release_channel(chan);
++
++	return err;
++}
++
++static int xilinx_axidmatest_remove(struct platform_device *pdev)
++{
++	struct dmatest_chan *dtc, *_dtc;
++	struct dma_chan *chan;
++
++	list_for_each_entry_safe(dtc, _dtc, &dmatest_channels, node) {
++		list_del(&dtc->node);
++		chan = dtc->chan;
++		dmatest_cleanup_channel(dtc);
++		pr_info("xilinx_dmatest: dropped channel %s\n",
++			dma_chan_name(chan));
++		dmaengine_terminate_all(chan);
++		dma_release_channel(chan);
++	}
++	return 0;
++}
++
++static const struct of_device_id xilinx_axidmatest_of_ids[] = {
++	{ .compatible = "xlnx,axi-dma-test-1.00.a",},
++	{}
++};
++
++static struct platform_driver xilinx_axidmatest_driver = {
++	.driver = {
++		.name = "xilinx_axidmatest",
++		.of_match_table = xilinx_axidmatest_of_ids,
++	},
++	.probe = xilinx_axidmatest_probe,
++	.remove = xilinx_axidmatest_remove,
++};
++
++static int __init axidma_init(void)
++{
++	return platform_driver_register(&xilinx_axidmatest_driver);
++}
++late_initcall(axidma_init);
++
++static void __exit axidma_exit(void)
++{
++	platform_driver_unregister(&xilinx_axidmatest_driver);
++}
++module_exit(axidma_exit)
++
++MODULE_AUTHOR("Xilinx, Inc.");
++MODULE_DESCRIPTION("Xilinx AXI DMA Test Client");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/dma/xilinx/vdmatest.c b/drivers/dma/xilinx/vdmatest.c
+new file mode 100644
+index 000000000..0ee97fb8f
+--- /dev/null
++++ b/drivers/dma/xilinx/vdmatest.c
+@@ -0,0 +1,666 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * XILINX VDMA Engine test client driver
++ *
++ * Copyright (C) 2010-2014 Xilinx, Inc. All rights reserved.
++ *
++ * Based on Atmel DMA Test Client
++ *
++ * Description:
++ * This is a simple Xilinx VDMA test client for AXI VDMA driver.
++ * This test assumes both the channels of VDMA are enabled in the
++ * hardware design and configured in back-to-back connection. Test
++ * starts by pumping the data onto one channel (MM2S) and then
++ * compares the data that is received on the other channel (S2MM).
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/dma/xilinx_dma.h>
++#include <linux/delay.h>
++#include <linux/init.h>
++#include <linux/kthread.h>
++#include <linux/module.h>
++#include <linux/of_dma.h>
++#include <linux/platform_device.h>
++#include <linux/random.h>
++#include <linux/slab.h>
++#include <linux/sched/task.h>
++#include <linux/wait.h>
++
++static unsigned int test_buf_size = 64;
++module_param(test_buf_size, uint, 0444);
++MODULE_PARM_DESC(test_buf_size, "Size of the memcpy test buffer");
++
++static unsigned int iterations = 1;
++module_param(iterations, uint, 0444);
++MODULE_PARM_DESC(iterations,
++		"Iterations before stopping test (default: infinite)");
++
++static unsigned int hsize = 64;
++module_param(hsize, uint, 0444);
++MODULE_PARM_DESC(hsize, "Horizontal size in bytes");
++
++static unsigned int vsize = 32;
++module_param(vsize, uint, 0444);
++MODULE_PARM_DESC(vsize, "Vertical size in bytes");
++
++/*
++ * Initialization patterns. All bytes in the source buffer has bit 7
++ * set, all bytes in the destination buffer has bit 7 cleared.
++ *
++ * Bit 6 is set for all bytes which are to be copied by the DMA
++ * engine. Bit 5 is set for all bytes which are to be overwritten by
++ * the DMA engine.
++ *
++ * The remaining bits are the inverse of a counter which increments by
++ * one for each byte address.
++ */
++#define PATTERN_SRC		0x80
++#define PATTERN_DST		0x00
++#define PATTERN_COPY		0x40
++#define PATTERN_OVERWRITE	0x20
++#define PATTERN_COUNT_MASK	0x1f
++
++/* Maximum number of frame buffers */
++#define MAX_NUM_FRAMES	32
++
++/**
++ * struct vdmatest_slave_thread - VDMA test thread
++ * @node: Thread node
++ * @task: Task structure pointer
++ * @tx_chan: Tx channel pointer
++ * @rx_chan: Rx Channel pointer
++ * @srcs: Source buffer
++ * @dsts: Destination buffer
++ * @type: DMA transaction type
++ */
++struct xilinx_vdmatest_slave_thread {
++	struct list_head node;
++	struct task_struct *task;
++	struct dma_chan *tx_chan;
++	struct dma_chan *rx_chan;
++	u8 **srcs;
++	u8 **dsts;
++	enum dma_transaction_type type;
++	bool done;
++};
++
++/**
++ * struct vdmatest_chan - VDMA Test channel
++ * @node: Channel node
++ * @chan: DMA channel pointer
++ * @threads: List of VDMA test threads
++ */
++struct xilinx_vdmatest_chan {
++	struct list_head node;
++	struct dma_chan *chan;
++	struct list_head threads;
++};
++
++/* Global variables */
++static DECLARE_WAIT_QUEUE_HEAD(thread_wait);
++static LIST_HEAD(xilinx_vdmatest_channels);
++static unsigned int nr_channels;
++static unsigned int frm_cnt;
++static dma_addr_t dma_srcs[MAX_NUM_FRAMES];
++static dma_addr_t dma_dsts[MAX_NUM_FRAMES];
++static struct dma_interleaved_template xt;
++
++static bool is_threaded_test_run(struct xilinx_vdmatest_chan *tx_dtc,
++					struct xilinx_vdmatest_chan *rx_dtc)
++{
++	struct xilinx_vdmatest_slave_thread *thread;
++	int ret = false;
++
++	list_for_each_entry(thread, &tx_dtc->threads, node) {
++		if (!thread->done)
++			ret = true;
++	}
++
++	list_for_each_entry(thread, &rx_dtc->threads, node) {
++		if (!thread->done)
++			ret = true;
++	}
++	return ret;
++}
++
++static void xilinx_vdmatest_init_srcs(u8 **bufs, unsigned int start,
++					unsigned int len)
++{
++	unsigned int i;
++	u8 *buf;
++
++	for (; (buf = *bufs); bufs++) {
++		for (i = 0; i < start; i++)
++			buf[i] = PATTERN_SRC | (~i & PATTERN_COUNT_MASK);
++		for (; i < start + len; i++)
++			buf[i] = PATTERN_SRC | PATTERN_COPY
++				| (~i & PATTERN_COUNT_MASK);
++		for (; i < test_buf_size; i++)
++			buf[i] = PATTERN_SRC | (~i & PATTERN_COUNT_MASK);
++		buf++;
++	}
++}
++
++static void xilinx_vdmatest_init_dsts(u8 **bufs, unsigned int start,
++					unsigned int len)
++{
++	unsigned int i;
++	u8 *buf;
++
++	for (; (buf = *bufs); bufs++) {
++		for (i = 0; i < start; i++)
++			buf[i] = PATTERN_DST | (~i & PATTERN_COUNT_MASK);
++		for (; i < start + len; i++)
++			buf[i] = PATTERN_DST | PATTERN_OVERWRITE
++				| (~i & PATTERN_COUNT_MASK);
++		for (; i < test_buf_size; i++)
++			buf[i] = PATTERN_DST | (~i & PATTERN_COUNT_MASK);
++	}
++}
++
++static void xilinx_vdmatest_mismatch(u8 actual, u8 pattern, unsigned int index,
++		unsigned int counter, bool is_srcbuf)
++{
++	u8 diff = actual ^ pattern;
++	u8 expected = pattern | (~counter & PATTERN_COUNT_MASK);
++	const char *thread_name = current->comm;
++
++	if (is_srcbuf)
++		pr_warn(
++		"%s: srcbuf[0x%x] overwritten! Expected %02x, got %02x\n",
++				thread_name, index, expected, actual);
++	else if ((pattern & PATTERN_COPY)
++			&& (diff & (PATTERN_COPY | PATTERN_OVERWRITE)))
++		pr_warn(
++		"%s: dstbuf[0x%x] not copied! Expected %02x, got %02x\n",
++				thread_name, index, expected, actual);
++	else if (diff & PATTERN_SRC)
++		pr_warn(
++		"%s: dstbuf[0x%x] was copied! Expected %02x, got %02x\n",
++				thread_name, index, expected, actual);
++	else
++		pr_warn(
++		"%s: dstbuf[0x%x] mismatch! Expected %02x, got %02x\n",
++				thread_name, index, expected, actual);
++}
++
++static unsigned int xilinx_vdmatest_verify(u8 **bufs, unsigned int start,
++		unsigned int end, unsigned int counter, u8 pattern,
++		bool is_srcbuf)
++{
++	unsigned int i, error_count = 0;
++	u8 actual, expected, *buf;
++	unsigned int counter_orig = counter;
++
++	for (; (buf = *bufs); bufs++) {
++		counter = counter_orig;
++		for (i = start; i < end; i++) {
++			actual = buf[i];
++			expected = pattern | (~counter & PATTERN_COUNT_MASK);
++			if (actual != expected) {
++				if (error_count < 32)
++					xilinx_vdmatest_mismatch(actual,
++							pattern, i,
++							counter, is_srcbuf);
++				error_count++;
++			}
++			counter++;
++		}
++	}
++
++	if (error_count > 32)
++		pr_warn("%s: %u errors suppressed\n",
++			current->comm, error_count - 32);
++
++	return error_count;
++}
++
++static void xilinx_vdmatest_slave_tx_callback(void *completion)
++{
++	pr_debug("Got tx callback\n");
++	complete(completion);
++}
++
++static void xilinx_vdmatest_slave_rx_callback(void *completion)
++{
++	pr_debug("Got rx callback\n");
++	complete(completion);
++}
++
++/*
++ * Function for slave transfers
++ * Each thread requires 2 channels, one for transmit, and one for receive
++ */
++static int xilinx_vdmatest_slave_func(void *data)
++{
++	struct xilinx_vdmatest_slave_thread *thread = data;
++	struct dma_chan *tx_chan, *rx_chan;
++	const char *thread_name;
++	unsigned int len, error_count;
++	unsigned int failed_tests = 0, total_tests = 0;
++	dma_cookie_t tx_cookie = 0, rx_cookie = 0;
++	enum dma_status status;
++	enum dma_ctrl_flags flags;
++	int ret = -ENOMEM, i;
++	struct xilinx_vdma_config config;
++
++	thread_name = current->comm;
++
++	/* Limit testing scope here */
++	test_buf_size = hsize * vsize;
++
++	/* This barrier ensures 'thread' is initialized and
++	 * we get valid DMA channels
++	 */
++	smp_rmb();
++	tx_chan = thread->tx_chan;
++	rx_chan = thread->rx_chan;
++
++	thread->srcs = kcalloc(frm_cnt+1, sizeof(u8 *), GFP_KERNEL);
++	if (!thread->srcs)
++		goto err_srcs;
++	for (i = 0; i < frm_cnt; i++) {
++		thread->srcs[i] = kmalloc(test_buf_size, GFP_KERNEL);
++		if (!thread->srcs[i])
++			goto err_srcbuf;
++	}
++
++	thread->dsts = kcalloc(frm_cnt+1, sizeof(u8 *), GFP_KERNEL);
++	if (!thread->dsts)
++		goto err_dsts;
++	for (i = 0; i < frm_cnt; i++) {
++		thread->dsts[i] = kmalloc(test_buf_size, GFP_KERNEL);
++		if (!thread->dsts[i])
++			goto err_dstbuf;
++	}
++
++	set_user_nice(current, 10);
++
++	flags = DMA_CTRL_ACK | DMA_PREP_INTERRUPT;
++
++	while (!kthread_should_stop()
++		&& !(iterations && total_tests >= iterations)) {
++		struct dma_device *tx_dev = tx_chan->device;
++		struct dma_device *rx_dev = rx_chan->device;
++		struct dma_async_tx_descriptor *txd = NULL;
++		struct dma_async_tx_descriptor *rxd = NULL;
++		struct completion rx_cmp, tx_cmp;
++		unsigned long rx_tmo =
++				msecs_to_jiffies(30000); /* RX takes longer */
++		unsigned long tx_tmo = msecs_to_jiffies(30000);
++		u8 align = 0;
++
++		total_tests++;
++
++		/* honor larger alignment restrictions */
++		align = tx_dev->copy_align;
++		if (rx_dev->copy_align > align)
++			align = rx_dev->copy_align;
++
++		if (1 << align > test_buf_size) {
++			pr_err("%u-byte buffer too small for %d-byte alignment\n",
++			       test_buf_size, 1 << align);
++			break;
++		}
++
++		len = test_buf_size;
++		xilinx_vdmatest_init_srcs(thread->srcs, 0, len);
++		xilinx_vdmatest_init_dsts(thread->dsts, 0, len);
++
++		/* Zero out configuration */
++		memset(&config, 0, sizeof(struct xilinx_vdma_config));
++
++		/* Set up hardware configuration information */
++		config.frm_cnt_en = 1;
++		config.coalesc = frm_cnt * 10;
++		config.park = 1;
++		xilinx_vdma_channel_set_config(tx_chan, &config);
++
++		xilinx_vdma_channel_set_config(rx_chan, &config);
++
++		for (i = 0; i < frm_cnt; i++) {
++			dma_dsts[i] = dma_map_single(rx_dev->dev,
++							thread->dsts[i],
++							test_buf_size,
++							DMA_DEV_TO_MEM);
++
++			if (dma_mapping_error(rx_dev->dev, dma_dsts[i])) {
++				failed_tests++;
++				continue;
++			}
++			xt.dst_start = dma_dsts[i];
++			xt.dir = DMA_DEV_TO_MEM;
++			xt.numf = vsize;
++			xt.sgl[0].size = hsize;
++			xt.sgl[0].icg = 0;
++			xt.frame_size = 1;
++			rxd = rx_dev->device_prep_interleaved_dma(rx_chan,
++								  &xt, flags);
++			rx_cookie = rxd->tx_submit(rxd);
++		}
++
++		for (i = 0; i < frm_cnt; i++) {
++			u8 *buf = thread->srcs[i];
++
++			dma_srcs[i] = dma_map_single(tx_dev->dev, buf, len,
++							DMA_MEM_TO_DEV);
++
++			if (dma_mapping_error(tx_dev->dev, dma_srcs[i])) {
++				failed_tests++;
++				continue;
++			}
++			xt.src_start = dma_srcs[i];
++			xt.dir = DMA_MEM_TO_DEV;
++			xt.numf = vsize;
++			xt.sgl[0].size = hsize;
++			xt.sgl[0].icg = 0;
++			xt.frame_size = 1;
++			txd = tx_dev->device_prep_interleaved_dma(tx_chan,
++								  &xt, flags);
++			tx_cookie = txd->tx_submit(txd);
++		}
++
++		if (!rxd || !txd) {
++			for (i = 0; i < frm_cnt; i++)
++				dma_unmap_single(tx_dev->dev, dma_srcs[i], len,
++						DMA_MEM_TO_DEV);
++			for (i = 0; i < frm_cnt; i++)
++				dma_unmap_single(rx_dev->dev, dma_dsts[i],
++						test_buf_size,
++						DMA_DEV_TO_MEM);
++			pr_warn("%s: #%u: prep error with len=0x%x ",
++					thread_name, total_tests - 1, len);
++			msleep(100);
++			failed_tests++;
++			continue;
++		}
++
++		init_completion(&rx_cmp);
++		rxd->callback = xilinx_vdmatest_slave_rx_callback;
++		rxd->callback_param = &rx_cmp;
++
++		init_completion(&tx_cmp);
++		txd->callback = xilinx_vdmatest_slave_tx_callback;
++		txd->callback_param = &tx_cmp;
++
++		if (dma_submit_error(rx_cookie) ||
++				dma_submit_error(tx_cookie)) {
++			pr_warn("%s: #%u: submit error %d/%d with len=0x%x ",
++					thread_name, total_tests - 1,
++					rx_cookie, tx_cookie, len);
++			msleep(100);
++			failed_tests++;
++			continue;
++		}
++		dma_async_issue_pending(tx_chan);
++		dma_async_issue_pending(rx_chan);
++
++		tx_tmo = wait_for_completion_timeout(&tx_cmp, tx_tmo);
++
++		status = dma_async_is_tx_complete(tx_chan, tx_cookie,
++							NULL, NULL);
++
++		if (tx_tmo == 0) {
++			pr_warn("%s: #%u: tx test timed out\n",
++					thread_name, total_tests - 1);
++			failed_tests++;
++			continue;
++		} else if (status != DMA_COMPLETE) {
++			pr_warn(
++			"%s: #%u: tx got completion callback, ",
++				   thread_name, total_tests - 1);
++			pr_warn("but status is \'%s\'\n",
++				   status == DMA_ERROR ? "error" :
++							"in progress");
++			failed_tests++;
++			continue;
++		}
++
++		rx_tmo = wait_for_completion_timeout(&rx_cmp, rx_tmo);
++		status = dma_async_is_tx_complete(rx_chan, rx_cookie,
++							NULL, NULL);
++
++		if (rx_tmo == 0) {
++			pr_warn("%s: #%u: rx test timed out\n",
++					thread_name, total_tests - 1);
++			failed_tests++;
++			continue;
++		} else if (status != DMA_COMPLETE) {
++			pr_warn(
++			"%s: #%u: rx got completion callback, ",
++					thread_name, total_tests - 1);
++			pr_warn("but status is \'%s\'\n",
++					status == DMA_ERROR ? "error" :
++							"in progress");
++			failed_tests++;
++			continue;
++		}
++
++		/* Unmap by myself */
++		for (i = 0; i < frm_cnt; i++)
++			dma_unmap_single(rx_dev->dev, dma_dsts[i],
++					 test_buf_size, DMA_DEV_TO_MEM);
++
++		error_count = 0;
++
++		pr_debug("%s: verifying source buffer...\n", thread_name);
++		error_count += xilinx_vdmatest_verify(thread->srcs, 0, 0,
++				0, PATTERN_SRC, true);
++		error_count += xilinx_vdmatest_verify(thread->srcs, 0,
++				len, 0, PATTERN_SRC | PATTERN_COPY, true);
++		error_count += xilinx_vdmatest_verify(thread->srcs, len,
++				test_buf_size, len, PATTERN_SRC, true);
++
++		pr_debug("%s: verifying dest buffer...\n",
++				thread->task->comm);
++		error_count += xilinx_vdmatest_verify(thread->dsts, 0, 0,
++				0, PATTERN_DST, false);
++		error_count += xilinx_vdmatest_verify(thread->dsts, 0,
++				len, 0, PATTERN_SRC | PATTERN_COPY, false);
++		error_count += xilinx_vdmatest_verify(thread->dsts, len,
++				test_buf_size, len, PATTERN_DST, false);
++
++		if (error_count) {
++			pr_warn("%s: #%u: %u errors with len=0x%x\n",
++				thread_name, total_tests - 1, error_count, len);
++			failed_tests++;
++		} else {
++			pr_debug("%s: #%u: No errors with len=0x%x\n",
++				thread_name, total_tests - 1, len);
++		}
++	}
++
++	ret = 0;
++	for (i = 0; thread->dsts[i]; i++)
++		kfree(thread->dsts[i]);
++err_dstbuf:
++	kfree(thread->dsts);
++err_dsts:
++	for (i = 0; thread->srcs[i]; i++)
++		kfree(thread->srcs[i]);
++err_srcbuf:
++	kfree(thread->srcs);
++err_srcs:
++	pr_notice("%s: terminating after %u tests, %u failures (status %d)\n",
++			thread_name, total_tests, failed_tests, ret);
++
++	thread->done = true;
++	wake_up(&thread_wait);
++
++	return ret;
++}
++
++static void xilinx_vdmatest_cleanup_channel(struct xilinx_vdmatest_chan *dtc)
++{
++	struct xilinx_vdmatest_slave_thread *thread, *_thread;
++	int ret;
++
++	list_for_each_entry_safe(thread, _thread,
++				&dtc->threads, node) {
++		ret = kthread_stop(thread->task);
++		pr_info("xilinx_vdmatest: thread %s exited with status %d\n",
++				thread->task->comm, ret);
++		list_del(&thread->node);
++		put_task_struct(thread->task);
++		kfree(thread);
++	}
++	kfree(dtc);
++}
++
++static int
++xilinx_vdmatest_add_slave_threads(struct xilinx_vdmatest_chan *tx_dtc,
++					struct xilinx_vdmatest_chan *rx_dtc)
++{
++	struct xilinx_vdmatest_slave_thread *thread;
++	struct dma_chan *tx_chan = tx_dtc->chan;
++	struct dma_chan *rx_chan = rx_dtc->chan;
++
++	thread = kzalloc(sizeof(struct xilinx_vdmatest_slave_thread),
++			GFP_KERNEL);
++	if (!thread)
++		pr_warn("xilinx_vdmatest: No memory for slave thread %s-%s\n",
++			   dma_chan_name(tx_chan), dma_chan_name(rx_chan));
++
++	thread->tx_chan = tx_chan;
++	thread->rx_chan = rx_chan;
++	thread->type = (enum dma_transaction_type)DMA_SLAVE;
++
++	/* This barrier ensures the DMA channels in the 'thread'
++	 * are initialized
++	 */
++	smp_wmb();
++	thread->task = kthread_run(xilinx_vdmatest_slave_func, thread, "%s-%s",
++		dma_chan_name(tx_chan), dma_chan_name(rx_chan));
++	if (IS_ERR(thread->task)) {
++		pr_warn("xilinx_vdmatest: Failed to run thread %s-%s\n",
++				dma_chan_name(tx_chan), dma_chan_name(rx_chan));
++		kfree(thread);
++		return PTR_ERR(thread->task);
++	}
++
++	get_task_struct(thread->task);
++	list_add_tail(&thread->node, &tx_dtc->threads);
++
++	/* Added one thread with 2 channels */
++	return 1;
++}
++
++static int xilinx_vdmatest_add_slave_channels(struct dma_chan *tx_chan,
++					struct dma_chan *rx_chan)
++{
++	struct xilinx_vdmatest_chan *tx_dtc, *rx_dtc;
++	unsigned int thread_count = 0;
++
++	tx_dtc = kmalloc(sizeof(struct xilinx_vdmatest_chan), GFP_KERNEL);
++	if (!tx_dtc)
++		return -ENOMEM;
++
++	rx_dtc = kmalloc(sizeof(struct xilinx_vdmatest_chan), GFP_KERNEL);
++	if (!rx_dtc)
++		return -ENOMEM;
++
++	tx_dtc->chan = tx_chan;
++	rx_dtc->chan = rx_chan;
++	INIT_LIST_HEAD(&tx_dtc->threads);
++	INIT_LIST_HEAD(&rx_dtc->threads);
++
++	xilinx_vdmatest_add_slave_threads(tx_dtc, rx_dtc);
++	thread_count += 1;
++
++	pr_info("xilinx_vdmatest: Started %u threads using %s %s\n",
++		thread_count, dma_chan_name(tx_chan), dma_chan_name(rx_chan));
++
++	list_add_tail(&tx_dtc->node, &xilinx_vdmatest_channels);
++	list_add_tail(&rx_dtc->node, &xilinx_vdmatest_channels);
++	nr_channels += 2;
++
++	if (iterations)
++		wait_event(thread_wait, !is_threaded_test_run(tx_dtc, rx_dtc));
++
++	return 0;
++}
++
++static int xilinx_vdmatest_probe(struct platform_device *pdev)
++{
++	struct dma_chan *chan, *rx_chan;
++	int err;
++
++	err = of_property_read_u32(pdev->dev.of_node,
++					"xlnx,num-fstores", &frm_cnt);
++	if (err < 0) {
++		pr_err("xilinx_vdmatest: missing xlnx,num-fstores property\n");
++		return err;
++	}
++
++	chan = dma_request_chan(&pdev->dev, "vdma0");
++	if (IS_ERR(chan)) {
++		err = PTR_ERR(chan);
++		if (err != -EPROBE_DEFER)
++			pr_err("xilinx_vdmatest: No Tx channel\n");
++		return err;
++	}
++
++	rx_chan = dma_request_chan(&pdev->dev, "vdma1");
++	if (IS_ERR(rx_chan)) {
++		err = PTR_ERR(rx_chan);
++		if (err != -EPROBE_DEFER)
++			pr_err("xilinx_vdmatest: No Rx channel\n");
++		goto free_tx;
++	}
++
++	err = xilinx_vdmatest_add_slave_channels(chan, rx_chan);
++	if (err) {
++		pr_err("xilinx_vdmatest: Unable to add channels\n");
++		goto free_rx;
++	}
++	return 0;
++
++free_rx:
++	dma_release_channel(rx_chan);
++free_tx:
++	dma_release_channel(chan);
++
++	return err;
++}
++
++static int xilinx_vdmatest_remove(struct platform_device *pdev)
++{
++	struct xilinx_vdmatest_chan *dtc, *_dtc;
++	struct dma_chan *chan;
++
++	list_for_each_entry_safe(dtc, _dtc, &xilinx_vdmatest_channels, node) {
++		list_del(&dtc->node);
++		chan = dtc->chan;
++		xilinx_vdmatest_cleanup_channel(dtc);
++		pr_info("xilinx_vdmatest: dropped channel %s\n",
++			dma_chan_name(chan));
++		dmaengine_terminate_async(chan);
++		dma_release_channel(chan);
++	}
++	return 0;
++}
++
++static const struct of_device_id xilinx_vdmatest_of_ids[] = {
++	{ .compatible = "xlnx,axi-vdma-test-1.00.a",},
++	{}
++};
++
++static struct platform_driver xilinx_vdmatest_driver = {
++	.driver = {
++		.name = "xilinx_vdmatest",
++		.owner = THIS_MODULE,
++		.of_match_table = xilinx_vdmatest_of_ids,
++	},
++	.probe = xilinx_vdmatest_probe,
++	.remove = xilinx_vdmatest_remove,
++};
++
++module_platform_driver(xilinx_vdmatest_driver);
++
++MODULE_AUTHOR("Xilinx, Inc.");
++MODULE_DESCRIPTION("Xilinx AXI VDMA Test Client");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/dma/xilinx/xilinx_dma.c b/drivers/dma/xilinx/xilinx_dma.c
+index 766017570..97055271d 100644
+--- a/drivers/dma/xilinx/xilinx_dma.c
++++ b/drivers/dma/xilinx/xilinx_dma.c
+@@ -2924,7 +2924,7 @@ static int xilinx_dma_chan_probe(struct xilinx_dma_device *xdev,
+  * @xdev: Driver specific device structure
+  * @node: Device node
+  *
+- * Return: 0 always.
++ * Return: '0' on success and failure value on error.
+  */
+ static int xilinx_dma_child_probe(struct xilinx_dma_device *xdev,
+ 				    struct device_node *node)
+diff --git a/drivers/dma/xilinx/xilinx_dpdma.c b/drivers/dma/xilinx/xilinx_dpdma.c
+index 84dc5240a..5f1ff7eb7 100644
+--- a/drivers/dma/xilinx/xilinx_dpdma.c
++++ b/drivers/dma/xilinx/xilinx_dpdma.c
+@@ -669,6 +669,84 @@ static void xilinx_dpdma_chan_free_tx_desc(struct virt_dma_desc *vdesc)
+ 	kfree(desc);
+ }
+ 
++/**
++ * xilinx_dpdma_chan_prep_cyclic - Prepare a cyclic dma descriptor
++ * @chan: DPDMA channel
++ * @buf_addr: buffer address
++ * @buf_len: buffer length
++ * @period_len: number of periods
++ * @flags: tx flags argument passed in to prepare function
++ *
++ * Prepare a tx descriptor incudling internal software/hardware descriptors
++ * for the given cyclic transaction.
++ *
++ * Return: A dma async tx descriptor on success, or NULL.
++ */
++static struct dma_async_tx_descriptor *
++xilinx_dpdma_chan_prep_cyclic(struct xilinx_dpdma_chan *chan,
++			      dma_addr_t buf_addr, size_t buf_len,
++			      size_t period_len, unsigned long flags)
++{
++	struct xilinx_dpdma_tx_desc *tx_desc;
++	struct xilinx_dpdma_sw_desc *sw_desc, *last = NULL;
++	unsigned int periods = buf_len / period_len;
++	unsigned int i;
++
++	tx_desc = xilinx_dpdma_chan_alloc_tx_desc(chan);
++	if (!tx_desc)
++		return (void *)tx_desc;
++
++	for (i = 0; i < periods; i++) {
++		struct xilinx_dpdma_hw_desc *hw_desc;
++
++		if (!IS_ALIGNED(buf_addr, XILINX_DPDMA_ALIGN_BYTES)) {
++			dev_err(chan->xdev->dev,
++				"buffer should be aligned at %d B\n",
++				XILINX_DPDMA_ALIGN_BYTES);
++			goto error;
++		}
++
++		sw_desc = xilinx_dpdma_chan_alloc_sw_desc(chan);
++		if (!sw_desc)
++			goto error;
++
++		xilinx_dpdma_sw_desc_set_dma_addrs(chan->xdev, sw_desc, last,
++						   &buf_addr, 1);
++		hw_desc = &sw_desc->hw;
++		hw_desc->xfer_size = period_len;
++		hw_desc->hsize_stride =
++			FIELD_PREP(XILINX_DPDMA_DESC_HSIZE_STRIDE_HSIZE_MASK,
++				   period_len) |
++			FIELD_PREP(XILINX_DPDMA_DESC_HSIZE_STRIDE_STRIDE_MASK,
++				   period_len);
++		hw_desc->control |= XILINX_DPDMA_DESC_CONTROL_PREEMBLE;
++		hw_desc->control |= XILINX_DPDMA_DESC_CONTROL_IGNORE_DONE;
++		hw_desc->control |= XILINX_DPDMA_DESC_CONTROL_COMPLETE_INTR;
++
++		list_add_tail(&sw_desc->node, &tx_desc->descriptors);
++
++		buf_addr += period_len;
++		last = sw_desc;
++	}
++
++	sw_desc = list_first_entry(&tx_desc->descriptors,
++				   struct xilinx_dpdma_sw_desc, node);
++	last->hw.next_desc = lower_32_bits(sw_desc->dma_addr);
++	if (chan->xdev->ext_addr)
++		last->hw.addr_ext |=
++			FIELD_PREP(XILINX_DPDMA_DESC_ADDR_EXT_NEXT_ADDR_MASK,
++				   upper_32_bits(sw_desc->dma_addr));
++
++	last->hw.control |= XILINX_DPDMA_DESC_CONTROL_LAST_OF_FRAME;
++
++	return vchan_tx_prep(&chan->vchan, &tx_desc->vdesc, flags);
++
++error:
++	xilinx_dpdma_chan_free_tx_desc(&tx_desc->vdesc);
++
++	return NULL;
++}
++
+ /**
+  * xilinx_dpdma_chan_prep_interleaved_dma - Prepare an interleaved dma
+  *					    descriptor
+@@ -1102,7 +1180,9 @@ static void xilinx_dpdma_chan_vsync_irq(struct  xilinx_dpdma_chan *chan)
+ 	chan->desc.active = pending;
+ 	chan->desc.pending = NULL;
+ 
++	spin_lock(&chan->vchan.lock);
+ 	xilinx_dpdma_chan_queue_transfer(chan);
++	spin_unlock(&chan->vchan.lock);
+ 
+ out:
+ 	spin_unlock_irqrestore(&chan->lock, flags);
+@@ -1188,6 +1268,23 @@ static void xilinx_dpdma_chan_handle_err(struct xilinx_dpdma_chan *chan)
+ /* -----------------------------------------------------------------------------
+  * DMA Engine Operations
+  */
++static struct dma_async_tx_descriptor *
++xilinx_dpdma_prep_dma_cyclic(struct dma_chan *dchan, dma_addr_t buf_addr,
++			     size_t buf_len, size_t period_len,
++			     enum dma_transfer_direction direction,
++			     unsigned long flags)
++{
++	struct xilinx_dpdma_chan *chan = to_xilinx_chan(dchan);
++
++	if (direction != DMA_MEM_TO_DEV)
++		return NULL;
++
++	if (buf_len % period_len)
++		return NULL;
++
++	return xilinx_dpdma_chan_prep_cyclic(chan, buf_addr, buf_len,
++						 period_len, flags);
++}
+ 
+ static struct dma_async_tx_descriptor *
+ xilinx_dpdma_prep_interleaved_dma(struct dma_chan *dchan,
+@@ -1495,7 +1592,9 @@ static void xilinx_dpdma_chan_err_task(struct tasklet_struct *t)
+ 		    XILINX_DPDMA_EINTR_CHAN_ERR_MASK << chan->id);
+ 
+ 	spin_lock_irqsave(&chan->lock, flags);
++	spin_lock(&chan->vchan.lock);
+ 	xilinx_dpdma_chan_queue_transfer(chan);
++	spin_unlock(&chan->vchan.lock);
+ 	spin_unlock_irqrestore(&chan->lock, flags);
+ }
+ 
+@@ -1667,6 +1766,7 @@ static int xilinx_dpdma_probe(struct platform_device *pdev)
+ 
+ 	dma_cap_set(DMA_SLAVE, ddev->cap_mask);
+ 	dma_cap_set(DMA_PRIVATE, ddev->cap_mask);
++	dma_cap_set(DMA_CYCLIC, ddev->cap_mask);
+ 	dma_cap_set(DMA_INTERLEAVE, ddev->cap_mask);
+ 	dma_cap_set(DMA_REPEAT, ddev->cap_mask);
+ 	dma_cap_set(DMA_LOAD_EOT, ddev->cap_mask);
+@@ -1674,6 +1774,7 @@ static int xilinx_dpdma_probe(struct platform_device *pdev)
+ 
+ 	ddev->device_alloc_chan_resources = xilinx_dpdma_alloc_chan_resources;
+ 	ddev->device_free_chan_resources = xilinx_dpdma_free_chan_resources;
++	ddev->device_prep_dma_cyclic = xilinx_dpdma_prep_dma_cyclic;
+ 	ddev->device_prep_interleaved_dma = xilinx_dpdma_prep_interleaved_dma;
+ 	/* TODO: Can we achieve better granularity ? */
+ 	ddev->device_tx_status = dma_cookie_status;
+diff --git a/drivers/dma/xilinx/xilinx_frmbuf.c b/drivers/dma/xilinx/xilinx_frmbuf.c
+new file mode 100644
+index 000000000..6a2aac45b
+--- /dev/null
++++ b/drivers/dma/xilinx/xilinx_frmbuf.c
+@@ -0,0 +1,1902 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * DMAEngine driver for Xilinx Framebuffer IP
++ *
++ * Copyright (C) 2016 - 2021 Xilinx, Inc.
++ *
++ * Authors: Radhey Shyam Pandey <radheys@xilinx.com>
++ *          John Nichols <jnichol@xilinx.com>
++ *          Jeffrey Mouroux <jmouroux@xilinx.com>
++ *
++ * Based on the Freescale DMA driver.
++ *
++ * Description:
++ * The AXI Framebuffer core is a soft Xilinx IP core that
++ * provides high-bandwidth direct memory access between memory
++ * and AXI4-Stream.
++ */
++
++#include <linux/bitops.h>
++#include <linux/clk.h>
++#include <linux/delay.h>
++#include <linux/dma/xilinx_frmbuf.h>
++#include <linux/dmapool.h>
++#include <linux/gpio/consumer.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/io.h>
++#include <linux/iopoll.h>
++#include <linux/module.h>
++#include <linux/of_address.h>
++#include <linux/of_dma.h>
++#include <linux/of_irq.h>
++#include <linux/of_platform.h>
++#include <linux/slab.h>
++#include <linux/videodev2.h>
++
++#include <drm/drm_fourcc.h>
++
++#include "../dmaengine.h"
++
++/* Register/Descriptor Offsets */
++#define XILINX_FRMBUF_CTRL_OFFSET		0x00
++#define XILINX_FRMBUF_GIE_OFFSET		0x04
++#define XILINX_FRMBUF_IE_OFFSET			0x08
++#define XILINX_FRMBUF_ISR_OFFSET		0x0c
++#define XILINX_FRMBUF_WIDTH_OFFSET		0x10
++#define XILINX_FRMBUF_HEIGHT_OFFSET		0x18
++#define XILINX_FRMBUF_STRIDE_OFFSET		0x20
++#define XILINX_FRMBUF_FMT_OFFSET		0x28
++#define XILINX_FRMBUF_ADDR_OFFSET		0x30
++#define XILINX_FRMBUF_ADDR2_OFFSET		0x3c
++#define XILINX_FRMBUF_FID_OFFSET		0x48
++#define XILINX_FRMBUF_FID_MODE_OFFSET	0x50
++#define XILINX_FRMBUF_ADDR3_OFFSET		0x54
++#define XILINX_FRMBUF_FID_ERR_OFFSET	0x58
++#define XILINX_FRMBUF_FID_OUT_OFFSET	0x60
++#define XILINX_FRMBUF_RD_ADDR3_OFFSET		0x74
++
++/* Control Registers */
++#define XILINX_FRMBUF_CTRL_AP_START		BIT(0)
++#define XILINX_FRMBUF_CTRL_AP_DONE		BIT(1)
++#define XILINX_FRMBUF_CTRL_AP_IDLE		BIT(2)
++#define XILINX_FRMBUF_CTRL_AP_READY		BIT(3)
++#define XILINX_FRMBUF_CTRL_FLUSH		BIT(5)
++#define XILINX_FRMBUF_CTRL_FLUSH_DONE		BIT(6)
++#define XILINX_FRMBUF_CTRL_AUTO_RESTART		BIT(7)
++#define XILINX_FRMBUF_GIE_EN			BIT(0)
++
++/* Interrupt Status and Control */
++#define XILINX_FRMBUF_IE_AP_DONE		BIT(0)
++#define XILINX_FRMBUF_IE_AP_READY		BIT(1)
++
++#define XILINX_FRMBUF_ISR_AP_DONE_IRQ		BIT(0)
++#define XILINX_FRMBUF_ISR_AP_READY_IRQ		BIT(1)
++
++#define XILINX_FRMBUF_ISR_ALL_IRQ_MASK	\
++		(XILINX_FRMBUF_ISR_AP_DONE_IRQ | \
++		XILINX_FRMBUF_ISR_AP_READY_IRQ)
++
++/* Video Format Register Settings */
++#define XILINX_FRMBUF_FMT_RGBX8			10
++#define XILINX_FRMBUF_FMT_YUVX8			11
++#define XILINX_FRMBUF_FMT_YUYV8			12
++#define XILINX_FRMBUF_FMT_RGBA8			13
++#define XILINX_FRMBUF_FMT_YUVA8			14
++#define XILINX_FRMBUF_FMT_RGBX10		15
++#define XILINX_FRMBUF_FMT_YUVX10		16
++#define XILINX_FRMBUF_FMT_Y_UV8			18
++#define XILINX_FRMBUF_FMT_Y_UV8_420		19
++#define XILINX_FRMBUF_FMT_RGB8			20
++#define XILINX_FRMBUF_FMT_YUV8			21
++#define XILINX_FRMBUF_FMT_Y_UV10		22
++#define XILINX_FRMBUF_FMT_Y_UV10_420		23
++#define XILINX_FRMBUF_FMT_Y8			24
++#define XILINX_FRMBUF_FMT_Y10			25
++#define XILINX_FRMBUF_FMT_BGRA8			26
++#define XILINX_FRMBUF_FMT_BGRX8			27
++#define XILINX_FRMBUF_FMT_UYVY8			28
++#define XILINX_FRMBUF_FMT_BGR8			29
++#define XILINX_FRMBUF_FMT_RGBX12		30
++#define XILINX_FRMBUF_FMT_RGB16			35
++#define XILINX_FRMBUF_FMT_Y_U_V8		42
++#define XILINX_FRMBUF_FMT_Y_U_V10		43
++
++/* FID Register */
++#define XILINX_FRMBUF_FID_MASK			BIT(0)
++
++/* FID ERR Register */
++#define XILINX_FRMBUF_FID_ERR_MASK		BIT(0)
++#define XILINX_FRMBUF_FID_OUT_MASK		BIT(0)
++
++#define XILINX_FRMBUF_ALIGN_MUL			8
++
++#define WAIT_FOR_FLUSH_DONE			25
++
++/* Pixels per clock property flag */
++#define XILINX_PPC_PROP				BIT(0)
++#define XILINX_FLUSH_PROP			BIT(1)
++#define XILINX_FID_PROP				BIT(2)
++#define XILINX_CLK_PROP				BIT(3)
++#define XILINX_THREE_PLANES_PROP		BIT(4)
++#define XILINX_FID_ERR_DETECT_PROP		BIT(5)
++
++#define XILINX_FRMBUF_MIN_HEIGHT		(64)
++#define XILINX_FRMBUF_MIN_WIDTH			(64)
++
++/**
++ * struct xilinx_frmbuf_desc_hw - Hardware Descriptor
++ * @luma_plane_addr: Luma or packed plane buffer address
++ * @chroma_plane_addr: Chroma plane buffer address
++ * @vsize: Vertical Size
++ * @hsize: Horizontal Size
++ * @stride: Number of bytes between the first
++ *	    pixels of each horizontal line
++ */
++struct xilinx_frmbuf_desc_hw {
++	dma_addr_t luma_plane_addr;
++	dma_addr_t chroma_plane_addr[2];
++	u32 vsize;
++	u32 hsize;
++	u32 stride;
++};
++
++/**
++ * struct xilinx_frmbuf_tx_descriptor - Per Transaction structure
++ * @async_tx: Async transaction descriptor
++ * @hw: Hardware descriptor
++ * @node: Node in the channel descriptors list
++ * @fid: Field ID of buffer
++ * @earlycb: Whether the callback should be called when in staged state
++ */
++struct xilinx_frmbuf_tx_descriptor {
++	struct dma_async_tx_descriptor async_tx;
++	struct xilinx_frmbuf_desc_hw hw;
++	struct list_head node;
++	u32 fid;
++	u32 earlycb;
++};
++
++/**
++ * struct xilinx_frmbuf_chan - Driver specific dma channel structure
++ * @xdev: Driver specific device structure
++ * @lock: Descriptor operation lock
++ * @chan_node: Member of a list of framebuffer channel instances
++ * @pending_list: Descriptors waiting
++ * @done_list: Complete descriptors
++ * @staged_desc: Next buffer to be programmed
++ * @active_desc: Currently active buffer being read/written to
++ * @common: DMA common channel
++ * @dev: The dma device
++ * @write_addr: callback that will write dma addresses to IP (32 or 64 bit)
++ * @irq: Channel IRQ
++ * @direction: Transfer direction
++ * @idle: Channel idle state
++ * @tasklet: Cleanup work after irq
++ * @vid_fmt: Reference to currently assigned video format description
++ * @hw_fid: FID enabled in hardware flag
++ * @mode: Select operation mode
++ * @fid_err_flag: Field id error detection flag
++ * @fid_out_val: Field id out val
++ * @fid_mode: Select fid mode
++ */
++struct xilinx_frmbuf_chan {
++	struct xilinx_frmbuf_device *xdev;
++	/* Descriptor operation lock */
++	spinlock_t lock;
++	struct list_head chan_node;
++	struct list_head pending_list;
++	struct list_head done_list;
++	struct xilinx_frmbuf_tx_descriptor *staged_desc;
++	struct xilinx_frmbuf_tx_descriptor *active_desc;
++	struct dma_chan common;
++	struct device *dev;
++	void (*write_addr)(struct xilinx_frmbuf_chan *chan, u32 reg,
++			   dma_addr_t value);
++	int irq;
++	enum dma_transfer_direction direction;
++	bool idle;
++	struct tasklet_struct tasklet;
++	const struct xilinx_frmbuf_format_desc *vid_fmt;
++	bool hw_fid;
++	enum operation_mode mode;
++	u8 fid_err_flag;
++	u8 fid_out_val;
++	enum fid_modes fid_mode;
++};
++
++/**
++ * struct xilinx_frmbuf_format_desc - lookup table to match fourcc to format
++ * @dts_name: Device tree name for this entry.
++ * @id: Format ID
++ * @bpw: Bits of pixel data + padding in a 32-bit word (luma plane for semi-pl)
++ * @ppw: Number of pixels represented in a 32-bit word (luma plane for semi-pl)
++ * @num_planes: Expected number of plane buffers in framebuffer for this format
++ * @drm_fmt: DRM video framework equivalent fourcc code
++ * @v4l2_fmt: Video 4 Linux framework equivalent fourcc code
++ * @fmt_bitmask: Flag identifying this format in device-specific "enabled"
++ *	bitmap
++ */
++struct xilinx_frmbuf_format_desc {
++	const char *dts_name;
++	u32 id;
++	u32 bpw;
++	u32 ppw;
++	u32 num_planes;
++	u32 drm_fmt;
++	u32 v4l2_fmt;
++	u32 fmt_bitmask;
++};
++
++static LIST_HEAD(frmbuf_chan_list);
++static DEFINE_MUTEX(frmbuf_chan_list_lock);
++
++static const struct xilinx_frmbuf_format_desc xilinx_frmbuf_formats[] = {
++	{
++		.dts_name = "xbgr8888",
++		.id = XILINX_FRMBUF_FMT_RGBX8,
++		.bpw = 32,
++		.ppw = 1,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_XBGR8888,
++		.v4l2_fmt = V4L2_PIX_FMT_BGRX32,
++		.fmt_bitmask = BIT(0),
++	},
++	{
++		.dts_name = "xbgr2101010",
++		.id = XILINX_FRMBUF_FMT_RGBX10,
++		.bpw = 32,
++		.ppw = 1,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_XBGR2101010,
++		.v4l2_fmt = V4L2_PIX_FMT_XBGR30,
++		.fmt_bitmask = BIT(1),
++	},
++	{
++		.dts_name = "xrgb8888",
++		.id = XILINX_FRMBUF_FMT_BGRX8,
++		.bpw = 32,
++		.ppw = 1,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_XRGB8888,
++		.v4l2_fmt = V4L2_PIX_FMT_XBGR32,
++		.fmt_bitmask = BIT(2),
++	},
++	{
++		.dts_name = "xvuy8888",
++		.id = XILINX_FRMBUF_FMT_YUVX8,
++		.bpw = 32,
++		.ppw = 1,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_XVUY8888,
++		.v4l2_fmt = V4L2_PIX_FMT_XVUY32,
++		.fmt_bitmask = BIT(5),
++	},
++	{
++		.dts_name = "vuy888",
++		.id = XILINX_FRMBUF_FMT_YUV8,
++		.bpw = 24,
++		.ppw = 1,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_VUY888,
++		.v4l2_fmt = V4L2_PIX_FMT_VUY24,
++		.fmt_bitmask = BIT(6),
++	},
++	{
++		.dts_name = "yuvx2101010",
++		.id = XILINX_FRMBUF_FMT_YUVX10,
++		.bpw = 32,
++		.ppw = 1,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_XVUY2101010,
++		.v4l2_fmt = V4L2_PIX_FMT_XVUY10,
++		.fmt_bitmask = BIT(7),
++	},
++	{
++		.dts_name = "yuyv",
++		.id = XILINX_FRMBUF_FMT_YUYV8,
++		.bpw = 32,
++		.ppw = 2,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_YUYV,
++		.v4l2_fmt = V4L2_PIX_FMT_YUYV,
++		.fmt_bitmask = BIT(8),
++	},
++	{
++		.dts_name = "uyvy",
++		.id = XILINX_FRMBUF_FMT_UYVY8,
++		.bpw = 32,
++		.ppw = 2,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_UYVY,
++		.v4l2_fmt = V4L2_PIX_FMT_UYVY,
++		.fmt_bitmask = BIT(9),
++	},
++	{
++		.dts_name = "nv16",
++		.id = XILINX_FRMBUF_FMT_Y_UV8,
++		.bpw = 32,
++		.ppw = 4,
++		.num_planes = 2,
++		.drm_fmt = DRM_FORMAT_NV16,
++		.v4l2_fmt = V4L2_PIX_FMT_NV16M,
++		.fmt_bitmask = BIT(11),
++	},
++	{
++		.dts_name = "nv16",
++		.id = XILINX_FRMBUF_FMT_Y_UV8,
++		.bpw = 32,
++		.ppw = 4,
++		.num_planes = 2,
++		.drm_fmt = 0,
++		.v4l2_fmt = V4L2_PIX_FMT_NV16,
++		.fmt_bitmask = BIT(11),
++	},
++	{
++		.dts_name = "nv12",
++		.id = XILINX_FRMBUF_FMT_Y_UV8_420,
++		.bpw = 32,
++		.ppw = 4,
++		.num_planes = 2,
++		.drm_fmt = DRM_FORMAT_NV12,
++		.v4l2_fmt = V4L2_PIX_FMT_NV12M,
++		.fmt_bitmask = BIT(12),
++	},
++	{
++		.dts_name = "nv12",
++		.id = XILINX_FRMBUF_FMT_Y_UV8_420,
++		.bpw = 32,
++		.ppw = 4,
++		.num_planes = 2,
++		.drm_fmt = 0,
++		.v4l2_fmt = V4L2_PIX_FMT_NV12,
++		.fmt_bitmask = BIT(12),
++	},
++	{
++		.dts_name = "xv15",
++		.id = XILINX_FRMBUF_FMT_Y_UV10_420,
++		.bpw = 32,
++		.ppw = 3,
++		.num_planes = 2,
++		.drm_fmt = DRM_FORMAT_XV15,
++		.v4l2_fmt = V4L2_PIX_FMT_XV15M,
++		.fmt_bitmask = BIT(13),
++	},
++	{
++		.dts_name = "xv15",
++		.id = XILINX_FRMBUF_FMT_Y_UV10_420,
++		.bpw = 32,
++		.ppw = 3,
++		.num_planes = 2,
++		.drm_fmt = 0,
++		.v4l2_fmt = V4L2_PIX_FMT_XV15,
++		.fmt_bitmask = BIT(13),
++	},
++	{
++		.dts_name = "xv20",
++		.id = XILINX_FRMBUF_FMT_Y_UV10,
++		.bpw = 32,
++		.ppw = 3,
++		.num_planes = 2,
++		.drm_fmt = DRM_FORMAT_XV20,
++		.v4l2_fmt = V4L2_PIX_FMT_XV20M,
++		.fmt_bitmask = BIT(14),
++	},
++	{
++		.dts_name = "xv20",
++		.id = XILINX_FRMBUF_FMT_Y_UV10,
++		.bpw = 32,
++		.ppw = 3,
++		.num_planes = 2,
++		.drm_fmt = 0,
++		.v4l2_fmt = V4L2_PIX_FMT_XV20,
++		.fmt_bitmask = BIT(14),
++	},
++	{
++		.dts_name = "bgr888",
++		.id = XILINX_FRMBUF_FMT_RGB8,
++		.bpw = 24,
++		.ppw = 1,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_BGR888,
++		.v4l2_fmt = V4L2_PIX_FMT_RGB24,
++		.fmt_bitmask = BIT(15),
++	},
++	{
++		.dts_name = "y8",
++		.id = XILINX_FRMBUF_FMT_Y8,
++		.bpw = 32,
++		.ppw = 4,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_Y8,
++		.v4l2_fmt = V4L2_PIX_FMT_GREY,
++		.fmt_bitmask = BIT(16),
++	},
++	{
++		.dts_name = "y10",
++		.id = XILINX_FRMBUF_FMT_Y10,
++		.bpw = 32,
++		.ppw = 3,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_Y10,
++		.v4l2_fmt = V4L2_PIX_FMT_XY10,
++		.fmt_bitmask = BIT(17),
++	},
++	{
++		.dts_name = "rgb888",
++		.id = XILINX_FRMBUF_FMT_BGR8,
++		.bpw = 24,
++		.ppw = 1,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_RGB888,
++		.v4l2_fmt = V4L2_PIX_FMT_BGR24,
++		.fmt_bitmask = BIT(18),
++	},
++	{
++		.dts_name = "abgr8888",
++		.id = XILINX_FRMBUF_FMT_RGBA8,
++		.bpw = 32,
++		.ppw = 1,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_ABGR8888,
++		.v4l2_fmt = 0,
++		.fmt_bitmask = BIT(19),
++	},
++	{
++		.dts_name = "argb8888",
++		.id = XILINX_FRMBUF_FMT_BGRA8,
++		.bpw = 32,
++		.ppw = 1,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_ARGB8888,
++		.v4l2_fmt = 0,
++		.fmt_bitmask = BIT(20),
++	},
++	{
++		.dts_name = "avuy8888",
++		.id = XILINX_FRMBUF_FMT_YUVA8,
++		.bpw = 32,
++		.ppw = 1,
++		.num_planes = 1,
++		.drm_fmt = DRM_FORMAT_AVUY,
++		.v4l2_fmt = 0,
++		.fmt_bitmask = BIT(21),
++	},
++	{
++		.dts_name = "xbgr4121212",
++		.id = XILINX_FRMBUF_FMT_RGBX12,
++		.bpw = 40,
++		.ppw = 1,
++		.num_planes = 1,
++		.v4l2_fmt = V4L2_PIX_FMT_XBGR40,
++		.fmt_bitmask = BIT(22),
++	},
++	{
++		.dts_name = "rgb16",
++		.id = XILINX_FRMBUF_FMT_RGB16,
++		.bpw = 48,
++		.ppw = 1,
++		.num_planes = 1,
++		.v4l2_fmt = V4L2_PIX_FMT_BGR48,
++		.fmt_bitmask = BIT(23),
++	},
++	{
++		.dts_name = "y_u_v8",
++		.id = XILINX_FRMBUF_FMT_Y_U_V8,
++		.bpw = 32,
++		.ppw = 4,
++		.num_planes = 3,
++		.v4l2_fmt = V4L2_PIX_FMT_YUV444M,
++		.drm_fmt = DRM_FORMAT_YUV444,
++		.fmt_bitmask = BIT(24),
++	},
++	{
++		.dts_name = "y_u_v8",
++		.id = XILINX_FRMBUF_FMT_Y_U_V8,
++		.bpw = 32,
++		.ppw = 4,
++		.num_planes = 3,
++		.v4l2_fmt = V4L2_PIX_FMT_YUV444P,
++		.drm_fmt = DRM_FORMAT_YUV444,
++		.fmt_bitmask = BIT(24),
++	},
++	{
++		.dts_name = "y_u_v10",
++		.id = XILINX_FRMBUF_FMT_Y_U_V10,
++		.bpw = 32,
++		.ppw = 3,
++		.num_planes = 3,
++		.v4l2_fmt = V4L2_PIX_FMT_X403,
++		.drm_fmt = DRM_FORMAT_X403,
++		.fmt_bitmask = BIT(25),
++	},
++};
++
++/**
++ * struct xilinx_frmbuf_feature - dt or IP property structure
++ * @direction: dma transfer mode and direction
++ * @flags: Bitmask of properties enabled in IP or dt
++ */
++struct xilinx_frmbuf_feature {
++	enum dma_transfer_direction direction;
++	u32 flags;
++};
++
++/**
++ * struct xilinx_frmbuf_device - dma device structure
++ * @regs: I/O mapped base address
++ * @dev: Device Structure
++ * @common: DMA device structure
++ * @chan: Driver specific dma channel
++ * @rst_gpio: GPIO reset
++ * @enabled_vid_fmts: Bitmask of video formats enabled in hardware
++ * @drm_memory_fmts: Array of supported DRM fourcc codes
++ * @drm_fmt_cnt: Count of supported DRM fourcc codes
++ * @v4l2_memory_fmts: Array of supported V4L2 fourcc codes
++ * @v4l2_fmt_cnt: Count of supported V4L2 fourcc codes
++ * @cfg: Pointer to Framebuffer Feature config struct
++ * @max_width: Maximum pixel width supported in IP.
++ * @max_height: Maximum number of lines supported in IP.
++ * @ppc: Pixels per clock supported in IP.
++ * @ap_clk: Video core clock
++ */
++struct xilinx_frmbuf_device {
++	void __iomem *regs;
++	struct device *dev;
++	struct dma_device common;
++	struct xilinx_frmbuf_chan chan;
++	struct gpio_desc *rst_gpio;
++	u32 enabled_vid_fmts;
++	u32 drm_memory_fmts[ARRAY_SIZE(xilinx_frmbuf_formats)];
++	u32 drm_fmt_cnt;
++	u32 v4l2_memory_fmts[ARRAY_SIZE(xilinx_frmbuf_formats)];
++	u32 v4l2_fmt_cnt;
++	const struct xilinx_frmbuf_feature *cfg;
++	u32 max_width;
++	u32 max_height;
++	u32 ppc;
++	struct clk *ap_clk;
++};
++
++static const struct xilinx_frmbuf_feature xlnx_fbwr_cfg_v20 = {
++	.direction = DMA_DEV_TO_MEM,
++};
++
++static const struct xilinx_frmbuf_feature xlnx_fbwr_cfg_v21 = {
++	.direction = DMA_DEV_TO_MEM,
++	.flags = XILINX_PPC_PROP | XILINX_FLUSH_PROP
++		| XILINX_FID_PROP | XILINX_CLK_PROP,
++};
++
++static const struct xilinx_frmbuf_feature xlnx_fbwr_cfg_v22 = {
++	.direction = DMA_DEV_TO_MEM,
++	.flags = XILINX_PPC_PROP | XILINX_FLUSH_PROP
++		| XILINX_FID_PROP | XILINX_CLK_PROP
++		| XILINX_THREE_PLANES_PROP,
++};
++
++static const struct xilinx_frmbuf_feature xlnx_fbrd_cfg_v20 = {
++	.direction = DMA_MEM_TO_DEV,
++};
++
++static const struct xilinx_frmbuf_feature xlnx_fbrd_cfg_v21 = {
++	.direction = DMA_MEM_TO_DEV,
++	.flags = XILINX_PPC_PROP | XILINX_FLUSH_PROP
++		| XILINX_FID_PROP | XILINX_CLK_PROP,
++};
++
++static const struct xilinx_frmbuf_feature xlnx_fbrd_cfg_v22 = {
++	.direction = DMA_MEM_TO_DEV,
++	.flags = XILINX_PPC_PROP | XILINX_FLUSH_PROP
++		| XILINX_FID_PROP | XILINX_CLK_PROP
++		| XILINX_THREE_PLANES_PROP
++		| XILINX_FID_ERR_DETECT_PROP,
++};
++
++static const struct of_device_id xilinx_frmbuf_of_ids[] = {
++	{ .compatible = "xlnx,axi-frmbuf-wr-v2",
++		.data = (void *)&xlnx_fbwr_cfg_v20},
++	{ .compatible = "xlnx,axi-frmbuf-wr-v2.1",
++		.data = (void *)&xlnx_fbwr_cfg_v21},
++	{ .compatible = "xlnx,axi-frmbuf-wr-v2.2",
++		.data = (void *)&xlnx_fbwr_cfg_v22},
++	{ .compatible = "xlnx,axi-frmbuf-rd-v2",
++		.data = (void *)&xlnx_fbrd_cfg_v20},
++	{ .compatible = "xlnx,axi-frmbuf-rd-v2.1",
++		.data = (void *)&xlnx_fbrd_cfg_v21},
++	{ .compatible = "xlnx,axi-frmbuf-rd-v2.2",
++		.data = (void *)&xlnx_fbrd_cfg_v22},
++	{/* end of list */}
++};
++
++/******************************PROTOTYPES*************************************/
++#define to_xilinx_chan(chan) \
++	container_of(chan, struct xilinx_frmbuf_chan, common)
++#define to_dma_tx_descriptor(tx) \
++	container_of(tx, struct xilinx_frmbuf_tx_descriptor, async_tx)
++
++static inline u32 frmbuf_read(struct xilinx_frmbuf_chan *chan, u32 reg)
++{
++	return ioread32(chan->xdev->regs + reg);
++}
++
++static inline void frmbuf_write(struct xilinx_frmbuf_chan *chan, u32 reg,
++				u32 value)
++{
++	iowrite32(value, chan->xdev->regs + reg);
++}
++
++static inline void frmbuf_writeq(struct xilinx_frmbuf_chan *chan, u32 reg,
++				 u64 value)
++{
++	iowrite32(lower_32_bits(value), chan->xdev->regs + reg);
++	iowrite32(upper_32_bits(value), chan->xdev->regs + reg + 4);
++}
++
++static void writeq_addr(struct xilinx_frmbuf_chan *chan, u32 reg,
++			dma_addr_t addr)
++{
++	frmbuf_writeq(chan, reg, (u64)addr);
++}
++
++static void write_addr(struct xilinx_frmbuf_chan *chan, u32 reg,
++		       dma_addr_t addr)
++{
++	frmbuf_write(chan, reg, addr);
++}
++
++static inline void frmbuf_clr(struct xilinx_frmbuf_chan *chan, u32 reg,
++			      u32 clr)
++{
++	frmbuf_write(chan, reg, frmbuf_read(chan, reg) & ~clr);
++}
++
++static inline void frmbuf_set(struct xilinx_frmbuf_chan *chan, u32 reg,
++			      u32 set)
++{
++	frmbuf_write(chan, reg, frmbuf_read(chan, reg) | set);
++}
++
++static void frmbuf_init_format_array(struct xilinx_frmbuf_device *xdev)
++{
++	u32 i, cnt;
++
++	for (i = 0; i < ARRAY_SIZE(xilinx_frmbuf_formats); i++) {
++		if (!(xdev->enabled_vid_fmts &
++		      xilinx_frmbuf_formats[i].fmt_bitmask))
++			continue;
++
++		if (xilinx_frmbuf_formats[i].drm_fmt) {
++			cnt = xdev->drm_fmt_cnt++;
++			xdev->drm_memory_fmts[cnt] =
++				xilinx_frmbuf_formats[i].drm_fmt;
++		}
++
++		if (xilinx_frmbuf_formats[i].v4l2_fmt) {
++			cnt = xdev->v4l2_fmt_cnt++;
++			xdev->v4l2_memory_fmts[cnt] =
++				xilinx_frmbuf_formats[i].v4l2_fmt;
++		}
++	}
++}
++
++static struct xilinx_frmbuf_chan *frmbuf_find_chan(struct dma_chan *chan)
++{
++	struct xilinx_frmbuf_chan *xil_chan;
++	bool found_xchan = false;
++
++	mutex_lock(&frmbuf_chan_list_lock);
++	list_for_each_entry(xil_chan, &frmbuf_chan_list, chan_node) {
++		if (chan == &xil_chan->common) {
++			found_xchan = true;
++			break;
++		}
++	}
++	mutex_unlock(&frmbuf_chan_list_lock);
++
++	if (!found_xchan) {
++		dev_dbg(chan->device->dev,
++			"dma chan not a Video Framebuffer channel instance\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	return xil_chan;
++}
++
++static struct xilinx_frmbuf_device *frmbuf_find_dev(struct dma_chan *chan)
++{
++	struct xilinx_frmbuf_chan *xchan, *temp;
++	struct xilinx_frmbuf_device *xdev;
++	bool is_frmbuf_chan = false;
++
++	list_for_each_entry_safe(xchan, temp, &frmbuf_chan_list, chan_node) {
++		if (chan == &xchan->common)
++			is_frmbuf_chan = true;
++	}
++
++	if (!is_frmbuf_chan)
++		return ERR_PTR(-ENODEV);
++
++	xchan = to_xilinx_chan(chan);
++	xdev = container_of(xchan, struct xilinx_frmbuf_device, chan);
++
++	return xdev;
++}
++
++static int frmbuf_verify_format(struct dma_chan *chan, u32 fourcc, u32 type)
++{
++	struct xilinx_frmbuf_chan *xil_chan = to_xilinx_chan(chan);
++	u32 i, sz = ARRAY_SIZE(xilinx_frmbuf_formats);
++
++	for (i = 0; i < sz; i++) {
++		if ((type == XDMA_DRM &&
++		     fourcc != xilinx_frmbuf_formats[i].drm_fmt) ||
++		   (type == XDMA_V4L2 &&
++		    fourcc != xilinx_frmbuf_formats[i].v4l2_fmt))
++			continue;
++
++		if (!(xilinx_frmbuf_formats[i].fmt_bitmask &
++		      xil_chan->xdev->enabled_vid_fmts))
++			return -EINVAL;
++
++		/*
++		 * The Alpha color formats are supported in Framebuffer Read
++		 * IP only as corresponding DRM formats.
++		 */
++		if (type == XDMA_DRM &&
++		    (xilinx_frmbuf_formats[i].drm_fmt == DRM_FORMAT_ABGR8888 ||
++		     xilinx_frmbuf_formats[i].drm_fmt == DRM_FORMAT_ARGB8888 ||
++		     xilinx_frmbuf_formats[i].drm_fmt == DRM_FORMAT_AVUY) &&
++		    xil_chan->direction != DMA_MEM_TO_DEV)
++			return -EINVAL;
++
++		xil_chan->vid_fmt = &xilinx_frmbuf_formats[i];
++		return 0;
++	}
++	return -EINVAL;
++}
++
++static void xilinx_xdma_set_config(struct dma_chan *chan, u32 fourcc, u32 type)
++{
++	struct xilinx_frmbuf_chan *xil_chan;
++	struct xilinx_frmbuf_device *xdev;
++	const struct xilinx_frmbuf_format_desc *old_vid_fmt;
++	int ret;
++
++	xil_chan = frmbuf_find_chan(chan);
++	if (IS_ERR(xil_chan))
++		return;
++
++	xdev = frmbuf_find_dev(chan);
++	if (IS_ERR(xdev))
++		return;
++
++	/* Save old video format */
++	old_vid_fmt = xil_chan->vid_fmt;
++
++	ret = frmbuf_verify_format(chan, fourcc, type);
++	if (ret == -EINVAL) {
++		dev_err(chan->device->dev,
++			"Framebuffer not configured for fourcc 0x%x\n",
++			fourcc);
++		return;
++	}
++
++	if ((!(xdev->cfg->flags & XILINX_THREE_PLANES_PROP)) &&
++	    (xil_chan->vid_fmt->id == XILINX_FRMBUF_FMT_Y_U_V8 ||
++	     xil_chan->vid_fmt->id == XILINX_FRMBUF_FMT_Y_U_V10)) {
++		dev_err(chan->device->dev, "doesn't support %s format\n",
++			xil_chan->vid_fmt->dts_name);
++		/* Restore to old video format */
++		xil_chan->vid_fmt = old_vid_fmt;
++		return;
++	}
++}
++
++void xilinx_xdma_set_mode(struct dma_chan *chan, enum operation_mode
++			  mode)
++{
++	struct xilinx_frmbuf_chan *xil_chan;
++
++	xil_chan = frmbuf_find_chan(chan);
++	if (IS_ERR(xil_chan))
++		return;
++
++	xil_chan->mode = mode;
++
++	return;
++
++} EXPORT_SYMBOL_GPL(xilinx_xdma_set_mode);
++
++void xilinx_xdma_drm_config(struct dma_chan *chan, u32 drm_fourcc)
++{
++	xilinx_xdma_set_config(chan, drm_fourcc, XDMA_DRM);
++
++} EXPORT_SYMBOL_GPL(xilinx_xdma_drm_config);
++
++void xilinx_xdma_v4l2_config(struct dma_chan *chan, u32 v4l2_fourcc)
++{
++	xilinx_xdma_set_config(chan, v4l2_fourcc, XDMA_V4L2);
++
++} EXPORT_SYMBOL_GPL(xilinx_xdma_v4l2_config);
++
++int xilinx_xdma_get_drm_vid_fmts(struct dma_chan *chan, u32 *fmt_cnt,
++				 u32 **fmts)
++{
++	struct xilinx_frmbuf_device *xdev;
++
++	xdev = frmbuf_find_dev(chan);
++
++	if (IS_ERR(xdev))
++		return PTR_ERR(xdev);
++
++	*fmt_cnt = xdev->drm_fmt_cnt;
++	*fmts = xdev->drm_memory_fmts;
++
++	return 0;
++}
++EXPORT_SYMBOL(xilinx_xdma_get_drm_vid_fmts);
++
++int xilinx_xdma_get_v4l2_vid_fmts(struct dma_chan *chan, u32 *fmt_cnt,
++				  u32 **fmts)
++{
++	struct xilinx_frmbuf_device *xdev;
++
++	xdev = frmbuf_find_dev(chan);
++
++	if (IS_ERR(xdev))
++		return PTR_ERR(xdev);
++
++	*fmt_cnt = xdev->v4l2_fmt_cnt;
++	*fmts = xdev->v4l2_memory_fmts;
++
++	return 0;
++}
++EXPORT_SYMBOL(xilinx_xdma_get_v4l2_vid_fmts);
++
++int xilinx_xdma_get_fid(struct dma_chan *chan,
++			struct dma_async_tx_descriptor *async_tx, u32 *fid)
++{
++	struct xilinx_frmbuf_device *xdev;
++	struct xilinx_frmbuf_tx_descriptor *desc;
++
++	xdev = frmbuf_find_dev(chan);
++	if (IS_ERR(xdev))
++		return PTR_ERR(xdev);
++
++	if (!async_tx || !fid)
++		return -EINVAL;
++
++	if (xdev->chan.direction != DMA_DEV_TO_MEM)
++		return -EINVAL;
++
++	desc = to_dma_tx_descriptor(async_tx);
++	if (!desc)
++		return -EINVAL;
++
++	*fid = desc->fid;
++	return 0;
++}
++EXPORT_SYMBOL(xilinx_xdma_get_fid);
++
++int xilinx_xdma_set_fid(struct dma_chan *chan,
++			struct dma_async_tx_descriptor *async_tx, u32 fid)
++{
++	struct xilinx_frmbuf_device *xdev;
++	struct xilinx_frmbuf_tx_descriptor *desc;
++
++	if (fid > 1 || !async_tx)
++		return -EINVAL;
++
++	xdev = frmbuf_find_dev(chan);
++	if (IS_ERR(xdev))
++		return PTR_ERR(xdev);
++
++	if (xdev->chan.direction != DMA_MEM_TO_DEV)
++		return -EINVAL;
++
++	desc = to_dma_tx_descriptor(async_tx);
++	if (!desc)
++		return -EINVAL;
++
++	desc->fid = fid;
++	return 0;
++}
++EXPORT_SYMBOL(xilinx_xdma_set_fid);
++
++int xilinx_xdma_get_fid_err_flag(struct dma_chan *chan,
++				 u32 *fid_err_flag)
++{
++	struct xilinx_frmbuf_device *xdev;
++
++	xdev = frmbuf_find_dev(chan);
++	if (IS_ERR(xdev))
++		return PTR_ERR(xdev);
++
++	if (xdev->chan.direction != DMA_MEM_TO_DEV || xdev->chan.idle)
++		return -EINVAL;
++
++	*fid_err_flag = xdev->chan.fid_err_flag;
++
++	return 0;
++}
++EXPORT_SYMBOL(xilinx_xdma_get_fid_err_flag);
++
++int xilinx_xdma_get_fid_out(struct dma_chan *chan,
++			    u32 *fid_out_val)
++{
++	struct xilinx_frmbuf_device *xdev;
++
++	xdev = frmbuf_find_dev(chan);
++	if (IS_ERR(xdev))
++		return PTR_ERR(xdev);
++
++	if (xdev->chan.direction != DMA_MEM_TO_DEV || xdev->chan.idle)
++		return -EINVAL;
++
++	*fid_out_val = xdev->chan.fid_out_val;
++
++	return 0;
++}
++EXPORT_SYMBOL(xilinx_xdma_get_fid_out);
++
++int xilinx_xdma_get_width_align(struct dma_chan *chan, u32 *width_align)
++{
++	struct xilinx_frmbuf_device *xdev;
++
++	xdev = frmbuf_find_dev(chan);
++	if (IS_ERR(xdev))
++		return PTR_ERR(xdev);
++	*width_align = xdev->ppc;
++
++	return 0;
++}
++EXPORT_SYMBOL(xilinx_xdma_get_width_align);
++
++int xilinx_xdma_get_earlycb(struct dma_chan *chan,
++			    struct dma_async_tx_descriptor *async_tx,
++			    u32 *earlycb)
++{
++	struct xilinx_frmbuf_device *xdev;
++	struct xilinx_frmbuf_tx_descriptor *desc;
++
++	xdev = frmbuf_find_dev(chan);
++	if (IS_ERR(xdev))
++		return PTR_ERR(xdev);
++
++	if (!async_tx || !earlycb)
++		return -EINVAL;
++
++	desc = to_dma_tx_descriptor(async_tx);
++	if (!desc)
++		return -EINVAL;
++
++	*earlycb = desc->earlycb;
++	return 0;
++}
++EXPORT_SYMBOL(xilinx_xdma_get_earlycb);
++
++int xilinx_xdma_set_earlycb(struct dma_chan *chan,
++			    struct dma_async_tx_descriptor *async_tx,
++			    u32 earlycb)
++{
++	struct xilinx_frmbuf_device *xdev;
++	struct xilinx_frmbuf_tx_descriptor *desc;
++
++	if (!async_tx)
++		return -EINVAL;
++
++	xdev = frmbuf_find_dev(chan);
++	if (IS_ERR(xdev))
++		return PTR_ERR(xdev);
++
++	desc = to_dma_tx_descriptor(async_tx);
++	if (!desc)
++		return -EINVAL;
++
++	desc->earlycb = earlycb;
++	return 0;
++}
++EXPORT_SYMBOL(xilinx_xdma_set_earlycb);
++
++/**
++ * of_dma_xilinx_xlate - Translation function
++ * @dma_spec: Pointer to DMA specifier as found in the device tree
++ * @ofdma: Pointer to DMA controller data
++ *
++ * Return: DMA channel pointer on success or error code on error
++ */
++static struct dma_chan *of_dma_xilinx_xlate(struct of_phandle_args *dma_spec,
++					    struct of_dma *ofdma)
++{
++	struct xilinx_frmbuf_device *xdev = ofdma->of_dma_data;
++
++	return dma_get_slave_channel(&xdev->chan.common);
++}
++
++/* -----------------------------------------------------------------------------
++ * Descriptors alloc and free
++ */
++
++/**
++ * xilinx_frmbuf_alloc_tx_descriptor - Allocate transaction descriptor
++ * @chan: Driver specific dma channel
++ *
++ * Return: The allocated descriptor on success and NULL on failure.
++ */
++static struct xilinx_frmbuf_tx_descriptor *
++xilinx_frmbuf_alloc_tx_descriptor(struct xilinx_frmbuf_chan *chan)
++{
++	struct xilinx_frmbuf_tx_descriptor *desc;
++
++	desc = kzalloc(sizeof(*desc), GFP_KERNEL);
++	if (!desc)
++		return NULL;
++
++	return desc;
++}
++
++/**
++ * xilinx_frmbuf_free_desc_list - Free descriptors list
++ * @chan: Driver specific dma channel
++ * @list: List to parse and delete the descriptor
++ */
++static void xilinx_frmbuf_free_desc_list(struct xilinx_frmbuf_chan *chan,
++					 struct list_head *list)
++{
++	struct xilinx_frmbuf_tx_descriptor *desc, *next;
++
++	list_for_each_entry_safe(desc, next, list, node) {
++		list_del(&desc->node);
++		kfree(desc);
++	}
++}
++
++/**
++ * xilinx_frmbuf_free_descriptors - Free channel descriptors
++ * @chan: Driver specific dma channel
++ */
++static void xilinx_frmbuf_free_descriptors(struct xilinx_frmbuf_chan *chan)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&chan->lock, flags);
++
++	xilinx_frmbuf_free_desc_list(chan, &chan->pending_list);
++	xilinx_frmbuf_free_desc_list(chan, &chan->done_list);
++	kfree(chan->active_desc);
++	kfree(chan->staged_desc);
++
++	chan->staged_desc = NULL;
++	chan->active_desc = NULL;
++	INIT_LIST_HEAD(&chan->pending_list);
++	INIT_LIST_HEAD(&chan->done_list);
++
++	spin_unlock_irqrestore(&chan->lock, flags);
++}
++
++/**
++ * xilinx_frmbuf_free_chan_resources - Free channel resources
++ * @dchan: DMA channel
++ */
++static void xilinx_frmbuf_free_chan_resources(struct dma_chan *dchan)
++{
++	struct xilinx_frmbuf_chan *chan = to_xilinx_chan(dchan);
++
++	xilinx_frmbuf_free_descriptors(chan);
++}
++
++/**
++ * xilinx_frmbuf_chan_desc_cleanup - Clean channel descriptors
++ * @chan: Driver specific dma channel
++ */
++static void xilinx_frmbuf_chan_desc_cleanup(struct xilinx_frmbuf_chan *chan)
++{
++	struct xilinx_frmbuf_tx_descriptor *desc, *next;
++	unsigned long flags;
++
++	spin_lock_irqsave(&chan->lock, flags);
++
++	list_for_each_entry_safe(desc, next, &chan->done_list, node) {
++		dma_async_tx_callback callback;
++		void *callback_param;
++
++		list_del(&desc->node);
++
++		/* Run the link descriptor callback function */
++		callback = desc->async_tx.callback;
++		callback_param = desc->async_tx.callback_param;
++		if (callback) {
++			spin_unlock_irqrestore(&chan->lock, flags);
++			callback(callback_param);
++			spin_lock_irqsave(&chan->lock, flags);
++		}
++
++		/* Run any dependencies, then free the descriptor */
++		dma_run_dependencies(&desc->async_tx);
++		kfree(desc);
++	}
++
++	spin_unlock_irqrestore(&chan->lock, flags);
++}
++
++/**
++ * xilinx_frmbuf_do_tasklet - Schedule completion tasklet
++ * @data: Pointer to the Xilinx frmbuf channel structure
++ */
++static void xilinx_frmbuf_do_tasklet(unsigned long data)
++{
++	struct xilinx_frmbuf_chan *chan = (struct xilinx_frmbuf_chan *)data;
++
++	xilinx_frmbuf_chan_desc_cleanup(chan);
++}
++
++/**
++ * xilinx_frmbuf_alloc_chan_resources - Allocate channel resources
++ * @dchan: DMA channel
++ *
++ * Return: '0' on success and failure value on error
++ */
++static int xilinx_frmbuf_alloc_chan_resources(struct dma_chan *dchan)
++{
++	dma_cookie_init(dchan);
++
++	return 0;
++}
++
++/**
++ * xilinx_frmbuf_tx_status - Get frmbuf transaction status
++ * @dchan: DMA channel
++ * @cookie: Transaction identifier
++ * @txstate: Transaction state
++ *
++ * Return: fmrbuf transaction status
++ */
++static enum dma_status xilinx_frmbuf_tx_status(struct dma_chan *dchan,
++					       dma_cookie_t cookie,
++					       struct dma_tx_state *txstate)
++{
++	return dma_cookie_status(dchan, cookie, txstate);
++}
++
++/**
++ * xilinx_frmbuf_halt - Halt frmbuf channel
++ * @chan: Driver specific dma channel
++ */
++static void xilinx_frmbuf_halt(struct xilinx_frmbuf_chan *chan)
++{
++	frmbuf_clr(chan, XILINX_FRMBUF_CTRL_OFFSET,
++		   XILINX_FRMBUF_CTRL_AP_START | chan->mode);
++	chan->idle = true;
++}
++
++/**
++ * xilinx_frmbuf_start - Start dma channel
++ * @chan: Driver specific dma channel
++ */
++static void xilinx_frmbuf_start(struct xilinx_frmbuf_chan *chan)
++{
++	frmbuf_set(chan, XILINX_FRMBUF_CTRL_OFFSET,
++		   XILINX_FRMBUF_CTRL_AP_START | chan->mode);
++	chan->idle = false;
++}
++
++/**
++ * xilinx_frmbuf_complete_descriptor - Mark the active descriptor as complete
++ * This function is invoked with spinlock held
++ * @chan : xilinx frmbuf channel
++ *
++ * CONTEXT: hardirq
++ */
++static void xilinx_frmbuf_complete_descriptor(struct xilinx_frmbuf_chan *chan)
++{
++	struct xilinx_frmbuf_tx_descriptor *desc = chan->active_desc;
++
++	/*
++	 * In case of frame buffer write, read the fid register
++	 * and associate it with descriptor
++	 */
++	if (chan->direction == DMA_DEV_TO_MEM && chan->hw_fid)
++		desc->fid = frmbuf_read(chan, XILINX_FRMBUF_FID_OFFSET) &
++			    XILINX_FRMBUF_FID_MASK;
++
++	dma_cookie_complete(&desc->async_tx);
++	list_add_tail(&desc->node, &chan->done_list);
++}
++
++/**
++ * xilinx_frmbuf_start_transfer - Starts frmbuf transfer
++ * @chan: Driver specific channel struct pointer
++ */
++static void xilinx_frmbuf_start_transfer(struct xilinx_frmbuf_chan *chan)
++{
++	struct xilinx_frmbuf_tx_descriptor *desc;
++	struct xilinx_frmbuf_device *xdev;
++
++	xdev = container_of(chan, struct xilinx_frmbuf_device, chan);
++
++	if (!chan->idle)
++		return;
++
++	if (chan->staged_desc) {
++		chan->active_desc = chan->staged_desc;
++		chan->staged_desc = NULL;
++	}
++
++	if (list_empty(&chan->pending_list))
++		return;
++
++	desc = list_first_entry(&chan->pending_list,
++				struct xilinx_frmbuf_tx_descriptor,
++				node);
++
++	if (desc->earlycb == EARLY_CALLBACK_START_DESC) {
++		dma_async_tx_callback callback;
++		void *callback_param;
++
++		callback = desc->async_tx.callback;
++		callback_param = desc->async_tx.callback_param;
++		if (callback) {
++			callback(callback_param);
++			desc->async_tx.callback = NULL;
++			chan->active_desc = desc;
++		}
++	}
++
++	/* Start the transfer */
++	chan->write_addr(chan, XILINX_FRMBUF_ADDR_OFFSET,
++			 desc->hw.luma_plane_addr);
++	chan->write_addr(chan, XILINX_FRMBUF_ADDR2_OFFSET,
++			 desc->hw.chroma_plane_addr[0]);
++	if (xdev->cfg->flags & XILINX_THREE_PLANES_PROP) {
++		if (chan->direction == DMA_MEM_TO_DEV)
++			chan->write_addr(chan, XILINX_FRMBUF_RD_ADDR3_OFFSET,
++					 desc->hw.chroma_plane_addr[1]);
++		else
++			chan->write_addr(chan, XILINX_FRMBUF_ADDR3_OFFSET,
++					 desc->hw.chroma_plane_addr[1]);
++	}
++
++	/* HW expects these parameters to be same for one transaction */
++	frmbuf_write(chan, XILINX_FRMBUF_WIDTH_OFFSET, desc->hw.hsize);
++	frmbuf_write(chan, XILINX_FRMBUF_STRIDE_OFFSET, desc->hw.stride);
++	frmbuf_write(chan, XILINX_FRMBUF_HEIGHT_OFFSET, desc->hw.vsize);
++	frmbuf_write(chan, XILINX_FRMBUF_FMT_OFFSET, chan->vid_fmt->id);
++
++	/* If it is framebuffer read IP set the FID */
++	if (chan->direction == DMA_MEM_TO_DEV && chan->hw_fid)
++		frmbuf_write(chan, XILINX_FRMBUF_FID_OFFSET, desc->fid);
++
++	/* Start the hardware */
++	xilinx_frmbuf_start(chan);
++	list_del(&desc->node);
++
++	/* No staging descriptor required when auto restart is disabled */
++	if (chan->mode == AUTO_RESTART)
++		chan->staged_desc = desc;
++	else
++		chan->active_desc = desc;
++}
++
++/**
++ * xilinx_frmbuf_issue_pending - Issue pending transactions
++ * @dchan: DMA channel
++ */
++static void xilinx_frmbuf_issue_pending(struct dma_chan *dchan)
++{
++	struct xilinx_frmbuf_chan *chan = to_xilinx_chan(dchan);
++	unsigned long flags;
++
++	spin_lock_irqsave(&chan->lock, flags);
++	xilinx_frmbuf_start_transfer(chan);
++	spin_unlock_irqrestore(&chan->lock, flags);
++}
++
++/**
++ * xilinx_frmbuf_reset - Reset frmbuf channel
++ * @chan: Driver specific dma channel
++ */
++static void xilinx_frmbuf_reset(struct xilinx_frmbuf_chan *chan)
++{
++	/* reset ip */
++	gpiod_set_value(chan->xdev->rst_gpio, 1);
++	udelay(1);
++	gpiod_set_value(chan->xdev->rst_gpio, 0);
++}
++
++/**
++ * xilinx_frmbuf_chan_reset - Reset frmbuf channel and enable interrupts
++ * @chan: Driver specific frmbuf channel
++ */
++static void xilinx_frmbuf_chan_reset(struct xilinx_frmbuf_chan *chan)
++{
++	xilinx_frmbuf_reset(chan);
++	frmbuf_write(chan, XILINX_FRMBUF_IE_OFFSET, XILINX_FRMBUF_IE_AP_DONE);
++	frmbuf_write(chan, XILINX_FRMBUF_GIE_OFFSET, XILINX_FRMBUF_GIE_EN);
++	chan->fid_err_flag = 0;
++	chan->fid_out_val = 0;
++}
++
++/**
++ * xilinx_frmbuf_irq_handler - frmbuf Interrupt handler
++ * @irq: IRQ number
++ * @data: Pointer to the Xilinx frmbuf channel structure
++ *
++ * Return: IRQ_HANDLED/IRQ_NONE
++ */
++static irqreturn_t xilinx_frmbuf_irq_handler(int irq, void *data)
++{
++	struct xilinx_frmbuf_chan *chan = data;
++	u32 status;
++	dma_async_tx_callback callback = NULL;
++	void *callback_param;
++	struct xilinx_frmbuf_tx_descriptor *desc;
++
++	status = frmbuf_read(chan, XILINX_FRMBUF_ISR_OFFSET);
++	if (!(status & XILINX_FRMBUF_ISR_ALL_IRQ_MASK))
++		return IRQ_NONE;
++
++	frmbuf_write(chan, XILINX_FRMBUF_ISR_OFFSET,
++		     status & XILINX_FRMBUF_ISR_ALL_IRQ_MASK);
++
++	/* Check if callback function needs to be called early */
++	desc = chan->staged_desc;
++	if (desc && desc->earlycb == EARLY_CALLBACK) {
++		callback = desc->async_tx.callback;
++		callback_param = desc->async_tx.callback_param;
++		if (callback) {
++			callback(callback_param);
++			desc->async_tx.callback = NULL;
++		}
++	}
++
++	if (status & XILINX_FRMBUF_ISR_AP_DONE_IRQ) {
++		spin_lock(&chan->lock);
++		chan->idle = true;
++		if (chan->active_desc) {
++			xilinx_frmbuf_complete_descriptor(chan);
++			chan->active_desc = NULL;
++		}
++
++		/* Update fid err detect flag and out value */
++		if (chan->direction == DMA_MEM_TO_DEV &&
++		    chan->hw_fid && chan->idle &&
++		    chan->xdev->cfg->flags & XILINX_FID_ERR_DETECT_PROP) {
++			if (chan->mode == AUTO_RESTART)
++				chan->fid_mode = FID_MODE_2;
++			else
++				chan->fid_mode = FID_MODE_1;
++
++			frmbuf_write(chan, XILINX_FRMBUF_FID_MODE_OFFSET,
++				     chan->fid_mode);
++			dev_dbg(chan->xdev->dev, "fid mode = %d\n",
++				frmbuf_read(chan, XILINX_FRMBUF_FID_MODE_OFFSET));
++
++			chan->fid_err_flag = frmbuf_read(chan,
++							 XILINX_FRMBUF_FID_ERR_OFFSET) &
++							XILINX_FRMBUF_FID_ERR_MASK;
++			chan->fid_out_val = frmbuf_read(chan,
++							XILINX_FRMBUF_FID_OUT_OFFSET) &
++							XILINX_FRMBUF_FID_OUT_MASK;
++			dev_dbg(chan->xdev->dev, "fid err cnt = 0x%x\n",
++				frmbuf_read(chan, XILINX_FRMBUF_FID_ERR_OFFSET));
++		}
++
++		xilinx_frmbuf_start_transfer(chan);
++		spin_unlock(&chan->lock);
++	}
++
++	tasklet_schedule(&chan->tasklet);
++	return IRQ_HANDLED;
++}
++
++/**
++ * xilinx_frmbuf_tx_submit - Submit DMA transaction
++ * @tx: Async transaction descriptor
++ *
++ * Return: cookie value on success and failure value on error
++ */
++static dma_cookie_t xilinx_frmbuf_tx_submit(struct dma_async_tx_descriptor *tx)
++{
++	struct xilinx_frmbuf_tx_descriptor *desc = to_dma_tx_descriptor(tx);
++	struct xilinx_frmbuf_chan *chan = to_xilinx_chan(tx->chan);
++	dma_cookie_t cookie;
++	unsigned long flags;
++
++	spin_lock_irqsave(&chan->lock, flags);
++	cookie = dma_cookie_assign(tx);
++	list_add_tail(&desc->node, &chan->pending_list);
++	spin_unlock_irqrestore(&chan->lock, flags);
++
++	return cookie;
++}
++
++/**
++ * xilinx_frmbuf_dma_prep_interleaved - prepare a descriptor for a
++ *	DMA_SLAVE transaction
++ * @dchan: DMA channel
++ * @xt: Interleaved template pointer
++ * @flags: transfer ack flags
++ *
++ * Return: Async transaction descriptor on success and NULL on failure
++ */
++static struct dma_async_tx_descriptor *
++xilinx_frmbuf_dma_prep_interleaved(struct dma_chan *dchan,
++				   struct dma_interleaved_template *xt,
++				   unsigned long flags)
++{
++	struct xilinx_frmbuf_chan *chan = to_xilinx_chan(dchan);
++	struct xilinx_frmbuf_tx_descriptor *desc;
++	struct xilinx_frmbuf_desc_hw *hw;
++	u32 vsize, hsize;
++
++	if (chan->direction != xt->dir || !chan->vid_fmt)
++		goto error;
++
++	if (!xt->numf || !xt->sgl[0].size)
++		goto error;
++
++	if (xt->frame_size != chan->vid_fmt->num_planes)
++		goto error;
++
++	vsize = xt->numf;
++	hsize = (xt->sgl[0].size * chan->vid_fmt->ppw * 8) /
++		 chan->vid_fmt->bpw;
++	/* hsize calc should not have resulted in an odd number */
++	if (hsize & 1)
++		hsize++;
++
++	if (vsize > chan->xdev->max_height || hsize > chan->xdev->max_width) {
++		dev_dbg(chan->xdev->dev,
++			"vsize %d max vsize %d hsize %d max hsize %d\n",
++			vsize, chan->xdev->max_height, hsize,
++			chan->xdev->max_width);
++		dev_err(chan->xdev->dev, "Requested size not supported!\n");
++		goto error;
++	}
++
++	desc = xilinx_frmbuf_alloc_tx_descriptor(chan);
++	if (!desc)
++		return NULL;
++
++	dma_async_tx_descriptor_init(&desc->async_tx, &chan->common);
++	desc->async_tx.tx_submit = xilinx_frmbuf_tx_submit;
++	async_tx_ack(&desc->async_tx);
++
++	hw = &desc->hw;
++	hw->vsize = xt->numf;
++	hw->stride = xt->sgl[0].icg + xt->sgl[0].size;
++	hw->hsize = (xt->sgl[0].size * chan->vid_fmt->ppw * 8) /
++		     chan->vid_fmt->bpw;
++
++	/* hsize calc should not have resulted in an odd number */
++	if (hw->hsize & 1)
++		hw->hsize++;
++
++	if (chan->direction == DMA_MEM_TO_DEV) {
++		hw->luma_plane_addr = xt->src_start;
++		if (xt->frame_size == 2 || xt->frame_size == 3)
++			hw->chroma_plane_addr[0] =
++				xt->src_start +
++				xt->numf * hw->stride +
++				xt->sgl[0].src_icg;
++		if (xt->frame_size == 3)
++			hw->chroma_plane_addr[1] =
++				hw->chroma_plane_addr[0] +
++				xt->numf * hw->stride +
++				xt->sgl[0].src_icg;
++	} else {
++		hw->luma_plane_addr = xt->dst_start;
++		if (xt->frame_size == 2 || xt->frame_size == 3)
++			hw->chroma_plane_addr[0] =
++				xt->dst_start +
++				xt->numf * hw->stride +
++				xt->sgl[0].dst_icg;
++		if (xt->frame_size == 3)
++			hw->chroma_plane_addr[1] =
++				hw->chroma_plane_addr[0] +
++				xt->numf * hw->stride +
++				xt->sgl[0].dst_icg;
++	}
++
++	return &desc->async_tx;
++
++error:
++	dev_err(chan->xdev->dev,
++		"Invalid dma template or missing dma video fmt config\n");
++	return NULL;
++}
++
++/**
++ * xilinx_frmbuf_terminate_all - Halt the channel and free descriptors
++ * @dchan: Driver specific dma channel pointer
++ *
++ * Return: 0
++ */
++static int xilinx_frmbuf_terminate_all(struct dma_chan *dchan)
++{
++	struct xilinx_frmbuf_chan *chan = to_xilinx_chan(dchan);
++
++	xilinx_frmbuf_halt(chan);
++	xilinx_frmbuf_free_descriptors(chan);
++	/* worst case frame-to-frame boundary; ensure frame output complete */
++	msleep(50);
++
++	if (chan->xdev->cfg->flags & XILINX_FLUSH_PROP) {
++		u8 count;
++
++		/*
++		 * Flush the framebuffer FIFO and
++		 * wait for max 50ms for flush done
++		 */
++		frmbuf_set(chan, XILINX_FRMBUF_CTRL_OFFSET,
++			   XILINX_FRMBUF_CTRL_FLUSH);
++		for (count = WAIT_FOR_FLUSH_DONE; count > 0; count--) {
++			if (frmbuf_read(chan, XILINX_FRMBUF_CTRL_OFFSET) &
++					XILINX_FRMBUF_CTRL_FLUSH_DONE)
++				break;
++			usleep_range(2000, 2100);
++		}
++
++		if (!count)
++			dev_err(chan->xdev->dev, "Framebuffer Flush not done!\n");
++	}
++
++	xilinx_frmbuf_chan_reset(chan);
++
++	return 0;
++}
++
++/**
++ * xilinx_frmbuf_synchronize - kill tasklet to stop further descr processing
++ * @dchan: Driver specific dma channel pointer
++ */
++static void xilinx_frmbuf_synchronize(struct dma_chan *dchan)
++{
++	struct xilinx_frmbuf_chan *chan = to_xilinx_chan(dchan);
++
++	tasklet_kill(&chan->tasklet);
++}
++
++/* -----------------------------------------------------------------------------
++ * Probe and remove
++ */
++
++/**
++ * xilinx_frmbuf_chan_remove - Per Channel remove function
++ * @chan: Driver specific dma channel
++ */
++static void xilinx_frmbuf_chan_remove(struct xilinx_frmbuf_chan *chan)
++{
++	/* Disable all interrupts */
++	frmbuf_clr(chan, XILINX_FRMBUF_IE_OFFSET,
++		   XILINX_FRMBUF_ISR_ALL_IRQ_MASK);
++
++	tasklet_kill(&chan->tasklet);
++	list_del(&chan->common.device_node);
++
++	mutex_lock(&frmbuf_chan_list_lock);
++	list_del(&chan->chan_node);
++	mutex_unlock(&frmbuf_chan_list_lock);
++}
++
++/**
++ * xilinx_frmbuf_chan_probe - Per Channel Probing
++ * It get channel features from the device tree entry and
++ * initialize special channel handling routines
++ *
++ * @xdev: Driver specific device structure
++ * @node: Device node
++ *
++ * Return: '0' on success and failure value on error
++ */
++static int xilinx_frmbuf_chan_probe(struct xilinx_frmbuf_device *xdev,
++				    struct device_node *node)
++{
++	struct xilinx_frmbuf_chan *chan;
++	int err;
++	u32 dma_addr_size = 0;
++
++	chan = &xdev->chan;
++
++	chan->dev = xdev->dev;
++	chan->xdev = xdev;
++	chan->idle = true;
++	chan->fid_err_flag = 0;
++	chan->fid_out_val = 0;
++	chan->mode = AUTO_RESTART;
++
++	err = of_property_read_u32(node, "xlnx,dma-addr-width",
++				   &dma_addr_size);
++	if (err || (dma_addr_size != 32 && dma_addr_size != 64)) {
++		dev_err(xdev->dev, "missing or invalid addr width dts prop\n");
++		return err;
++	}
++
++	if (dma_addr_size == 64 && sizeof(dma_addr_t) == sizeof(u64))
++		chan->write_addr = writeq_addr;
++	else
++		chan->write_addr = write_addr;
++
++	if (xdev->cfg->flags & XILINX_FID_PROP)
++		chan->hw_fid = of_property_read_bool(node, "xlnx,fid");
++
++	spin_lock_init(&chan->lock);
++	INIT_LIST_HEAD(&chan->pending_list);
++	INIT_LIST_HEAD(&chan->done_list);
++
++	chan->irq = irq_of_parse_and_map(node, 0);
++	err = devm_request_irq(xdev->dev, chan->irq, xilinx_frmbuf_irq_handler,
++			       IRQF_SHARED, "xilinx_framebuffer", chan);
++
++	if (err) {
++		dev_err(xdev->dev, "unable to request IRQ %d\n", chan->irq);
++		return err;
++	}
++
++	tasklet_init(&chan->tasklet, xilinx_frmbuf_do_tasklet,
++		     (unsigned long)chan);
++
++	/*
++	 * Initialize the DMA channel and add it to the DMA engine channels
++	 * list.
++	 */
++	chan->common.device = &xdev->common;
++
++	list_add_tail(&chan->common.device_node, &xdev->common.channels);
++
++	mutex_lock(&frmbuf_chan_list_lock);
++	list_add_tail(&chan->chan_node, &frmbuf_chan_list);
++	mutex_unlock(&frmbuf_chan_list_lock);
++
++	xilinx_frmbuf_chan_reset(chan);
++
++	return 0;
++}
++
++/**
++ * xilinx_frmbuf_probe - Driver probe function
++ * @pdev: Pointer to the platform_device structure
++ *
++ * Return: '0' on success and failure value on error
++ */
++static int xilinx_frmbuf_probe(struct platform_device *pdev)
++{
++	struct device_node *node = pdev->dev.of_node;
++	struct xilinx_frmbuf_device *xdev;
++	struct resource *io;
++	enum dma_transfer_direction dma_dir;
++	const struct of_device_id *match;
++	int err;
++	u32 i, j, align, max_width, max_height;
++	int hw_vid_fmt_cnt;
++	const char *vid_fmts[ARRAY_SIZE(xilinx_frmbuf_formats)];
++
++	xdev = devm_kzalloc(&pdev->dev, sizeof(*xdev), GFP_KERNEL);
++	if (!xdev)
++		return -ENOMEM;
++
++	xdev->dev = &pdev->dev;
++
++	match = of_match_node(xilinx_frmbuf_of_ids, node);
++	if (!match)
++		return -ENODEV;
++
++	xdev->cfg = match->data;
++
++	dma_dir = (enum dma_transfer_direction)xdev->cfg->direction;
++
++	if (xdev->cfg->flags & XILINX_CLK_PROP) {
++		xdev->ap_clk = devm_clk_get(xdev->dev, "ap_clk");
++		if (IS_ERR(xdev->ap_clk)) {
++			err = PTR_ERR(xdev->ap_clk);
++			dev_err(xdev->dev, "failed to get ap_clk (%d)\n", err);
++			return err;
++		}
++	} else {
++		dev_info(xdev->dev, "assuming clock is enabled!\n");
++	}
++
++	xdev->rst_gpio = devm_gpiod_get(&pdev->dev, "reset",
++					GPIOD_OUT_HIGH);
++	if (IS_ERR(xdev->rst_gpio)) {
++		err = PTR_ERR(xdev->rst_gpio);
++		if (err == -EPROBE_DEFER)
++			dev_info(&pdev->dev,
++				 "Probe deferred due to GPIO reset defer\n");
++		else
++			dev_err(&pdev->dev,
++				"Unable to locate reset property in dt\n");
++		return err;
++	}
++
++	gpiod_set_value_cansleep(xdev->rst_gpio, 0x0);
++
++	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	xdev->regs = devm_ioremap_resource(&pdev->dev, io);
++	if (IS_ERR(xdev->regs))
++		return PTR_ERR(xdev->regs);
++
++	if (xdev->cfg->flags & XILINX_THREE_PLANES_PROP)
++		max_height = 8640;
++	else
++		max_height = 4320;
++
++	err = of_property_read_u32(node, "xlnx,max-height", &xdev->max_height);
++	if (err < 0) {
++		dev_err(xdev->dev, "xlnx,max-height is missing!");
++		return -EINVAL;
++	} else if (xdev->max_height > max_height ||
++		   xdev->max_height < XILINX_FRMBUF_MIN_HEIGHT) {
++		dev_err(&pdev->dev, "Invalid height in dt");
++		return -EINVAL;
++	}
++
++	if (xdev->cfg->flags & XILINX_THREE_PLANES_PROP)
++		max_width = 15360;
++	else
++		max_width = 8192;
++
++	err = of_property_read_u32(node, "xlnx,max-width", &xdev->max_width);
++	if (err < 0) {
++		dev_err(xdev->dev, "xlnx,max-width is missing!");
++		return -EINVAL;
++	} else if (xdev->max_width > max_width ||
++		   xdev->max_width < XILINX_FRMBUF_MIN_WIDTH) {
++		dev_err(&pdev->dev, "Invalid width in dt");
++		return -EINVAL;
++	}
++
++	/* Initialize the DMA engine */
++	if (xdev->cfg->flags & XILINX_PPC_PROP) {
++		err = of_property_read_u32(node, "xlnx,pixels-per-clock", &xdev->ppc);
++		if (err || (xdev->ppc != 1 && xdev->ppc != 2 &&
++			    xdev->ppc != 4 && xdev->ppc != 8)) {
++			dev_err(&pdev->dev, "missing or invalid pixels per clock dts prop\n");
++			return err;
++		}
++		err = of_property_read_u32(node, "xlnx,dma-align", &align);
++		if (err)
++			align = xdev->ppc * XILINX_FRMBUF_ALIGN_MUL;
++
++		if (align < (xdev->ppc * XILINX_FRMBUF_ALIGN_MUL) ||
++		    ffs(align) != fls(align)) {
++			dev_err(&pdev->dev, "invalid dma align dts prop\n");
++			return -EINVAL;
++		}
++	} else {
++		align = 16;
++	}
++
++	xdev->common.copy_align = (enum dmaengine_alignment)(fls(align) - 1);
++	xdev->common.dev = &pdev->dev;
++
++	if (xdev->cfg->flags & XILINX_CLK_PROP) {
++		err = clk_prepare_enable(xdev->ap_clk);
++		if (err) {
++			dev_err(&pdev->dev, " failed to enable ap_clk (%d)\n",
++				err);
++			return err;
++		}
++	}
++
++	INIT_LIST_HEAD(&xdev->common.channels);
++	dma_cap_set(DMA_SLAVE, xdev->common.cap_mask);
++	dma_cap_set(DMA_PRIVATE, xdev->common.cap_mask);
++
++	/* Initialize the channels */
++	err = xilinx_frmbuf_chan_probe(xdev, node);
++	if (err < 0)
++		goto disable_clk;
++
++	xdev->chan.direction = dma_dir;
++
++	if (xdev->chan.direction == DMA_DEV_TO_MEM) {
++		xdev->common.directions = BIT(DMA_DEV_TO_MEM);
++		dev_info(&pdev->dev, "Xilinx AXI frmbuf DMA_DEV_TO_MEM\n");
++	} else if (xdev->chan.direction == DMA_MEM_TO_DEV) {
++		xdev->common.directions = BIT(DMA_MEM_TO_DEV);
++		dev_info(&pdev->dev, "Xilinx AXI frmbuf DMA_MEM_TO_DEV\n");
++	} else {
++		err = -EINVAL;
++		goto remove_chan;
++	}
++
++	/* read supported video formats and update internal table */
++	hw_vid_fmt_cnt = of_property_count_strings(node, "xlnx,vid-formats");
++
++	err = of_property_read_string_array(node, "xlnx,vid-formats",
++					    vid_fmts, hw_vid_fmt_cnt);
++	if (err < 0) {
++		dev_err(&pdev->dev,
++			"Missing or invalid xlnx,vid-formats dts prop\n");
++		goto remove_chan;
++	}
++
++	for (i = 0; i < hw_vid_fmt_cnt; i++) {
++		const char *vid_fmt_name = vid_fmts[i];
++
++		for (j = 0; j < ARRAY_SIZE(xilinx_frmbuf_formats); j++) {
++			const char *dts_name =
++				xilinx_frmbuf_formats[j].dts_name;
++
++			if (strcmp(vid_fmt_name, dts_name))
++				continue;
++
++			xdev->enabled_vid_fmts |=
++				xilinx_frmbuf_formats[j].fmt_bitmask;
++		}
++	}
++
++	/* Determine supported vid framework formats */
++	frmbuf_init_format_array(xdev);
++
++	xdev->common.device_alloc_chan_resources =
++				xilinx_frmbuf_alloc_chan_resources;
++	xdev->common.device_free_chan_resources =
++				xilinx_frmbuf_free_chan_resources;
++	xdev->common.device_prep_interleaved_dma =
++				xilinx_frmbuf_dma_prep_interleaved;
++	xdev->common.device_terminate_all = xilinx_frmbuf_terminate_all;
++	xdev->common.device_synchronize = xilinx_frmbuf_synchronize;
++	xdev->common.device_tx_status = xilinx_frmbuf_tx_status;
++	xdev->common.device_issue_pending = xilinx_frmbuf_issue_pending;
++
++	platform_set_drvdata(pdev, xdev);
++
++	/* Register the DMA engine with the core */
++	dma_async_device_register(&xdev->common);
++
++	err = of_dma_controller_register(node, of_dma_xilinx_xlate, xdev);
++	if (err < 0) {
++		dev_err(&pdev->dev, "Unable to register DMA to DT\n");
++		goto error;
++	}
++
++	dev_info(&pdev->dev, "Xilinx AXI FrameBuffer Engine Driver Probed!!\n");
++
++	return 0;
++error:
++	dma_async_device_unregister(&xdev->common);
++remove_chan:
++	xilinx_frmbuf_chan_remove(&xdev->chan);
++disable_clk:
++	clk_disable_unprepare(xdev->ap_clk);
++	return err;
++}
++
++/**
++ * xilinx_frmbuf_remove - Driver remove function
++ * @pdev: Pointer to the platform_device structure
++ *
++ * Return: Always '0'
++ */
++static int xilinx_frmbuf_remove(struct platform_device *pdev)
++{
++	struct xilinx_frmbuf_device *xdev = platform_get_drvdata(pdev);
++
++	of_dma_controller_free(pdev->dev.of_node);
++
++	dma_async_device_unregister(&xdev->common);
++	xilinx_frmbuf_chan_remove(&xdev->chan);
++	clk_disable_unprepare(xdev->ap_clk);
++
++	return 0;
++}
++
++MODULE_DEVICE_TABLE(of, xilinx_frmbuf_of_ids);
++
++static struct platform_driver xilinx_frmbuf_driver = {
++	.driver = {
++		.name = "xilinx-frmbuf",
++		.of_match_table = xilinx_frmbuf_of_ids,
++	},
++	.probe = xilinx_frmbuf_probe,
++	.remove = xilinx_frmbuf_remove,
++};
++
++module_platform_driver(xilinx_frmbuf_driver);
++
++MODULE_AUTHOR("Xilinx, Inc.");
++MODULE_DESCRIPTION("Xilinx Framebuffer driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/dma/xilinx/zynqmp_dma.c b/drivers/dma/xilinx/zynqmp_dma.c
+index 21472a5d7..5c0f2deb9 100644
+--- a/drivers/dma/xilinx/zynqmp_dma.c
++++ b/drivers/dma/xilinx/zynqmp_dma.c
+@@ -1062,7 +1062,11 @@ static int zynqmp_dma_probe(struct platform_device *pdev)
+ 	zdev->dev = &pdev->dev;
+ 	INIT_LIST_HEAD(&zdev->common.channels);
+ 
+-	dma_set_mask(&pdev->dev, DMA_BIT_MASK(44));
++	ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(44));
++	if (ret) {
++		dev_err(&pdev->dev, "DMA not available for address range\n");
++		return ret;
++	}
+ 	dma_cap_set(DMA_MEMCPY, zdev->common.cap_mask);
+ 
+ 	p = &zdev->common;
+diff --git a/include/linux/dma/xilinx_frmbuf.h b/include/linux/dma/xilinx_frmbuf.h
+new file mode 100644
+index 000000000..aa048a3eb
+--- /dev/null
++++ b/include/linux/dma/xilinx_frmbuf.h
+@@ -0,0 +1,258 @@
++/*
++ * Xilinx Framebuffer DMA support header file
++ *
++ * Copyright (C) 2017 Xilinx, Inc. All rights reserved.
++ *
++ * This is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#ifndef __XILINX_FRMBUF_DMA_H
++#define __XILINX_FRMBUF_DMA_H
++
++#include <linux/dmaengine.h>
++
++/* Modes to enable early callback */
++/* To avoid first frame delay */
++#define EARLY_CALLBACK			BIT(1)
++/* Give callback at start of descriptor processing */
++#define EARLY_CALLBACK_START_DESC	BIT(2)
++/**
++ * enum vid_frmwork_type - Linux video framework type
++ * @XDMA_DRM: fourcc is of type DRM
++ * @XDMA_V4L2: fourcc is of type V4L2
++ */
++enum vid_frmwork_type {
++	XDMA_DRM = 0,
++	XDMA_V4L2,
++};
++
++/**
++ * enum operation_mode - FB IP control register field settings to select mode
++ * @DEFAULT : Use default mode, No explicit bit field settings required.
++ * @AUTO_RESTART : Use auto-restart mode by setting BIT(7) of control register.
++ */
++enum operation_mode {
++	DEFAULT = 0x0,
++	AUTO_RESTART = BIT(7),
++};
++
++/**
++ * enum fid_modes - FB IP fid mode register settings to select mode
++ * @FID_MODE_0: carries the fid value shared by application
++ * @FID_MODE_1: sets the fid after first frame
++ * @FID_MODE_2: sets the fid after second frame
++ */
++enum fid_modes {
++	FID_MODE_0 = 0,
++	FID_MODE_1 = 1,
++	FID_MODE_2 = 2,
++};
++
++#if IS_ENABLED(CONFIG_XILINX_FRMBUF)
++/**
++ * xilinx_xdma_set_mode - Set operation mode for framebuffer IP
++ * @chan: dma channel instance
++ * @mode: Famebuffer IP operation mode.
++ * This routine is used when utilizing "video format aware" Xilinx DMA IP
++ * (such as Video Framebuffer Read or Video Framebuffer Write).  This call
++ * must be made prior to dma_async_issue_pending(). This routine should be
++ * called by client driver to set the operation mode for framebuffer IP based
++ * upon the use-case, for e.g. for non-streaming usecases (like MEM2MEM) it's
++ * more appropriate to use default mode unlike streaming usecases where
++ * auto-restart mode is more suitable.
++ *
++ * auto-restart or free running mode.
++ */
++void xilinx_xdma_set_mode(struct dma_chan *chan, enum operation_mode mode);
++
++/**
++ * xilinx_xdma_drm_config - configure video format in video aware DMA
++ * @chan: dma channel instance
++ * @drm_fourcc: DRM fourcc code describing the memory layout of video data
++ *
++ * This routine is used when utilizing "video format aware" Xilinx DMA IP
++ * (such as Video Framebuffer Read or Video Framebuffer Write).  This call
++ * must be made prior to dma_async_issue_pending() to establish the video
++ * data memory format within the hardware DMA.
++ */
++void xilinx_xdma_drm_config(struct dma_chan *chan, u32 drm_fourcc);
++
++/**
++ * xilinx_xdma_v4l2_config - configure video format in video aware DMA
++ * @chan: dma channel instance
++ * @v4l2_fourcc: V4L2 fourcc code describing the memory layout of video data
++ *
++ * This routine is used when utilizing "video format aware" Xilinx DMA IP
++ * (such as Video Framebuffer Read or Video Framebuffer Write).  This call
++ * must be made prior to dma_async_issue_pending() to establish the video
++ * data memory format within the hardware DMA.
++ */
++void xilinx_xdma_v4l2_config(struct dma_chan *chan, u32 v4l2_fourcc);
++
++/**
++ * xilinx_xdma_get_drm_vid_fmts - obtain list of supported DRM mem formats
++ * @chan: dma channel instance
++ * @fmt_cnt: Output param - total count of supported DRM fourcc codes
++ * @fmts: Output param - pointer to array of DRM fourcc codes (not a copy)
++ *
++ * Return: a reference to an array of DRM fourcc codes supported by this
++ * instance of the Video Framebuffer Driver
++ */
++int xilinx_xdma_get_drm_vid_fmts(struct dma_chan *chan, u32 *fmt_cnt,
++				 u32 **fmts);
++
++/**
++ * xilinx_xdma_get_v4l2_vid_fmts - obtain list of supported V4L2 mem formats
++ * @chan: dma channel instance
++ * @fmt_cnt: Output param - total count of supported V4L2 fourcc codes
++ * @fmts: Output param - pointer to array of V4L2 fourcc codes (not a copy)
++ *
++ * Return: a reference to an array of V4L2 fourcc codes supported by this
++ * instance of the Video Framebuffer Driver
++ */
++int xilinx_xdma_get_v4l2_vid_fmts(struct dma_chan *chan, u32 *fmt_cnt,
++				  u32 **fmts);
++
++/**
++ * xilinx_xdma_get_fid - Get the Field ID of the buffer received.
++ * This function should be called from the callback function registered
++ * per descriptor in prep_interleaved.
++ *
++ * @chan: dma channel instance
++ * @async_tx: descriptor whose parent structure contains fid.
++ * @fid: Output param - Field ID of the buffer. 0 - even, 1 - odd.
++ *
++ * Return: 0 on success, -EINVAL in case of invalid chan
++ */
++int xilinx_xdma_get_fid(struct dma_chan *chan,
++			struct dma_async_tx_descriptor *async_tx, u32 *fid);
++
++/**
++ * xilinx_xdma_set_fid - Set the Field ID of the buffer to be transmitted
++ * @chan: dma channel instance
++ * @async_tx: dma async tx descriptor for the buffer
++ * @fid: Field ID of the buffer. 0 - even, 1 - odd.
++ *
++ * Return: 0 on success, -EINVAL in case of invalid chan
++ */
++int xilinx_xdma_set_fid(struct dma_chan *chan,
++			struct dma_async_tx_descriptor *async_tx, u32 fid);
++
++/**
++ * xilinx_xdma_get_fid_err_flag - Get the Field ID error flag.
++ *
++ * @chan: dma channel instance
++ * @fid_err_flag: Field id error detect flag. 0 - no error, 1 - error.
++ *
++ * Return: 0 on success, -EINVAL in case of invalid chan
++ */
++int xilinx_xdma_get_fid_err_flag(struct dma_chan *chan,
++				 u32 *fid_err_flag);
++
++/**
++ * xilinx_xdma_get_fid_out - Get the Field ID out signal value.
++ *
++ * @chan: dma channel instance
++ * @fid_out_val: Field id out signal value.
++ *
++ * Return: 0 on success, -EINVAL in case of invalid chan
++ */
++int xilinx_xdma_get_fid_out(struct dma_chan *chan,
++			    u32 *fid_out_val);
++
++/**:
++ * xilinx_xdma_get_earlycb - Get info if early callback has been enabled.
++ *
++ * @chan: dma channel instance
++ * @async_tx: descriptor whose parent structure contains fid.
++ * @earlycb: Output param - Early callback mode
++ *
++ * Return: 0 on success, -EINVAL in case of invalid chan
++ */
++int xilinx_xdma_get_earlycb(struct dma_chan *chan,
++			    struct dma_async_tx_descriptor *async_tx,
++			    u32 *earlycb);
++
++/**
++ * xilinx_xdma_set_earlycb - Enable/Disable early callback
++ * @chan: dma channel instance
++ * @async_tx: dma async tx descriptor for the buffer
++ * @earlycb: Enable early callback mode for descriptor
++ *
++ * Return: 0 on success, -EINVAL in case of invalid chan
++ */
++int xilinx_xdma_set_earlycb(struct dma_chan *chan,
++			    struct dma_async_tx_descriptor *async_tx,
++			    u32 earlycb);
++/**
++ * xilinx_xdma_get_width_align - Get width alignment value
++ *
++ * @chan: dma channel instance
++ * @width_align: width alignment value
++ *
++ * Return: 0 on success, -ENODEV in case no framebuffer device found
++ */
++int xilinx_xdma_get_width_align(struct dma_chan *chan, u32 *width_align);
++
++#else
++static inline void xilinx_xdma_set_mode(struct dma_chan *chan,
++					enum operation_mode mode)
++{ }
++
++static inline void xilinx_xdma_drm_config(struct dma_chan *chan, u32 drm_fourcc)
++{ }
++
++static inline void xilinx_xdma_v4l2_config(struct dma_chan *chan,
++					   u32 v4l2_fourcc)
++{ }
++
++static inline int xilinx_xdma_get_drm_vid_fmts(struct dma_chan *chan,
++					       u32 *fmt_cnt, u32 **fmts)
++{
++	return -ENODEV;
++}
++
++static inline int xilinx_xdma_get_v4l2_vid_fmts(struct dma_chan *chan,
++						u32 *fmt_cnt,u32 **fmts)
++{
++	return -ENODEV;
++}
++
++static inline int xilinx_xdma_get_fid(struct dma_chan *chan,
++				      struct dma_async_tx_descriptor *async_tx,
++				      u32 *fid)
++{
++	return -ENODEV;
++}
++
++static inline int xilinx_xdma_set_fid(struct dma_chan *chan,
++				      struct dma_async_tx_descriptor *async_tx,
++				      u32 fid)
++{
++	return -ENODEV;
++}
++
++static inline int xilinx_xdma_get_earlycb(struct dma_chan *chan,
++					  struct dma_async_tx_descriptor *atx,
++					  u32 *earlycb)
++{
++	return -ENODEV;
++}
++
++static inline int xilinx_xdma_set_earlycb(struct dma_chan *chan,
++					  struct dma_async_tx_descriptor *atx,
++					  u32 earlycb)
++{
++	return -ENODEV;
++}
++
++static inline int xilinx_xdma_get_width_align(struct dma_chan *chan, u32 *width_align)
++{
++	return -ENODEV;
++}
++#endif
++
++#endif /*__XILINX_FRMBUF_DMA_H*/

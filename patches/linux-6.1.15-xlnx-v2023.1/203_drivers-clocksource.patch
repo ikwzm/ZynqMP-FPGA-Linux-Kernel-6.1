@@ -1,0 +1,72 @@
+diff --git a/Documentation/devicetree/bindings/timer/cdns,ttc.yaml b/Documentation/devicetree/bindings/timer/cdns,ttc.yaml
+index 7d821fd48..2855e92e0 100644
+--- a/Documentation/devicetree/bindings/timer/cdns,ttc.yaml
++++ b/Documentation/devicetree/bindings/timer/cdns,ttc.yaml
+@@ -32,12 +32,26 @@ properties:
+     description: |
+       Bit width of the timer, necessary if not 16.
+ 
++  "#pwm-cells":
++    description: |
++      Required to configure TTC as PWM device, supported cells are 0 to 3.
++    minimum: 0
++    maximum: 3
++
+ required:
+   - compatible
+   - reg
+-  - interrupts
+   - clocks
+ 
++allOf:
++  - if:
++      not:
++        required:
++          - "#pwm-cells"
++    then:
++      required:
++        - interrupts
++
+ additionalProperties: false
+ 
+ examples:
+@@ -50,3 +64,12 @@ examples:
+         clocks = <&cpu_clk 3>;
+         timer-width = <32>;
+     };
++
++  - |
++    ttc1: ttc1@f8002000 {
++        compatible = "cdns,ttc";
++        reg = <0xF8002000 0x1000>;
++        clocks = <&cpu_clk 3>;
++        timer-width = <32>;
++        #pwm-cells = <3>;
++    };
+diff --git a/drivers/clocksource/timer-cadence-ttc.c b/drivers/clocksource/timer-cadence-ttc.c
+index 4efd0cf3b..ba4664914 100644
+--- a/drivers/clocksource/timer-cadence-ttc.c
++++ b/drivers/clocksource/timer-cadence-ttc.c
+@@ -476,6 +476,9 @@ static int __init ttc_timer_probe(struct platform_device *pdev)
+ 	u32 timer_width = 16;
+ 	struct device_node *timer = pdev->dev.of_node;
+ 
++	if (of_property_read_bool(timer, "#pwm-cells"))
++		return -ENODEV;
++
+ 	if (initialized)
+ 		return 0;
+ 
+diff --git a/include/clocksource/timer-xilinx.h b/include/clocksource/timer-xilinx.h
+index c0f56fe6d..d116f18de 100644
+--- a/include/clocksource/timer-xilinx.h
++++ b/include/clocksource/timer-xilinx.h
+@@ -41,7 +41,7 @@ struct regmap;
+ struct xilinx_timer_priv {
+ 	struct regmap *map;
+ 	struct clk *clk;
+-	u32 max;
++	u64 max;
+ };
+ 
+ /**

@@ -1,0 +1,42 @@
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index 9489f93b3..622215a8b 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -215,7 +215,11 @@ irqreturn_t handle_irq_event(struct irq_desc *desc)
+ }
+ 
+ #ifdef CONFIG_GENERIC_IRQ_MULTI_HANDLER
++#ifndef CONFIG_IRQCHIP_XILINX_INTC_MODULE_SUPPORT_EXPERIMENTAL
+ int __init set_handle_irq(void (*handle_irq)(struct pt_regs *))
++#else
++int set_handle_irq(void (*handle_irq)(struct pt_regs *))
++#endif
+ {
+ 	if (handle_arch_irq)
+ 		return -EBUSY;
+diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
+index fd0996274..46197cf93 100644
+--- a/kernel/irq/irqdesc.c
++++ b/kernel/irq/irqdesc.c
+@@ -355,9 +355,7 @@ struct irq_desc *irq_to_desc(unsigned int irq)
+ {
+ 	return radix_tree_lookup(&irq_desc_tree, irq);
+ }
+-#ifdef CONFIG_KVM_BOOK3S_64_HV_MODULE
+ EXPORT_SYMBOL_GPL(irq_to_desc);
+-#endif
+ 
+ static void delete_irq_desc(unsigned int irq)
+ {
+diff --git a/kernel/irq/msi.c b/kernel/irq/msi.c
+index a9ee53529..35b39fee8 100644
+--- a/kernel/irq/msi.c
++++ b/kernel/irq/msi.c
+@@ -1037,6 +1037,7 @@ void msi_domain_free_irqs(struct irq_domain *domain, struct device *dev)
+ 	msi_domain_free_irqs_descs_locked(domain, dev);
+ 	msi_unlock_descs(dev);
+ }
++EXPORT_SYMBOL_GPL(msi_domain_free_irqs);
+ 
+ /**
+  * msi_get_domain_info - Get the MSI interrupt domain info for @domain

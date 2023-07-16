@@ -1,0 +1,68 @@
+diff --git a/Makefile b/Makefile
+index 4dfe902b7..1c3c1f8d4 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1281,6 +1281,11 @@ prepare0: archprepare
+ 	$(Q)$(MAKE) $(build)=scripts/mod
+ 	$(Q)$(MAKE) $(build)=. prepare
+ 
++# linux-headers debian package postinst
++PHONY += linux-headers-postinst
++linux-headers-postinst: archscripts scripts
++	$(Q)$(MAKE) $(build)=scripts/mod
++
+ # All the preparing..
+ prepare: prepare0
+ ifdef CONFIG_RUST
+diff --git a/scripts/package/builddeb b/scripts/package/builddeb
+index 67cd420dc..0a8c30338 100755
+--- a/scripts/package/builddeb
++++ b/scripts/package/builddeb
+@@ -60,10 +60,11 @@ deploy_kernel_headers () {
+ 
+ 	(
+ 		cd $srctree
+-		find . arch/$SRCARCH -maxdepth 1 -name Makefile\*
+-		find include scripts -type f -o -type l
++		find . -name Makefile\* -o -name Kconfig\* -o -name \*.pl
++		find include tools/include security/selinux/include -type f -o -type l
++		find scripts -type f -o -type l
+ 		find arch/$SRCARCH -name Kbuild.platforms -o -name Platform
+-		find $(find arch/$SRCARCH -name include -o -name scripts -type d) -type f
++		find $(find arch/$SRCARCH -name include -o -name scripts -o -name tools -type d) -type f
+ 	) > debian/hdrsrcfiles
+ 
+ 	{
+@@ -78,12 +79,32 @@ deploy_kernel_headers () {
+ 		fi
+ 	} > debian/hdrobjfiles
+ 
++	if [ "$cross_compiling" -eq 1 ]; then
++		mv debian/hdrsrcfiles debian/hdrsrcfiles.orig
++		mv debian/hdrobjfiles debian/hdrobjfiles.orig
++		file -f debian/hdrsrcfiles.orig | gawk -F':' '$2!~/ELF/{print $1}' > debian/hdrsrcfiles
++		file -f debian/hdrobjfiles.orig | gawk -F':' '$2!~/ELF/{print $1}' > debian/hdrobjfiles
++		rm -f debian/hdrsrcfiles.orig debian/hdrobjfiles.orig
++	fi
++
+ 	destdir=$pdir/usr/src/linux-headers-$version
+ 	mkdir -p $destdir
+ 	tar -c -f - -C $srctree -T debian/hdrsrcfiles | tar -xf - -C $destdir
+ 	tar -c -f - -T debian/hdrobjfiles | tar -xf - -C $destdir
+ 	rm -f debian/hdrsrcfiles debian/hdrobjfiles
+ 
++	# create postinst 
++	if [ "$cross_compiling" -eq 1 ]; then
++		mkdir -m 755 -p "$pdir/DEBIAN"
++		cat <<EOF >> $pdir/DEBIAN/postinst
++#!/bin/sh -e
++
++make -C /usr/src/linux-headers-$version linux-headers-postinst
++
++EOF
++		chmod 755 $pdir/DEBIAN/postinst
++	fi
++
+ 	# copy .config manually to be where it's expected to be
+ 	cp $KCONFIG_CONFIG $destdir/.config
+ 
