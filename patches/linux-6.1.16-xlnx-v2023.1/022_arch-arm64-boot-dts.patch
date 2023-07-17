@@ -21901,7 +21901,7 @@ index 000000000..1efc4b5ec
 +	snps,usb3_lpm_capable;
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp.dtsi b/arch/arm64/boot/dts/xilinx/zynqmp.dtsi
-index a549265e5..6a210cb9b 100644
+index 7c1af75f3..94cc7eced 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp.dtsi
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp.dtsi
 @@ -13,6 +13,7 @@
@@ -22415,7 +22415,7 @@ index a549265e5..6a210cb9b 100644
  			compatible = "xlnx,zynqmp-uart", "cdns,uart-r1p12";
  			status = "disabled";
  			interrupt-parent = <&gic>;
-@@ -809,22 +981,28 @@
+@@ -809,23 +981,29 @@
  			status = "disabled";
  			compatible = "xlnx,zynqmp-dwc3";
  			reg = <0x0 0xff9d0000 0x0 0x100>;
@@ -22440,6 +22440,7 @@ index a549265e5..6a210cb9b 100644
 +				interrupts = <0 65 4>, <0 69 4>, <0 75 4>;
  				iommus = <&smmu 0x860>;
  				snps,quirk-frame-length-adjustment = <0x20>;
+ 				snps,resume-hs-terminations;
 +				clock-names = "ref";
 +				snps,enable_guctl1_resume_quirk;
 +				snps,enable_guctl1_ipd_quirk;
@@ -22447,7 +22448,7 @@ index a549265e5..6a210cb9b 100644
  				/* dma-coherent; */
  			};
  		};
-@@ -835,6 +1013,7 @@
+@@ -836,6 +1014,7 @@
  			status = "disabled";
  			compatible = "xlnx,zynqmp-dwc3";
  			reg = <0x0 0xff9e0000 0x0 0x100>;
@@ -22455,7 +22456,7 @@ index a549265e5..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_USB_1>;
  			resets = <&zynqmp_reset ZYNQMP_RESET_USB1_CORERESET>,
  				 <&zynqmp_reset ZYNQMP_RESET_USB1_HIBERRESET>,
-@@ -844,13 +1023,17 @@
+@@ -845,14 +1024,18 @@
  
  			dwc3_1: usb@fe300000 {
  				compatible = "snps,dwc3";
@@ -22469,6 +22470,7 @@ index a549265e5..6a210cb9b 100644
 +				interrupts = <0 70 4>, <0 74 4>, <0 76 4>;
  				iommus = <&smmu 0x861>;
  				snps,quirk-frame-length-adjustment = <0x20>;
+ 				snps,resume-hs-terminations;
 +				clock-names = "ref";
 +				snps,enable_guctl1_resume_quirk;
 +				snps,enable_guctl1_ipd_quirk;
@@ -22476,7 +22478,7 @@ index a549265e5..6a210cb9b 100644
  				/* dma-coherent; */
  			};
  		};
-@@ -879,7 +1062,9 @@
+@@ -881,7 +1064,9 @@
  			status = "disabled";
  			interrupt-parent = <&gic>;
  			interrupts = <0 56 4>;
@@ -22486,7 +22488,7 @@ index a549265e5..6a210cb9b 100644
  			#address-cells = <1>;
  			#size-cells = <1>;
  			#io-channel-cells = <1>;
-@@ -895,8 +1080,6 @@
+@@ -897,8 +1082,6 @@
  				compatible = "xlnx,zynqmp-ams-pl";
  				status = "disabled";
  				reg = <0x400 0x400>;
@@ -22495,7 +22497,7 @@ index a549265e5..6a210cb9b 100644
  			};
  		};
  
-@@ -908,21 +1091,32 @@
+@@ -910,21 +1093,32 @@
  			interrupt-parent = <&gic>;
  			clock-names = "axi_clk";
  			power-domains = <&zynqmp_firmware PD_DP>;
@@ -22531,7 +22533,7 @@ index a549265e5..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_DP>;
  			resets = <&zynqmp_reset ZYNQMP_RESET_DP>;
  			dma-names = "vid0", "vid1", "vid2", "gfx0";
-@@ -930,6 +1124,34 @@
+@@ -932,6 +1126,34 @@
  			       <&zynqmp_dpdma ZYNQMP_DPDMA_VIDEO1>,
  			       <&zynqmp_dpdma ZYNQMP_DPDMA_VIDEO2>,
  			       <&zynqmp_dpdma ZYNQMP_DPDMA_GRAPHICS>;

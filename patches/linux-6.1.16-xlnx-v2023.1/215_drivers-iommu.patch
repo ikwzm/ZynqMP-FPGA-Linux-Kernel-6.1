@@ -1,5 +1,5 @@
 diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index 959d895fc..80a993b1e 100644
+index fd8c8aeb3..8972ca746 100644
 --- a/drivers/iommu/iommu.c
 +++ b/drivers/iommu/iommu.c
 @@ -27,6 +27,7 @@

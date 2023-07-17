@@ -645,7 +645,7 @@ index 238d3d344..11f5f5c9e 100644
  IRQCHIP_DECLARE(xilinx_intc_opb, "xlnx,opb-intc-1.00.c", xilinx_intc_of_init);
 +#endif
 diff --git a/drivers/irqchip/irqchip.c b/drivers/irqchip/irqchip.c
-index 3570f0a58..81e724f0e 100644
+index 7899607fb..0cc55f4c6 100644
 --- a/drivers/irqchip/irqchip.c
 +++ b/drivers/irqchip/irqchip.c
 @@ -15,6 +15,14 @@
@@ -671,7 +671,7 @@ index 3570f0a58..81e724f0e 100644
  int platform_irqchip_probe(struct platform_device *pdev)
  {
  	struct device_node *np = pdev->dev.of_node;
-@@ -58,3 +67,59 @@ int platform_irqchip_probe(struct platform_device *pdev)
+@@ -62,3 +71,59 @@ int platform_irqchip_probe(struct platform_device *pdev)
  	return irq_init_cb(np, par_np);
  }
  EXPORT_SYMBOL_GPL(platform_irqchip_probe);

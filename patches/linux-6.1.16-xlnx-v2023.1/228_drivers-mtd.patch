@@ -147,7 +147,7 @@ index 656dd80a0..57ca9f5ee 100644
  
  static const struct spi_nor_fixups atmel_nor_global_protection_fixups = {
 diff --git a/drivers/mtd/spi-nor/core.c b/drivers/mtd/spi-nor/core.c
-index 5dbf52aa0..f3c99beff 100644
+index cda57cb86..fdcac7f86 100644
 --- a/drivers/mtd/spi-nor/core.c
 +++ b/drivers/mtd/spi-nor/core.c
 @@ -277,7 +277,7 @@ static ssize_t spi_nor_spimem_write_data(struct spi_nor *nor, loff_t to,
@@ -1067,7 +1067,7 @@ index 5dbf52aa0..f3c99beff 100644
  	unsigned int cap;
  
  	/* X-X-X modes are not supported yet, mask them all. */
-@@ -2045,6 +2603,7 @@ static int spi_nor_select_read(struct spi_nor *nor,
+@@ -2054,6 +2612,7 @@ static int spi_nor_select_read(struct spi_nor *nor,
  			       u32 shared_hwcaps)
  {
  	int cmd, best_match = fls(shared_hwcaps & SNOR_HWCAPS_READ_MASK) - 1;
@@ -1075,7 +1075,7 @@ index 5dbf52aa0..f3c99beff 100644
  	const struct spi_nor_read_command *read;
  
  	if (best_match < 0)
-@@ -2054,7 +2613,7 @@ static int spi_nor_select_read(struct spi_nor *nor,
+@@ -2063,7 +2622,7 @@ static int spi_nor_select_read(struct spi_nor *nor,
  	if (cmd < 0)
  		return -EINVAL;
  
@@ -1084,7 +1084,7 @@ index 5dbf52aa0..f3c99beff 100644
  	nor->read_opcode = read->opcode;
  	nor->read_proto = read->proto;
  
-@@ -2075,6 +2634,7 @@ static int spi_nor_select_read(struct spi_nor *nor,
+@@ -2084,6 +2643,7 @@ static int spi_nor_select_read(struct spi_nor *nor,
  static int spi_nor_select_pp(struct spi_nor *nor,
  			     u32 shared_hwcaps)
  {
@@ -1092,7 +1092,7 @@ index 5dbf52aa0..f3c99beff 100644
  	int cmd, best_match = fls(shared_hwcaps & SNOR_HWCAPS_PP_MASK) - 1;
  	const struct spi_nor_pp_command *pp;
  
-@@ -2085,7 +2645,7 @@ static int spi_nor_select_pp(struct spi_nor *nor,
+@@ -2094,7 +2654,7 @@ static int spi_nor_select_pp(struct spi_nor *nor,
  	if (cmd < 0)
  		return -EINVAL;
  
@@ -1101,7 +1101,7 @@ index 5dbf52aa0..f3c99beff 100644
  	nor->program_opcode = pp->opcode;
  	nor->write_proto = pp->proto;
  	return 0;
-@@ -2146,7 +2706,8 @@ spi_nor_select_uniform_erase(struct spi_nor_erase_map *map,
+@@ -2155,7 +2715,8 @@ spi_nor_select_uniform_erase(struct spi_nor_erase_map *map,
  
  static int spi_nor_select_erase(struct spi_nor *nor)
  {
@@ -1111,7 +1111,7 @@ index 5dbf52aa0..f3c99beff 100644
  	const struct spi_nor_erase_type *erase = NULL;
  	struct mtd_info *mtd = &nor->mtd;
  	u32 wanted_size = nor->info->sector_size;
-@@ -2170,7 +2731,15 @@ static int spi_nor_select_erase(struct spi_nor *nor)
+@@ -2179,7 +2740,15 @@ static int spi_nor_select_erase(struct spi_nor *nor)
  		if (!erase)
  			return -EINVAL;
  		nor->erase_opcode = erase->opcode;
@@ -1128,7 +1128,7 @@ index 5dbf52aa0..f3c99beff 100644
  		return 0;
  	}
  
-@@ -2188,14 +2757,22 @@ static int spi_nor_select_erase(struct spi_nor *nor)
+@@ -2197,14 +2766,22 @@ static int spi_nor_select_erase(struct spi_nor *nor)
  	if (!erase)
  		return -EINVAL;
  
@@ -1153,7 +1153,7 @@ index 5dbf52aa0..f3c99beff 100644
  	u32 ignored_mask, shared_mask;
  	int err;
  
-@@ -2255,8 +2832,14 @@ static int spi_nor_default_setup(struct spi_nor *nor,
+@@ -2264,8 +2841,14 @@ static int spi_nor_default_setup(struct spi_nor *nor,
  
  static int spi_nor_set_addr_nbytes(struct spi_nor *nor)
  {
@@ -1170,7 +1170,7 @@ index 5dbf52aa0..f3c99beff 100644
  	} else if (nor->read_proto == SNOR_PROTO_8_8_8_DTR) {
  		/*
  		 * In 8D-8D-8D mode, one byte takes half a cycle to transfer. So
-@@ -2277,9 +2860,67 @@ static int spi_nor_set_addr_nbytes(struct spi_nor *nor)
+@@ -2286,9 +2869,67 @@ static int spi_nor_set_addr_nbytes(struct spi_nor *nor)
  		nor->addr_nbytes = 3;
  	}
  
@@ -1241,7 +1241,7 @@ index 5dbf52aa0..f3c99beff 100644
  	}
  
  	if (nor->addr_nbytes > SPI_NOR_MAX_ADDR_NBYTES) {
-@@ -2299,10 +2940,11 @@ static int spi_nor_set_addr_nbytes(struct spi_nor *nor)
+@@ -2308,10 +2949,11 @@ static int spi_nor_set_addr_nbytes(struct spi_nor *nor)
  static int spi_nor_setup(struct spi_nor *nor,
  			 const struct spi_nor_hwcaps *hwcaps)
  {
@@ -1255,7 +1255,7 @@ index 5dbf52aa0..f3c99beff 100644
  	else
  		ret = spi_nor_default_setup(nor, hwcaps);
  	if (ret)
-@@ -2337,7 +2979,7 @@ static void spi_nor_manufacturer_init_params(struct spi_nor *nor)
+@@ -2346,7 +2988,7 @@ static void spi_nor_manufacturer_init_params(struct spi_nor *nor)
   */
  static void spi_nor_no_sfdp_init_params(struct spi_nor *nor)
  {
@@ -1264,7 +1264,7 @@ index 5dbf52aa0..f3c99beff 100644
  	struct spi_nor_erase_map *map = &params->erase_map;
  	const u8 no_sfdp_flags = nor->info->no_sfdp_flags;
  	u8 i, erase_mask;
-@@ -2427,6 +3069,8 @@ static void spi_nor_init_flags(struct spi_nor *nor)
+@@ -2436,6 +3078,8 @@ static void spi_nor_init_flags(struct spi_nor *nor)
  		nor->flags |= SNOR_F_HAS_4BIT_BP;
  		if (flags & SPI_NOR_BP3_SR_BIT6)
  			nor->flags |= SNOR_F_HAS_SR_BP3_BIT6;
@@ -1273,7 +1273,7 @@ index 5dbf52aa0..f3c99beff 100644
  	}
  
  	if (flags & NO_CHIP_ERASE)
-@@ -2462,6 +3106,12 @@ static void spi_nor_init_fixup_flags(struct spi_nor *nor)
+@@ -2471,6 +3115,12 @@ static void spi_nor_init_fixup_flags(struct spi_nor *nor)
   */
  static void spi_nor_late_init_params(struct spi_nor *nor)
  {
@@ -1286,7 +1286,7 @@ index 5dbf52aa0..f3c99beff 100644
  	if (nor->manufacturer && nor->manufacturer->fixups &&
  	    nor->manufacturer->fixups->late_init)
  		nor->manufacturer->fixups->late_init(nor);
-@@ -2476,8 +3126,53 @@ static void spi_nor_late_init_params(struct spi_nor *nor)
+@@ -2485,8 +3135,53 @@ static void spi_nor_late_init_params(struct spi_nor *nor)
  	 * NOR protection support. When locking_ops are not provided, we pick
  	 * the default ones.
  	 */
@@ -1341,7 +1341,7 @@ index 5dbf52aa0..f3c99beff 100644
  }
  
  /**
-@@ -2490,12 +3185,13 @@ static void spi_nor_late_init_params(struct spi_nor *nor)
+@@ -2499,12 +3194,13 @@ static void spi_nor_late_init_params(struct spi_nor *nor)
   */
  static void spi_nor_sfdp_init_params_deprecated(struct spi_nor *nor)
  {
@@ -1357,7 +1357,7 @@ index 5dbf52aa0..f3c99beff 100644
  		nor->flags &= ~SNOR_F_4B_OPCODES;
  	}
  }
-@@ -2530,7 +3226,7 @@ static void spi_nor_init_params_deprecated(struct spi_nor *nor)
+@@ -2539,7 +3235,7 @@ static void spi_nor_init_params_deprecated(struct spi_nor *nor)
   */
  static void spi_nor_init_default_params(struct spi_nor *nor)
  {
@@ -1366,7 +1366,7 @@ index 5dbf52aa0..f3c99beff 100644
  	const struct flash_info *info = nor->info;
  	struct device_node *np = spi_nor_get_flash_node(nor);
  
-@@ -2610,12 +3306,15 @@ static void spi_nor_init_default_params(struct spi_nor *nor)
+@@ -2619,12 +3315,15 @@ static void spi_nor_init_default_params(struct spi_nor *nor)
   */
  static int spi_nor_init_params(struct spi_nor *nor)
  {
@@ -1384,7 +1384,7 @@ index 5dbf52aa0..f3c99beff 100644
  	spi_nor_init_default_params(nor);
  
  	if (nor->info->parse_sfdp) {
-@@ -2643,9 +3342,10 @@ static int spi_nor_init_params(struct spi_nor *nor)
+@@ -2652,9 +3351,10 @@ static int spi_nor_init_params(struct spi_nor *nor)
   */
  static int spi_nor_octal_dtr_enable(struct spi_nor *nor, bool enable)
  {
@@ -1396,7 +1396,7 @@ index 5dbf52aa0..f3c99beff 100644
  		return 0;
  
  	if (!(nor->read_proto == SNOR_PROTO_8_8_8_DTR &&
-@@ -2655,7 +3355,7 @@ static int spi_nor_octal_dtr_enable(struct spi_nor *nor, bool enable)
+@@ -2664,7 +3364,7 @@ static int spi_nor_octal_dtr_enable(struct spi_nor *nor, bool enable)
  	if (!(nor->flags & SNOR_F_IO_MODE_EN_VOLATILE))
  		return 0;
  
@@ -1405,7 +1405,7 @@ index 5dbf52aa0..f3c99beff 100644
  	if (ret)
  		return ret;
  
-@@ -2675,19 +3375,54 @@ static int spi_nor_octal_dtr_enable(struct spi_nor *nor, bool enable)
+@@ -2684,19 +3384,54 @@ static int spi_nor_octal_dtr_enable(struct spi_nor *nor, bool enable)
   */
  static int spi_nor_quad_enable(struct spi_nor *nor)
  {
@@ -1467,7 +1467,7 @@ index 5dbf52aa0..f3c99beff 100644
  
  	err = spi_nor_octal_dtr_enable(nor, true);
  	if (err) {
-@@ -2728,9 +3463,29 @@ static int spi_nor_init(struct spi_nor *nor)
+@@ -2737,9 +3472,29 @@ static int spi_nor_init(struct spi_nor *nor)
  		 */
  		WARN_ONCE(nor->flags & SNOR_F_BROKEN_RESET,
  			  "enabling reset hack; may not recover from unexpected reboots\n");
@@ -1500,7 +1500,7 @@ index 5dbf52aa0..f3c99beff 100644
  	}
  
  	return 0;
-@@ -2844,10 +3599,34 @@ static void spi_nor_put_device(struct mtd_info *mtd)
+@@ -2853,10 +3608,34 @@ static void spi_nor_put_device(struct mtd_info *mtd)
  
  void spi_nor_restore(struct spi_nor *nor)
  {
@@ -1537,7 +1537,7 @@ index 5dbf52aa0..f3c99beff 100644
  
  	if (nor->flags & SNOR_F_SOFT_RESET)
  		spi_nor_soft_reset(nor);
-@@ -2911,8 +3690,11 @@ static const struct flash_info *spi_nor_get_flash_info(struct spi_nor *nor,
+@@ -2920,8 +3699,11 @@ static const struct flash_info *spi_nor_get_flash_info(struct spi_nor *nor,
  
  static void spi_nor_set_mtd_info(struct spi_nor *nor)
  {
@@ -1549,7 +1549,7 @@ index 5dbf52aa0..f3c99beff 100644
  
  	spi_nor_set_mtd_locking_ops(nor);
  	spi_nor_set_mtd_otp_ops(nor);
-@@ -2926,9 +3708,23 @@ static void spi_nor_set_mtd_info(struct spi_nor *nor)
+@@ -2935,9 +3717,23 @@ static void spi_nor_set_mtd_info(struct spi_nor *nor)
  		mtd->flags |= MTD_NO_ERASE;
  	else
  		mtd->_erase = spi_nor_erase;
@@ -1576,7 +1576,7 @@ index 5dbf52aa0..f3c99beff 100644
  	mtd->_read = spi_nor_read;
  	/* Might be already set by some SST flashes. */
  	if (!mtd->_write)
-@@ -2961,7 +3757,7 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
+@@ -2970,7 +3766,7 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
  	 * We need the bounce buffer early to read/write registers when going
  	 * through the spi-mem layer (buffers have to be DMA-able).
  	 * For spi-mem drivers, we'll reallocate a new buffer if
@@ -1585,7 +1585,7 @@ index 5dbf52aa0..f3c99beff 100644
  	 * shouldn't happen before long since NOR pages are usually less
  	 * than 1KB) after spi_nor_scan() returns.
  	 */
-@@ -3028,13 +3824,14 @@ EXPORT_SYMBOL_GPL(spi_nor_scan);
+@@ -3037,13 +3833,14 @@ EXPORT_SYMBOL_GPL(spi_nor_scan);
  
  static int spi_nor_create_read_dirmap(struct spi_nor *nor)
  {
@@ -1601,7 +1601,7 @@ index 5dbf52aa0..f3c99beff 100644
  	};
  	struct spi_mem_op *op = &info.op_tmpl;
  
-@@ -3059,13 +3856,14 @@ static int spi_nor_create_read_dirmap(struct spi_nor *nor)
+@@ -3068,13 +3865,14 @@ static int spi_nor_create_read_dirmap(struct spi_nor *nor)
  
  static int spi_nor_create_write_dirmap(struct spi_nor *nor)
  {
@@ -1617,7 +1617,7 @@ index 5dbf52aa0..f3c99beff 100644
  	};
  	struct spi_mem_op *op = &info.op_tmpl;
  
-@@ -3088,6 +3886,7 @@ static int spi_nor_create_write_dirmap(struct spi_nor *nor)
+@@ -3097,6 +3895,7 @@ static int spi_nor_create_write_dirmap(struct spi_nor *nor)
  
  static int spi_nor_probe(struct spi_mem *spimem)
  {
@@ -1625,7 +1625,7 @@ index 5dbf52aa0..f3c99beff 100644
  	struct spi_device *spi = spimem->spi;
  	struct flash_platform_data *data = dev_get_platdata(&spi->dev);
  	struct spi_nor *nor;
-@@ -3107,6 +3906,9 @@ static int spi_nor_probe(struct spi_mem *spimem)
+@@ -3116,6 +3915,9 @@ static int spi_nor_probe(struct spi_mem *spimem)
  	nor->dev = &spi->dev;
  	spi_nor_set_flash_node(nor, spi->dev.of_node);
  
@@ -1635,7 +1635,7 @@ index 5dbf52aa0..f3c99beff 100644
  	spi_mem_set_drvdata(spimem, nor);
  
  	if (data && data->name)
-@@ -3134,13 +3936,15 @@ static int spi_nor_probe(struct spi_mem *spimem)
+@@ -3143,13 +3945,15 @@ static int spi_nor_probe(struct spi_mem *spimem)
  
  	spi_nor_debugfs_register(nor);
  
@@ -1653,7 +1653,7 @@ index 5dbf52aa0..f3c99beff 100644
  		devm_kfree(nor->dev, nor->bouncebuf);
  		nor->bouncebuf = devm_kmalloc(nor->dev,
  					      nor->bouncebuf_size,
-@@ -3175,6 +3979,10 @@ static void spi_nor_shutdown(struct spi_mem *spimem)
+@@ -3184,6 +3988,10 @@ static void spi_nor_shutdown(struct spi_mem *spimem)
  {
  	struct spi_nor *nor = spi_mem_get_drvdata(spimem);
  
@@ -1665,7 +1665,7 @@ index 5dbf52aa0..f3c99beff 100644
  }
  
 diff --git a/drivers/mtd/spi-nor/core.h b/drivers/mtd/spi-nor/core.h
-index 85b0cf254..49799c3b0 100644
+index d18dafeb0..878deccb4 100644
 --- a/drivers/mtd/spi-nor/core.h
 +++ b/drivers/mtd/spi-nor/core.h
 @@ -11,6 +11,12 @@
@@ -2706,7 +2706,7 @@ index 00ab0d2d6..7cc61ba77 100644
  
  	if (WARN_ON(!is_power_of_2(spi_nor_otp_region_len(nor))))
 diff --git a/drivers/mtd/spi-nor/sfdp.c b/drivers/mtd/spi-nor/sfdp.c
-index 2257f1b4c..a327bdb21 100644
+index 78110387b..e71ac165c 100644
 --- a/drivers/mtd/spi-nor/sfdp.c
 +++ b/drivers/mtd/spi-nor/sfdp.c
 @@ -432,7 +432,7 @@ static void spi_nor_regions_sort_erase_types(struct spi_nor_erase_map *map)
@@ -2837,10 +2837,10 @@ index 2257f1b4c..a327bdb21 100644
  			break;
  		}
 diff --git a/drivers/mtd/spi-nor/spansion.c b/drivers/mtd/spi-nor/spansion.c
-index 015004900..110759037 100644
+index 7ac2ad1a8..ac03ff496 100644
 --- a/drivers/mtd/spi-nor/spansion.c
 +++ b/drivers/mtd/spi-nor/spansion.c
-@@ -131,8 +131,9 @@ static int cypress_nor_octal_dtr_dis(struct spi_nor *nor)
+@@ -136,8 +136,9 @@ static int cypress_nor_octal_dtr_dis(struct spi_nor *nor)
   */
  static int cypress_nor_quad_enable_volatile(struct spi_nor *nor)
  {
@@ -2851,7 +2851,7 @@ index 015004900..110759037 100644
  	u8 cfr1v_written;
  	int ret;
  
-@@ -190,6 +191,7 @@ static int cypress_nor_quad_enable_volatile(struct spi_nor *nor)
+@@ -195,6 +196,7 @@ static int cypress_nor_quad_enable_volatile(struct spi_nor *nor)
   */
  static int cypress_nor_set_page_size(struct spi_nor *nor)
  {
@@ -2859,7 +2859,7 @@ index 015004900..110759037 100644
  	struct spi_mem_op op =
  		CYPRESS_NOR_RD_ANY_REG_OP(3, SPINOR_REG_CYPRESS_CFR3V,
  					  nor->bouncebuf);
-@@ -200,9 +202,9 @@ static int cypress_nor_set_page_size(struct spi_nor *nor)
+@@ -205,9 +207,9 @@ static int cypress_nor_set_page_size(struct spi_nor *nor)
  		return ret;
  
  	if (nor->bouncebuf[0] & SPINOR_REG_CYPRESS_CFR3V_PGSZ)
@@ -2871,7 +2871,7 @@ index 015004900..110759037 100644
  
  	return 0;
  }
-@@ -212,16 +214,19 @@ s25hx_t_post_bfpt_fixup(struct spi_nor *nor,
+@@ -217,16 +219,19 @@ s25hx_t_post_bfpt_fixup(struct spi_nor *nor,
  			const struct sfdp_parameter_header *bfpt_header,
  			const struct sfdp_bfpt *bfpt)
  {
@@ -2893,7 +2893,7 @@ index 015004900..110759037 100644
  	unsigned int i;
  
  	/*
-@@ -244,7 +249,7 @@ static void s25hx_t_post_sfdp_fixup(struct spi_nor *nor)
+@@ -249,7 +254,7 @@ static void s25hx_t_post_sfdp_fixup(struct spi_nor *nor)
  
  static void s25hx_t_late_init(struct spi_nor *nor)
  {
@@ -2902,7 +2902,7 @@ index 015004900..110759037 100644
  
  	/* Fast Read 4B requires mode cycles */
  	params->reads[SNOR_CMD_READ_FAST].num_mode_clocks = 8;
-@@ -277,28 +282,32 @@ static int cypress_nor_octal_dtr_enable(struct spi_nor *nor, bool enable)
+@@ -282,28 +287,32 @@ static int cypress_nor_octal_dtr_enable(struct spi_nor *nor, bool enable)
  
  static void s28hs512t_default_init(struct spi_nor *nor)
  {
@@ -2941,7 +2941,7 @@ index 015004900..110759037 100644
  				SPINOR_OP_PP_4B, SNOR_PROTO_8_8_8_DTR);
  
  	/*
-@@ -306,7 +315,7 @@ static void s28hs512t_post_sfdp_fixup(struct spi_nor *nor)
+@@ -311,7 +320,7 @@ static void s28hs512t_post_sfdp_fixup(struct spi_nor *nor)
  	 * address bytes needed for Read Status Register command as 0 but the
  	 * actual value for that is 4.
  	 */
@@ -2950,7 +2950,7 @@ index 015004900..110759037 100644
  }
  
  static int s28hs512t_post_bfpt_fixup(struct spi_nor *nor,
-@@ -327,13 +336,15 @@ s25fs_s_nor_post_bfpt_fixups(struct spi_nor *nor,
+@@ -332,13 +341,15 @@ s25fs_s_nor_post_bfpt_fixups(struct spi_nor *nor,
  			     const struct sfdp_parameter_header *bfpt_header,
  			     const struct sfdp_bfpt *bfpt)
  {
@@ -2967,7 +2967,7 @@ index 015004900..110759037 100644
  
  	return 0;
  }
-@@ -351,24 +362,28 @@ static const struct flash_info spansion_nor_parts[] = {
+@@ -356,24 +367,28 @@ static const struct flash_info spansion_nor_parts[] = {
  	{ "s25sl064p",  INFO(0x010216, 0x4d00,  64 * 1024, 128)
  		NO_SFDP_FLAGS(SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ) },
  	{ "s25fl128s0", INFO6(0x012018, 0x4d0080, 256 * 1024, 64)
@@ -2997,7 +2997,7 @@ index 015004900..110759037 100644
  		NO_SFDP_FLAGS(SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ)
  		MFR_FLAGS(USE_CLSR)
  	},
-@@ -427,12 +442,15 @@ static const struct flash_info spansion_nor_parts[] = {
+@@ -432,12 +447,15 @@ static const struct flash_info spansion_nor_parts[] = {
  	{ "s25fl208k",  INFO(0x014014,      0,  64 * 1024,  16)
  		NO_SFDP_FLAGS(SECT_4K | SPI_NOR_DUAL_READ) },
  	{ "s25fl064l",  INFO(0x016017,      0,  64 * 1024, 128)
@@ -3013,7 +3013,7 @@ index 015004900..110759037 100644
  		NO_SFDP_FLAGS(SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ)
  		FIXUP_FLAGS(SPI_NOR_4B_OPCODES) },
  	{ "s25hl512t",  INFO6(0x342a1a, 0x0f0390, 256 * 1024, 256)
-@@ -524,7 +542,9 @@ static int spansion_nor_sr_ready_and_clear(struct spi_nor *nor)
+@@ -529,7 +547,9 @@ static int spansion_nor_sr_ready_and_clear(struct spi_nor *nor)
  
  static void spansion_nor_late_init(struct spi_nor *nor)
  {
@@ -3024,7 +3024,7 @@ index 015004900..110759037 100644
  		nor->flags |= SNOR_F_4B_OPCODES;
  		/* No small sector erase for 4-byte command set */
  		nor->erase_opcode = SPINOR_OP_SE;
-@@ -532,7 +552,7 @@ static void spansion_nor_late_init(struct spi_nor *nor)
+@@ -537,7 +557,7 @@ static void spansion_nor_late_init(struct spi_nor *nor)
  	}
  
  	if (nor->info->mfr_flags & USE_CLSR)

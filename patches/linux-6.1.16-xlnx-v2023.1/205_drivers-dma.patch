@@ -258,7 +258,7 @@ index c0a1408b1..a10019d3a 100644
  additionalProperties: false
  
 diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 7524b62a8..38068672d 100644
+index b64ae02c2..b9760139b 100644
 --- a/drivers/dma/Kconfig
 +++ b/drivers/dma/Kconfig
 @@ -753,6 +753,12 @@ config XILINX_ZYNQMP_DPDMA

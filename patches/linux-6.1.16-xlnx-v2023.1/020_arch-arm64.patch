@@ -138,7 +138,7 @@ index 7d301700d..1f3f52ce4 100644
  #define __SYS_BARRIER_INSN(CRm, op2, Rt) \
  	__emit_inst(0xd5000000 | sys_insn(0, 3, 3, (CRm), (op2)) | ((Rt) & 0x1f))
 diff --git a/arch/arm64/kernel/cpufeature.c b/arch/arm64/kernel/cpufeature.c
-index b3f37e220..308630465 100644
+index 86b2f7ec6..0d7889fed 100644
 --- a/arch/arm64/kernel/cpufeature.c
 +++ b/arch/arm64/kernel/cpufeature.c
 @@ -2101,6 +2101,11 @@ static void cpu_trap_el0_impdef(const struct arm64_cpu_capabilities *__unused)

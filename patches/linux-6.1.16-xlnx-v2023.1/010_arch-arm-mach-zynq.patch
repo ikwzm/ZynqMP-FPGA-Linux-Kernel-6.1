@@ -416,7 +416,7 @@ index 8ba450ab5..609766366 100644
 +	zynq_pm_suspend_init();
  }
 diff --git a/arch/arm/mach-zynq/slcr.c b/arch/arm/mach-zynq/slcr.c
-index 377076148..6800aa9f6 100644
+index 9765b3f4c..2fd8a8570 100644
 --- a/arch/arm/mach-zynq/slcr.c
 +++ b/arch/arm/mach-zynq/slcr.c
 @@ -16,10 +16,12 @@

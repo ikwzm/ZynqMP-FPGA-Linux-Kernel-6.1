@@ -81,10 +81,10 @@ index e1a569b99..7093a0714 100644
  
  	test->ca8210_dfs_spi_int = debugfs_create_file(
 diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index d1bb62f73..5c8e49857 100644
+index d4b969e68..15ea11ebc 100644
 --- a/drivers/spi/Kconfig
 +++ b/drivers/spi/Kconfig
-@@ -1094,6 +1094,7 @@ config SPI_XTENSA_XTFPGA
+@@ -1093,6 +1093,7 @@ config SPI_XTENSA_XTFPGA
  config SPI_ZYNQ_QSPI
  	tristate "Xilinx Zynq QSPI controller"
  	depends on ARCH_ZYNQ || COMPILE_TEST
@@ -92,7 +92,7 @@ index d1bb62f73..5c8e49857 100644
  	help
  	  This enables support for the Zynq Quad SPI controller
  	  in master mode.
-@@ -1101,9 +1102,10 @@ config SPI_ZYNQ_QSPI
+@@ -1100,9 +1101,10 @@ config SPI_ZYNQ_QSPI
  
  config SPI_ZYNQMP_GQSPI
  	tristate "Xilinx ZynqMP GQSPI controller"
@@ -497,7 +497,7 @@ index e28521922..a3d8f6108 100644
  
  	dev_warn(&spi->dev, "Native CS is not working for cs > 0\n");
 diff --git a/drivers/spi/spi-bcm63xx-hsspi.c b/drivers/spi/spi-bcm63xx-hsspi.c
-index b871fd810..dc179c467 100644
+index 02f56fc00..5863f8b29 100644
 --- a/drivers/spi/spi-bcm63xx-hsspi.c
 +++ b/drivers/spi/spi-bcm63xx-hsspi.c
 @@ -130,7 +130,7 @@ static void bcm63xx_hsspi_set_cs(struct bcm63xx_hsspi *bs, unsigned int cs,
@@ -518,8 +518,8 @@ index b871fd810..dc179c467 100644
  	u16 opcode = 0;
  	int pending = t->len;
  	int step_size = HSSPI_BUFFER_LEN;
-@@ -165,7 +165,7 @@ static int bcm63xx_hsspi_do_txrx(struct spi_device *spi, struct spi_transfer *t)
- 	u8 *rx = t->rx_buf;
+@@ -166,7 +166,7 @@ static int bcm63xx_hsspi_do_txrx(struct spi_device *spi, struct spi_transfer *t)
+ 	u32 val = 0;
  
  	bcm63xx_hsspi_set_clk(bs, spi, t->speed_hz);
 -	bcm63xx_hsspi_set_cs(bs, spi->chip_select, true);
@@ -527,7 +527,7 @@ index b871fd810..dc179c467 100644
  
  	if (tx && rx)
  		opcode = HSSPI_OP_READ_WRITE;
-@@ -228,14 +228,14 @@ static int bcm63xx_hsspi_setup(struct spi_device *spi)
+@@ -234,14 +234,14 @@ static int bcm63xx_hsspi_setup(struct spi_device *spi)
  	u32 reg;
  
  	reg = __raw_readl(bs->regs +
@@ -544,7 +544,7 @@ index b871fd810..dc179c467 100644
  
  	mutex_lock(&bs->bus_mutex);
  	reg = __raw_readl(bs->regs + HSSPI_GLOBAL_CTRL_REG);
-@@ -243,16 +243,16 @@ static int bcm63xx_hsspi_setup(struct spi_device *spi)
+@@ -249,16 +249,16 @@ static int bcm63xx_hsspi_setup(struct spi_device *spi)
  	/* only change actual polarities if there is no transfer */
  	if ((reg & GLOBAL_CTRL_CS_POLARITY_MASK) == bs->cs_polarity) {
  		if (spi->mode & SPI_CS_HIGH)
@@ -565,7 +565,7 @@ index b871fd810..dc179c467 100644
  
  	mutex_unlock(&bs->bus_mutex);
  
-@@ -283,7 +283,7 @@ static int bcm63xx_hsspi_transfer_one(struct spi_master *master,
+@@ -289,7 +289,7 @@ static int bcm63xx_hsspi_transfer_one(struct spi_master *master,
  	 * e. At the end restore the polarities again to their default values.
  	 */
  
@@ -574,7 +574,7 @@ index b871fd810..dc179c467 100644
  	bcm63xx_hsspi_set_cs(bs, dummy_cs, true);
  
  	list_for_each_entry(t, &msg->transfers, transfer_list) {
-@@ -296,7 +296,7 @@ static int bcm63xx_hsspi_transfer_one(struct spi_master *master,
+@@ -302,7 +302,7 @@ static int bcm63xx_hsspi_transfer_one(struct spi_master *master,
  		spi_transfer_delay_exec(t);
  
  		if (t->cs_change)
@@ -3104,7 +3104,7 @@ index 23ad05252..46e7c4465 100644
  	if (enable)
  		reg |= SUN6I_TFR_CTL_CS_LEVEL;
 diff --git a/drivers/spi/spi-synquacer.c b/drivers/spi/spi-synquacer.c
-index 47cbe7313..7385a85c0 100644
+index dc188f920..733dc8c52 100644
 --- a/drivers/spi/spi-synquacer.c
 +++ b/drivers/spi/spi-synquacer.c
 @@ -250,7 +250,7 @@ static int synquacer_spi_config(struct spi_master *master,
@@ -3125,7 +3125,7 @@ index 47cbe7313..7385a85c0 100644
  	sspi->bus_width = bus_width;
  
  	return 0;
-@@ -489,7 +489,7 @@ static void synquacer_spi_set_cs(struct spi_device *spi, bool enable)
+@@ -488,7 +488,7 @@ static void synquacer_spi_set_cs(struct spi_device *spi, bool enable)
  	val = readl(sspi->regs + SYNQUACER_HSSPI_REG_DMSTART);
  	val &= ~(SYNQUACER_HSSPI_DMPSEL_CS_MASK <<
  		 SYNQUACER_HSSPI_DMPSEL_CS_SHIFT);

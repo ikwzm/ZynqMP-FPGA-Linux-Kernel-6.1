@@ -31,7 +31,7 @@ index 16fa17bbd..86c0bdede 100644
  }
  
 diff --git a/drivers/media/usb/uvc/uvcvideo.h b/drivers/media/usb/uvc/uvcvideo.h
-index df93db259..e04c55e3f 100644
+index 1227ae63f..d60ad7164 100644
 --- a/drivers/media/usb/uvc/uvcvideo.h
 +++ b/drivers/media/usb/uvc/uvcvideo.h
 @@ -48,9 +48,9 @@

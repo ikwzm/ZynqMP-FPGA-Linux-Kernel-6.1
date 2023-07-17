@@ -1303,7 +1303,7 @@ index 27de2a97f..c6dc173fe 100644
  }
  
 diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
-index 9d82de4c0..33cde6e4a 100644
+index 739e0d40c..933af4ac9 100644
 --- a/drivers/gpu/drm/drm_edid.c
 +++ b/drivers/gpu/drm/drm_edid.c
 @@ -2866,6 +2866,57 @@ mode_is_rb(const struct drm_display_mode *mode)
@@ -1399,7 +1399,7 @@ index 71edb80fe..fc9cf2004 100644
  MODULE_PARM_DESC(drm_leak_fbdev_smem,
  		 "Allow unsafe leaking fbdev physical smem address [default=false]");
 diff --git a/drivers/gpu/drm/drm_fourcc.c b/drivers/gpu/drm/drm_fourcc.c
-index 6242dfbe9..ab72d9dab 100644
+index 0f17dfa87..bf5de1e5d 100644
 --- a/drivers/gpu/drm/drm_fourcc.c
 +++ b/drivers/gpu/drm/drm_fourcc.c
 @@ -29,6 +29,7 @@
@@ -1410,7 +1410,7 @@ index 6242dfbe9..ab72d9dab 100644
  
  /**
   * drm_mode_legacy_fb_format - compute drm fourcc code from legacy description
-@@ -241,6 +242,9 @@ const struct drm_format_info *__drm_format_info(u32 format)
+@@ -245,6 +246,9 @@ const struct drm_format_info *__drm_format_info(u32 format)
  		{ .format = DRM_FORMAT_NV61,		.depth = 0,  .num_planes = 2, .cpp = { 1, 2, 0 }, .hsub = 2, .vsub = 1, .is_yuv = true },
  		{ .format = DRM_FORMAT_NV24,		.depth = 0,  .num_planes = 2, .cpp = { 1, 2, 0 }, .hsub = 1, .vsub = 1, .is_yuv = true },
  		{ .format = DRM_FORMAT_NV42,		.depth = 0,  .num_planes = 2, .cpp = { 1, 2, 0 }, .hsub = 1, .vsub = 1, .is_yuv = true },
@@ -1420,7 +1420,7 @@ index 6242dfbe9..ab72d9dab 100644
  		{ .format = DRM_FORMAT_YUYV,		.depth = 0,  .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 2, .vsub = 1, .is_yuv = true },
  		{ .format = DRM_FORMAT_YVYU,		.depth = 0,  .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 2, .vsub = 1, .is_yuv = true },
  		{ .format = DRM_FORMAT_UYVY,		.depth = 0,  .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 2, .vsub = 1, .is_yuv = true },
-@@ -306,6 +310,11 @@ const struct drm_format_info *__drm_format_info(u32 format)
+@@ -310,6 +314,11 @@ const struct drm_format_info *__drm_format_info(u32 format)
  		{ .format = DRM_FORMAT_P030,            .depth = 0,  .num_planes = 2,
  		  .char_per_block = { 4, 8, 0 }, .block_w = { 3, 3, 0 }, .block_h = { 1, 1, 0 },
  		  .hsub = 2, .vsub = 2, .is_yuv = true},
@@ -1432,7 +1432,7 @@ index 6242dfbe9..ab72d9dab 100644
  	};
  
  	unsigned int i;
-@@ -444,3 +453,36 @@ uint64_t drm_format_info_min_pitch(const struct drm_format_info *info,
+@@ -448,3 +457,36 @@ uint64_t drm_format_info_min_pitch(const struct drm_format_info *info,
  			    drm_format_info_block_height(info, plane));
  }
  EXPORT_SYMBOL(drm_format_info_min_pitch);
