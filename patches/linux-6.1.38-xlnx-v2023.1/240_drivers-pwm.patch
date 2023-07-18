@@ -34,10 +34,10 @@ index 7bf1a29f0..f744f021b 100644
  obj-$(CONFIG_PWM_SPRD)		+= pwm-sprd.o
 diff --git a/drivers/pwm/pwm-cadence.c b/drivers/pwm/pwm-cadence.c
 new file mode 100644
-index 000000000..73f377860
+index 000000000..8dff88ca3
 --- /dev/null
 +++ b/drivers/pwm/pwm-cadence.c
-@@ -0,0 +1,362 @@
+@@ -0,0 +1,364 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Driver to configure cadence TTC timer as PWM
@@ -251,7 +251,7 @@ index 000000000..73f377860
 +	return 0;
 +}
 +
-+static void ttc_pwm_get_state(struct pwm_chip *chip,
++static int  ttc_pwm_get_state(struct pwm_chip *chip,
 +			      struct pwm_device *pwm,
 +			      struct pwm_state *state)
 +{
@@ -279,6 +279,8 @@ index 000000000..73f377860
 +
 +	tmp = ttc_pwm_ch_readl(priv, pwm, TTC_MATCH_CNT_VAL_OFFSET);
 +	state->duty_cycle = DIV_ROUND_CLOSEST_ULL(tmp, rate);
++
++	return 0;
 +}
 +
 +static struct pwm_device *
