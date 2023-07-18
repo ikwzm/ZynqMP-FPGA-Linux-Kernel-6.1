@@ -25,7 +25,7 @@ index 8d241a703..92cb9006e 100644
    - compatible
    - reg
 diff --git a/drivers/i2c/busses/i2c-xiic.c b/drivers/i2c/busses/i2c-xiic.c
-index 277a02455..1e89e8270 100644
+index effae4d46..1870eccf7 100644
 --- a/drivers/i2c/busses/i2c-xiic.c
 +++ b/drivers/i2c/busses/i2c-xiic.c
 @@ -32,6 +32,8 @@
@@ -716,7 +716,7 @@ index 277a02455..1e89e8270 100644
  	ret = xiic_reinit(i2c);
  	if (!ret)
  		__xiic_start_xfer(i2c);
-@@ -729,7 +1189,7 @@ static int xiic_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+@@ -731,7 +1191,7 @@ static int xiic_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
  
  static u32 xiic_func(struct i2c_adapter *adap)
  {
@@ -725,7 +725,7 @@ index 277a02455..1e89e8270 100644
  }
  
  static const struct i2c_algorithm xiic_algorithm = {
-@@ -737,21 +1197,30 @@ static const struct i2c_algorithm xiic_algorithm = {
+@@ -739,21 +1199,30 @@ static const struct i2c_algorithm xiic_algorithm = {
  	.functionality = xiic_func,
  };
  
@@ -761,7 +761,7 @@ index 277a02455..1e89e8270 100644
  	struct resource *res;
  	int ret, irq;
  	u8 i;
-@@ -761,6 +1230,13 @@ static int xiic_i2c_probe(struct platform_device *pdev)
+@@ -763,6 +1232,13 @@ static int xiic_i2c_probe(struct platform_device *pdev)
  	if (!i2c)
  		return -ENOMEM;
  
@@ -775,7 +775,7 @@ index 277a02455..1e89e8270 100644
  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
  	i2c->base = devm_ioremap_resource(&pdev->dev, res);
  	if (IS_ERR(i2c->base))
-@@ -798,6 +1274,15 @@ static int xiic_i2c_probe(struct platform_device *pdev)
+@@ -800,6 +1276,15 @@ static int xiic_i2c_probe(struct platform_device *pdev)
  	pm_runtime_use_autosuspend(i2c->dev);
  	pm_runtime_set_active(i2c->dev);
  	pm_runtime_enable(i2c->dev);
@@ -791,7 +791,7 @@ index 277a02455..1e89e8270 100644
  	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
  					xiic_process, IRQF_ONESHOT,
  					pdev->name, i2c);
-@@ -841,6 +1326,9 @@ static int xiic_i2c_probe(struct platform_device *pdev)
+@@ -843,6 +1328,9 @@ static int xiic_i2c_probe(struct platform_device *pdev)
  			i2c_new_client_device(&i2c->adap, pdata->devices + i);
  	}
  
@@ -801,7 +801,7 @@ index 277a02455..1e89e8270 100644
  	return 0;
  
  err_clk_dis:
-@@ -858,11 +1346,14 @@ static int xiic_i2c_remove(struct platform_device *pdev)
+@@ -860,11 +1348,14 @@ static int xiic_i2c_remove(struct platform_device *pdev)
  	/* remove adapter & data */
  	i2c_del_adapter(&i2c->adap);
  
@@ -819,7 +819,7 @@ index 277a02455..1e89e8270 100644
  	pm_runtime_put_sync(i2c->dev);
  	clk_disable_unprepare(i2c->clk);
  	pm_runtime_disable(&pdev->dev);
-@@ -872,14 +1363,6 @@ static int xiic_i2c_remove(struct platform_device *pdev)
+@@ -874,14 +1365,6 @@ static int xiic_i2c_remove(struct platform_device *pdev)
  	return 0;
  }
  

@@ -61,10 +61,10 @@ index 000000000..03b39f4b1
 +	xlnx,num-intr-inputs = <0x1>;
 +};
 diff --git a/drivers/irqchip/Kconfig b/drivers/irqchip/Kconfig
-index 7ef9f5e69..fd8d0dd90 100644
+index a29a426e4..e40e3a171 100644
 --- a/drivers/irqchip/Kconfig
 +++ b/drivers/irqchip/Kconfig
-@@ -313,6 +313,13 @@ config XILINX_INTC
+@@ -314,6 +314,13 @@ config XILINX_INTC
  	  This is used as a primary controller with MicroBlaze and can also
  	  be used as a secondary chained controller on other platforms.
  
@@ -732,7 +732,7 @@ index 7899607fb..0cc55f4c6 100644
 +EXPORT_SYMBOL_GPL(platform_irqchip_remove);
 +#endif
 diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-index f61447913..614607ecf 100644
+index 2be2091c2..1849f2b44 100644
 --- a/include/linux/cpuhotplug.h
 +++ b/include/linux/cpuhotplug.h
 @@ -152,6 +152,7 @@ enum cpuhp_state {
@@ -743,7 +743,7 @@ index f61447913..614607ecf 100644
  	CPUHP_AP_ARM_MVEBU_COHERENCY,
  	CPUHP_AP_MICROCODE_LOADER,
  	CPUHP_AP_PERF_X86_AMD_UNCORE_STARTING,
-@@ -183,6 +184,7 @@ enum cpuhp_state {
+@@ -182,6 +183,7 @@ enum cpuhp_state {
  	CPUHP_AP_RISCV_TIMER_STARTING,
  	CPUHP_AP_CLINT_TIMER_STARTING,
  	CPUHP_AP_CSKY_TIMER_STARTING,

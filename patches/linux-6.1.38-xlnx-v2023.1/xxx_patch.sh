@@ -15,11 +15,13 @@ run_command()
 run_patch()
 {
     if [ $dry_run -ne 0 ] || [ $verbose -ne 0 ]; then
-	echo "## patch ${PATCH_DIR}/${1}"
+        echo "## patch ${PATCH_DIR}/${1}"
     fi
-    run_command "patch -p1 < ${PATCH_DIR}/${1}"
-    run_command "git add --all"
-    run_command "git commit -m '[patch] ${1}'"
+    if [ -e "${PATCH_DIR}/${1}" ]; then
+        run_command "patch -p1 < ${PATCH_DIR}/${1}"
+        run_command "git add --all"
+        run_command "git commit -m '[patch] ${1}'"
+    fi
 }
 
 run_patch 010_arch-arm-mach-zynq.patch

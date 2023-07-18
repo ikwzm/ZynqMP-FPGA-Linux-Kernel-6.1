@@ -11,7 +11,7 @@ index f7617b88c..1394ae66a 100644
    reg:
      maxItems: 1
 diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
-index 434f83168..517d187d8 100644
+index 12f685168..825748781 100644
 --- a/drivers/tty/serial/Kconfig
 +++ b/drivers/tty/serial/Kconfig
 @@ -535,7 +535,7 @@ config SERIAL_UARTLITE_NR_UARTS

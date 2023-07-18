@@ -1135,10 +1135,10 @@ index 16565a0a5..e9b63c3ad 100644
  		drm_dp_aux_init(aux);
  
 diff --git a/drivers/gpu/drm/display/drm_hdmi_helper.c b/drivers/gpu/drm/display/drm_hdmi_helper.c
-index 0264abe55..a6c998597 100644
+index faf5e9efa..d1bfa263d 100644
 --- a/drivers/gpu/drm/display/drm_hdmi_helper.c
 +++ b/drivers/gpu/drm/display/drm_hdmi_helper.c
-@@ -80,6 +80,81 @@ int drm_hdmi_infoframe_set_hdr_metadata(struct hdmi_drm_infoframe *frame,
+@@ -78,6 +78,81 @@ int drm_hdmi_infoframe_set_hdr_metadata(struct hdmi_drm_infoframe *frame,
  }
  EXPORT_SYMBOL(drm_hdmi_infoframe_set_hdr_metadata);
  
@@ -1386,7 +1386,7 @@ index 3b535ad1b..64f4f318d 100644
  	return dma_addr;
  }
 diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index 71edb80fe..fc9cf2004 100644
+index 76e46713b..af7d18a9a 100644
 --- a/drivers/gpu/drm/drm_fb_helper.c
 +++ b/drivers/gpu/drm/drm_fb_helper.c
 @@ -74,7 +74,7 @@ MODULE_PARM_DESC(drm_fbdev_overalloc,
@@ -31579,10 +31579,10 @@ index c04026d82..839aded7c 100644
 -
  #endif /* _ZYNQMP_DPSUB_H_ */
 diff --git a/include/drm/display/drm_dp.h b/include/drm/display/drm_dp.h
-index e934aab35..5b7e0cc3b 100644
+index 05f2cc03d..92ed9c41f 100644
 --- a/include/drm/display/drm_dp.h
 +++ b/include/drm/display/drm_dp.h
-@@ -1094,6 +1094,7 @@
+@@ -1100,6 +1100,7 @@
  
  /* Extended Receiver Capability: See DP_DPCD_REV for definitions */
  #define DP_DP13_DPCD_REV                    0x2200

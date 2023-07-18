@@ -270,7 +270,7 @@ index 2417b13ba..000000000
 -		clock-names = "pll_ref", "aclk";
 -	};
 diff --git a/drivers/soc/xilinx/xlnx_event_manager.c b/drivers/soc/xilinx/xlnx_event_manager.c
-index 2de082765..cc3d549f5 100644
+index c76381899..fe78dee99 100644
 --- a/drivers/soc/xilinx/xlnx_event_manager.c
 +++ b/drivers/soc/xilinx/xlnx_event_manager.c
 @@ -35,7 +35,6 @@ static int event_manager_availability = -EACCES;
@@ -281,9 +281,9 @@ index 2de082765..cc3d549f5 100644
  #define REGISTER_NOTIFIER_FIRMWARE_VERSION	(2U)
  
  static DEFINE_HASHTABLE(reg_driver_map, REGISTERED_DRIVER_MAX_ORDER);
-@@ -116,8 +115,10 @@ static int xlnx_add_cb_for_notify_event(const u32 node_id, const u32 event, cons
- 		INIT_LIST_HEAD(&eve_data->cb_list_head);
+@@ -139,8 +138,10 @@ static int xlnx_add_cb_for_notify_event(const u32 node_id, const u32 event, cons
  
+ 		/* Add multiple handler and private data in list */
  		cb_data = kmalloc(sizeof(*cb_data), GFP_KERNEL);
 -		if (!cb_data)
 +		if (!cb_data) {
@@ -293,7 +293,7 @@ index 2de082765..cc3d549f5 100644
  		cb_data->eve_cb = cb_fun;
  		cb_data->agent_data = data;
  
-@@ -473,13 +474,13 @@ static void xlnx_call_notify_cb_handler(const u32 *payload)
+@@ -475,13 +476,13 @@ static void xlnx_call_notify_cb_handler(const u32 *payload)
  		}
  	}
  	if (!is_callback_found)
@@ -309,7 +309,7 @@ index 2de082765..cc3d549f5 100644
  }
  
  static irqreturn_t xlnx_event_handler(int irq, void *dev_id)
-@@ -551,7 +552,7 @@ static void xlnx_disable_percpu_irq(void *data)
+@@ -553,7 +554,7 @@ static void xlnx_disable_percpu_irq(void *data)
  static int xlnx_event_init_sgi(struct platform_device *pdev)
  {
  	int ret = 0;
@@ -318,7 +318,7 @@ index 2de082765..cc3d549f5 100644
  	/*
  	 * IRQ related structures are used for the following:
  	 * for each SGI interrupt ensure its mapped by GIC IRQ domain
-@@ -588,9 +589,12 @@ static int xlnx_event_init_sgi(struct platform_device *pdev)
+@@ -590,9 +591,12 @@ static int xlnx_event_init_sgi(struct platform_device *pdev)
  	sgi_fwspec.param[0] = sgi_num;
  	virq_sgi = irq_create_fwspec_mapping(&sgi_fwspec);
  
@@ -331,7 +331,7 @@ index 2de082765..cc3d549f5 100644
  	WARN_ON(ret);
  	if (ret) {
  		irq_dispose_mapping(virq_sgi);
-@@ -649,7 +653,12 @@ static int xlnx_event_manager_probe(struct platform_device *pdev)
+@@ -651,7 +655,12 @@ static int xlnx_event_manager_probe(struct platform_device *pdev)
  
  	ret = zynqmp_pm_register_sgi(sgi_num, 0);
  	if (ret) {

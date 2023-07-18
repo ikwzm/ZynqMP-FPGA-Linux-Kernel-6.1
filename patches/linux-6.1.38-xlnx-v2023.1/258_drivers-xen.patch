@@ -183,10 +183,10 @@ index 000000000..7a6147528
 +
 +#endif
 diff --git a/include/xen/xen.h b/include/xen/xen.h
-index a99bab817..97dd2eb1f 100644
+index b088f0d31..bde5fd09b 100644
 --- a/include/xen/xen.h
 +++ b/include/xen/xen.h
-@@ -71,4 +71,9 @@ static inline void xen_free_unpopulated_pages(unsigned int nr_pages,
+@@ -82,4 +82,9 @@ static inline bool xen_processor_present(uint32_t acpi_id)
  }
  #endif
  

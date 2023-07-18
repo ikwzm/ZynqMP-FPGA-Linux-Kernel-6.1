@@ -31,7 +31,7 @@ index 16fa17bbd..86c0bdede 100644
  }
  
 diff --git a/drivers/media/usb/uvc/uvcvideo.h b/drivers/media/usb/uvc/uvcvideo.h
-index 1227ae63f..d60ad7164 100644
+index 33e7475d4..1d7cbc738 100644
 --- a/drivers/media/usb/uvc/uvcvideo.h
 +++ b/drivers/media/usb/uvc/uvcvideo.h
 @@ -48,9 +48,9 @@
@@ -46,7 +46,7 @@ index 1227ae63f..d60ad7164 100644
  /* Maximum status buffer size in bytes of interrupt URB. */
  #define UVC_MAX_STATUS_SIZE	16
  
-@@ -311,6 +311,7 @@ struct uvc_buffer {
+@@ -310,6 +310,7 @@ struct uvc_buffer {
  
  #define UVC_QUEUE_DISCONNECTED		(1 << 0)
  #define UVC_QUEUE_DROP_CORRUPTED	(1 << 1)

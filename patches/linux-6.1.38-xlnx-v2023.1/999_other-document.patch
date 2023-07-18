@@ -1,5 +1,5 @@
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 350d7e3ba..28b70e962 100644
+index 379387e20..a1ad369db 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
 @@ -937,6 +937,15 @@ Q:	https://patchwork.kernel.org/project/linux-rdma/list/

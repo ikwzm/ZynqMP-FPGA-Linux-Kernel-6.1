@@ -196,10 +196,10 @@ index 5fb55bf19..43014a617 100644
  }
  
 diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
-index 2b280beb0..2cd1fefab 100644
+index c02ad4f76..98c9e515b 100644
 --- a/drivers/usb/host/xhci.c
 +++ b/drivers/usb/host/xhci.c
-@@ -187,7 +187,11 @@ int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us)
+@@ -188,7 +188,11 @@ int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us)
  
  	xhci_dbg_trace(xhci, trace_xhci_dbg_init, "// Reset the HC");
  	command = readl(&xhci->op_regs->command);
@@ -211,7 +211,7 @@ index 2b280beb0..2cd1fefab 100644
  	writel(command, &xhci->op_regs->command);
  
  	/* Existing Intel xHCI controllers require a delay of 1 mS,
-@@ -200,7 +204,13 @@ int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us)
+@@ -201,7 +205,13 @@ int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us)
  	if (xhci->quirks & XHCI_INTEL_HOST)
  		udelay(1000);
  
@@ -227,7 +227,7 @@ index 2b280beb0..2cd1fefab 100644
  		return ret;
  
 diff --git a/drivers/usb/host/xhci.h b/drivers/usb/host/xhci.h
-index dcee7f320..1eff17984 100644
+index 6348cacdc..b2ddf2a06 100644
 --- a/drivers/usb/host/xhci.h
 +++ b/drivers/usb/host/xhci.h
 @@ -2109,6 +2109,8 @@ void xhci_free_container_ctx(struct xhci_hcd *xhci,

@@ -21,7 +21,7 @@ index 403563c06..5fd0f7b16 100644
  		ss_cap->bU2DevExitLat = dcd_config_params.bU2DevExitLat;
  	}
 diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
-index 658e2e21f..a88bdc22e 100644
+index c21acebe8..f31cdc72f 100644
 --- a/drivers/usb/gadget/function/f_tcm.c
 +++ b/drivers/usb/gadget/function/f_tcm.c
 @@ -1657,8 +1657,10 @@ static ssize_t tcm_usbg_tpg_nexus_store(struct config_item *item,

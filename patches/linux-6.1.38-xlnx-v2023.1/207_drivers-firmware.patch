@@ -603,7 +603,7 @@ index 000000000..647887a4d
 +module_init(zynqmp_secure_init);
 +module_exit(zynqmp_secure_exit);
 diff --git a/drivers/firmware/xilinx/zynqmp.c b/drivers/firmware/xilinx/zynqmp.c
-index ff5cabe70..833e1def0 100644
+index 6587fa857..a38ee4486 100644
 --- a/drivers/firmware/xilinx/zynqmp.c
 +++ b/drivers/firmware/xilinx/zynqmp.c
 @@ -2,7 +2,8 @@

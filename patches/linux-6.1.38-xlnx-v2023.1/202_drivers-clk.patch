@@ -454,7 +454,7 @@ index 000000000..00d657280
 +    };
 +...
 diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
-index d79905f3e..9511987c2 100644
+index 5da82f2bd..dbdcde8f6 100644
 --- a/drivers/clk/Kconfig
 +++ b/drivers/clk/Kconfig
 @@ -171,6 +171,38 @@ config COMMON_CLK_BM1880
