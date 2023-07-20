@@ -30,13 +30,14 @@ For Linux Kernel image and Debian Packages, please refer to the respective relea
 
 | Version  | Local Name          | Build Version | Release Tag |
 |:---------|:--------------------|:--------------|:------------|
+| 6.1.38   | zynqmp-fpga-generic | 2             | [6.1.38-zynqmp-fpga-generic-2](https://github.com/ikwzm/ZynqMP-FPGA-Linux-Kernel-6.1/tree/6.1.38-zynqmp-fpga-generic-2) |
 | 6.1.0    | zynqmp-fpga-generic | 4             | [6.1.0-zynqmp-fpga-generic-4](https://github.com/ikwzm/ZynqMP-FPGA-Linux-Kernel-6.1/tree/6.1.0-zynqmp-fpga-generic-4) |
 
 Download
 ------------------------------------------------------------------------------------
 
 ```console
-shell$ export RELEASE_TAG=6.1.0-zynqmp-fpga-generic-4
+shell$ export RELEASE_TAG=6.1.38-zynqmp-fpga-generic-2
 shell$ wget https://github.com/ikwzm/ZynqMP-FPGA-Linux-Kernel-6.1/archive/refs/tags/$RELEASE_TAG.tar.gz
 shell$ tar xfz $RELEASE_TAG.tar.gz
 shell$ cd ZynqMP-FPGA-Linux-Kernel-6.1-$RELEASE_TAG
