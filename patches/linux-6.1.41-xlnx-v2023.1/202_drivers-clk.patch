@@ -5971,7 +5971,7 @@ index 000000000..28ea3050d
 +
 +#endif /* SI5324DRV_H_ */
 diff --git a/drivers/clk/xilinx/clk-xlnx-clock-wizard.c b/drivers/clk/xilinx/clk-xlnx-clock-wizard.c
-index eb1dfe7ec..1cd2c42ca 100644
+index 4a2358393..e68be24a2 100644
 --- a/drivers/clk/xilinx/clk-xlnx-clock-wizard.c
 +++ b/drivers/clk/xilinx/clk-xlnx-clock-wizard.c
 @@ -8,12 +8,14 @@

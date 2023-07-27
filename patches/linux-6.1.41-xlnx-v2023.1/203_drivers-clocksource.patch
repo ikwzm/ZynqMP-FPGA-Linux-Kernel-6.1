@@ -44,7 +44,7 @@ index 7d821fd48..2855e92e0 100644
 +        #pwm-cells = <3>;
 +    };
 diff --git a/drivers/clocksource/timer-cadence-ttc.c b/drivers/clocksource/timer-cadence-ttc.c
-index 4efd0cf3b..ba4664914 100644
+index 0d52e28fe..e1e102f22 100644
 --- a/drivers/clocksource/timer-cadence-ttc.c
 +++ b/drivers/clocksource/timer-cadence-ttc.c
 @@ -476,6 +476,9 @@ static int __init ttc_timer_probe(struct platform_device *pdev)

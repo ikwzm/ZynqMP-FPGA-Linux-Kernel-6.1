@@ -270,7 +270,7 @@ index 2417b13ba..000000000
 -		clock-names = "pll_ref", "aclk";
 -	};
 diff --git a/drivers/soc/xilinx/xlnx_event_manager.c b/drivers/soc/xilinx/xlnx_event_manager.c
-index c76381899..fe78dee99 100644
+index f9d9b82b5..e37613050 100644
 --- a/drivers/soc/xilinx/xlnx_event_manager.c
 +++ b/drivers/soc/xilinx/xlnx_event_manager.c
 @@ -35,7 +35,6 @@ static int event_manager_availability = -EACCES;
@@ -293,7 +293,7 @@ index c76381899..fe78dee99 100644
  		cb_data->eve_cb = cb_fun;
  		cb_data->agent_data = data;
  
-@@ -475,13 +476,13 @@ static void xlnx_call_notify_cb_handler(const u32 *payload)
+@@ -477,13 +478,13 @@ static void xlnx_call_notify_cb_handler(const u32 *payload)
  		}
  	}
  	if (!is_callback_found)
@@ -309,7 +309,7 @@ index c76381899..fe78dee99 100644
  }
  
  static irqreturn_t xlnx_event_handler(int irq, void *dev_id)
-@@ -553,7 +554,7 @@ static void xlnx_disable_percpu_irq(void *data)
+@@ -555,7 +556,7 @@ static void xlnx_disable_percpu_irq(void *data)
  static int xlnx_event_init_sgi(struct platform_device *pdev)
  {
  	int ret = 0;
@@ -318,7 +318,7 @@ index c76381899..fe78dee99 100644
  	/*
  	 * IRQ related structures are used for the following:
  	 * for each SGI interrupt ensure its mapped by GIC IRQ domain
-@@ -590,9 +591,12 @@ static int xlnx_event_init_sgi(struct platform_device *pdev)
+@@ -592,9 +593,12 @@ static int xlnx_event_init_sgi(struct platform_device *pdev)
  	sgi_fwspec.param[0] = sgi_num;
  	virq_sgi = irq_create_fwspec_mapping(&sgi_fwspec);
  
@@ -331,7 +331,7 @@ index c76381899..fe78dee99 100644
  	WARN_ON(ret);
  	if (ret) {
  		irq_dispose_mapping(virq_sgi);
-@@ -651,7 +655,12 @@ static int xlnx_event_manager_probe(struct platform_device *pdev)
+@@ -653,7 +657,12 @@ static int xlnx_event_manager_probe(struct platform_device *pdev)
  
  	ret = zynqmp_pm_register_sgi(sgi_num, 0);
  	if (ret) {

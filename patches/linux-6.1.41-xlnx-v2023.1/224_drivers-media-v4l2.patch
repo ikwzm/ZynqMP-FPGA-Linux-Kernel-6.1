@@ -1776,7 +1776,7 @@ index 658106f5b..67c140255 100644
  
  #endif
 diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
-index 29da1f4b4..43d157955 100644
+index 45fa03882..9cc2b7f70 100644
 --- a/include/uapi/linux/videodev2.h
 +++ b/include/uapi/linux/videodev2.h
 @@ -291,6 +291,7 @@ enum v4l2_xfer_func {

@@ -227,10 +227,10 @@ index c02ad4f76..98c9e515b 100644
  		return ret;
  
 diff --git a/drivers/usb/host/xhci.h b/drivers/usb/host/xhci.h
-index 6348cacdc..b2ddf2a06 100644
+index 1354310cb..de579d9bf 100644
 --- a/drivers/usb/host/xhci.h
 +++ b/drivers/usb/host/xhci.h
-@@ -2109,6 +2109,8 @@ void xhci_free_container_ctx(struct xhci_hcd *xhci,
+@@ -2111,6 +2111,8 @@ void xhci_free_container_ctx(struct xhci_hcd *xhci,
  
  /* xHCI host controller glue */
  typedef void (*xhci_get_quirks_t)(struct device *, struct xhci_hcd *);

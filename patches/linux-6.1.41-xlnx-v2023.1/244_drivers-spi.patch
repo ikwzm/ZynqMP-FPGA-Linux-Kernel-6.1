@@ -397,7 +397,7 @@ index 80c3e38f5..1ff28784c 100644
  	spi_engine_program_add_cmd(p, dry, SPI_ENGINE_CMD_ASSERT(1, mask));
  }
 diff --git a/drivers/spi/spi-bcm-qspi.c b/drivers/spi/spi-bcm-qspi.c
-index cad2d55dc..cd7c5db67 100644
+index 137e7315a..702879bfd 100644
 --- a/drivers/spi/spi-bcm-qspi.c
 +++ b/drivers/spi/spi-bcm-qspi.c
 @@ -986,7 +986,7 @@ static int write_to_hw(struct bcm_qspi *qspi, struct spi_device *spi)
@@ -778,7 +778,7 @@ index 0a1fb2bc9..5e60e3d58 100644
  
  	return 0;
 diff --git a/drivers/spi/spi-dw-core.c b/drivers/spi/spi-dw-core.c
-index c3bfb6c84..ae3108c70 100644
+index 4976e3b89..7778b19bc 100644
 --- a/drivers/spi/spi-dw-core.c
 +++ b/drivers/spi/spi-dw-core.c
 @@ -103,7 +103,7 @@ void dw_spi_set_cs(struct spi_device *spi, bool enable)
@@ -949,7 +949,7 @@ index b14f430a6..10aa38bd5 100644
  	if (cs < mpc8xxx_spi->native_chipselects) {
  		slvsel = mpc8xxx_spi_read_reg(&reg_base->slvsel);
 diff --git a/drivers/spi/spi-geni-qcom.c b/drivers/spi/spi-geni-qcom.c
-index dd1581893..271a5efea 100644
+index 7b76dcd11..7eb98d7db 100644
 --- a/drivers/spi/spi-geni-qcom.c
 +++ b/drivers/spi/spi-geni-qcom.c
 @@ -347,9 +347,9 @@ static int setup_fifo_params(struct spi_device *spi_slv,
