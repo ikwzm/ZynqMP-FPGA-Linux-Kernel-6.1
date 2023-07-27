@@ -1,10 +1,10 @@
 #!/bin/bash
 
 CURRENT_DIR=`pwd`
-KERNEL_VERSION=6.1.38
-KERNEL_STABLE_VERSION=v6.1.38
+KERNEL_VERSION=6.1.41
+KERNEL_STABLE_VERSION=v6.1.41
 LOCAL_VERSION=zynqmp-fpga-generic
-BUILD_VERSION=2
+BUILD_VERSION=1
 KERNEL_RELEASE=$KERNEL_VERSION-$LOCAL_VERSION
 LINUX_BUILD_DIR=linux-$KERNEL_RELEASE
 
@@ -18,7 +18,7 @@ echo "LINUX_BUILD_DIR =" $LINUX_BUILD_DIR
 
 git clone --depth 1 -b $KERNEL_STABLE_VERSION git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git $LINUX_BUILD_DIR
 
-### Make Branch linux-5.15.107-zynqmp-fpga-generic
+### Make Branch 
 
 cd $LINUX_BUILD_DIR
 git checkout -b $KERNEL_RELEASE refs/tags/$KERNEL_STABLE_VERSION
