@@ -584,7 +584,7 @@ index 02f56fc00..5863f8b29 100644
  
  	mutex_lock(&bs->bus_mutex);
 diff --git a/drivers/spi/spi-bcm63xx.c b/drivers/spi/spi-bcm63xx.c
-index 80fa0ef89..66aac1d00 100644
+index 147199002..521fb37ca 100644
 --- a/drivers/spi/spi-bcm63xx.c
 +++ b/drivers/spi/spi-bcm63xx.c
 @@ -292,7 +292,7 @@ static int bcm63xx_txrx_bufs(struct spi_device *spi, struct spi_transfer *first,
@@ -791,7 +791,7 @@ index 4976e3b89..7778b19bc 100644
  		dw_writel(dws, DW_SPI_SER, 0);
  }
 diff --git a/drivers/spi/spi-dw-mmio.c b/drivers/spi/spi-dw-mmio.c
-index 26c40ea6d..d511da766 100644
+index 8046e9138..127f4733d 100644
 --- a/drivers/spi/spi-dw-mmio.c
 +++ b/drivers/spi/spi-dw-mmio.c
 @@ -65,7 +65,7 @@ static void dw_spi_mscc_set_cs(struct spi_device *spi, bool enable)
@@ -2008,10 +2008,10 @@ index 411b1307b..4d4b98f8e 100644
  	/* CMOS output mode and MOSI signal from previous transfer */
  	rspi->sppcr = 0;
 diff --git a/drivers/spi/spi-s3c64xx.c b/drivers/spi/spi-s3c64xx.c
-index 71d324ec9..f6682bfe4 100644
+index 1480df7b4..67136f81b 100644
 --- a/drivers/spi/spi-s3c64xx.c
 +++ b/drivers/spi/spi-s3c64xx.c
-@@ -891,7 +891,7 @@ static int s3c64xx_spi_setup(struct spi_device *spi)
+@@ -893,7 +893,7 @@ static int s3c64xx_spi_setup(struct spi_device *spi)
  
  	/* NULL is fine, we just avoid using the FB delay (=0) */
  	if (IS_ERR(cs)) {
