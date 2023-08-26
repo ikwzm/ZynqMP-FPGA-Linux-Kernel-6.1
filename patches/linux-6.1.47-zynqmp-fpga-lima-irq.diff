@@ -1,0 +1,120 @@
+diff --git a/drivers/gpu/drm/lima/lima_device.c b/drivers/gpu/drm/lima/lima_device.c
+index cf26400c2..34fbd04bd 100644
+--- a/drivers/gpu/drm/lima/lima_device.c
++++ b/drivers/gpu/drm/lima/lima_device.c
+@@ -21,7 +21,7 @@
+ 
+ struct lima_ip_desc {
+ 	char *name;
+-	char *irq_name;
++	char *irq_name[2];
+ 	bool must_have[lima_gpu_num];
+ 	int offset[lima_gpu_num];
+ 
+@@ -31,10 +31,11 @@ struct lima_ip_desc {
+ 	void (*suspend)(struct lima_ip *ip);
+ };
+ 
+-#define LIMA_IP_DESC(ipname, mst0, mst1, off0, off1, func, irq) \
++#define LIMA_IP_DESC(ipname, mst0, mst1, off0, off1, func, irq0, irq1)	\
+ 	[lima_ip_##ipname] = { \
+ 		.name = #ipname, \
+-		.irq_name = irq, \
++		.irq_name[0] = irq0, \
++		.irq_name[1] = irq1, \
+ 		.must_have = { \
+ 			[lima_gpu_mali400] = mst0, \
+ 			[lima_gpu_mali450] = mst1, \
+@@ -50,32 +51,32 @@ struct lima_ip_desc {
+ 	}
+ 
+ static struct lima_ip_desc lima_ip_desc[lima_ip_num] = {
+-	LIMA_IP_DESC(pmu,         false, false, 0x02000, 0x02000, pmu,      "pmu"),
+-	LIMA_IP_DESC(l2_cache0,   true,  true,  0x01000, 0x10000, l2_cache, NULL),
+-	LIMA_IP_DESC(l2_cache1,   false, true,  -1,      0x01000, l2_cache, NULL),
+-	LIMA_IP_DESC(l2_cache2,   false, false, -1,      0x11000, l2_cache, NULL),
+-	LIMA_IP_DESC(gp,          true,  true,  0x00000, 0x00000, gp,       "gp"),
+-	LIMA_IP_DESC(pp0,         true,  true,  0x08000, 0x08000, pp,       "pp0"),
+-	LIMA_IP_DESC(pp1,         false, false, 0x0A000, 0x0A000, pp,       "pp1"),
+-	LIMA_IP_DESC(pp2,         false, false, 0x0C000, 0x0C000, pp,       "pp2"),
+-	LIMA_IP_DESC(pp3,         false, false, 0x0E000, 0x0E000, pp,       "pp3"),
+-	LIMA_IP_DESC(pp4,         false, false, -1,      0x28000, pp,       "pp4"),
+-	LIMA_IP_DESC(pp5,         false, false, -1,      0x2A000, pp,       "pp5"),
+-	LIMA_IP_DESC(pp6,         false, false, -1,      0x2C000, pp,       "pp6"),
+-	LIMA_IP_DESC(pp7,         false, false, -1,      0x2E000, pp,       "pp7"),
+-	LIMA_IP_DESC(gpmmu,       true,  true,  0x03000, 0x03000, mmu,      "gpmmu"),
+-	LIMA_IP_DESC(ppmmu0,      true,  true,  0x04000, 0x04000, mmu,      "ppmmu0"),
+-	LIMA_IP_DESC(ppmmu1,      false, false, 0x05000, 0x05000, mmu,      "ppmmu1"),
+-	LIMA_IP_DESC(ppmmu2,      false, false, 0x06000, 0x06000, mmu,      "ppmmu2"),
+-	LIMA_IP_DESC(ppmmu3,      false, false, 0x07000, 0x07000, mmu,      "ppmmu3"),
+-	LIMA_IP_DESC(ppmmu4,      false, false, -1,      0x1C000, mmu,      "ppmmu4"),
+-	LIMA_IP_DESC(ppmmu5,      false, false, -1,      0x1D000, mmu,      "ppmmu5"),
+-	LIMA_IP_DESC(ppmmu6,      false, false, -1,      0x1E000, mmu,      "ppmmu6"),
+-	LIMA_IP_DESC(ppmmu7,      false, false, -1,      0x1F000, mmu,      "ppmmu7"),
+-	LIMA_IP_DESC(dlbu,        false, true,  -1,      0x14000, dlbu,     NULL),
+-	LIMA_IP_DESC(bcast,       false, true,  -1,      0x13000, bcast,    NULL),
+-	LIMA_IP_DESC(pp_bcast,    false, true,  -1,      0x16000, pp_bcast, "pp"),
+-	LIMA_IP_DESC(ppmmu_bcast, false, true,  -1,      0x15000, mmu,      NULL),
++	LIMA_IP_DESC(pmu,         false, false, 0x02000, 0x02000, pmu,      "pmu"  , "IRQPMU"   ),
++	LIMA_IP_DESC(l2_cache0,   true,  true,  0x01000, 0x10000, l2_cache, NULL   , NULL       ),
++	LIMA_IP_DESC(l2_cache1,   false, true,  -1,      0x01000, l2_cache, NULL   , NULL       ),
++	LIMA_IP_DESC(l2_cache2,   false, false, -1,      0x11000, l2_cache, NULL   , NULL       ),
++	LIMA_IP_DESC(gp,          true,  true,  0x00000, 0x00000, gp,       "gp"   , "IRQGP"    ),
++	LIMA_IP_DESC(pp0,         true,  true,  0x08000, 0x08000, pp,       "pp0"  , "IRQPP0"   ),
++	LIMA_IP_DESC(pp1,         false, false, 0x0A000, 0x0A000, pp,       "pp1"  , "IRQPP1"   ),
++	LIMA_IP_DESC(pp2,         false, false, 0x0C000, 0x0C000, pp,       "pp2"  , "IRQPP2"   ),
++	LIMA_IP_DESC(pp3,         false, false, 0x0E000, 0x0E000, pp,       "pp3"  , "IRQPP3"   ),
++	LIMA_IP_DESC(pp4,         false, false, -1,      0x28000, pp,       "pp4"  , "IRQPP4"   ),
++	LIMA_IP_DESC(pp5,         false, false, -1,      0x2A000, pp,       "pp5"  , "IRQPP5"   ),
++	LIMA_IP_DESC(pp6,         false, false, -1,      0x2C000, pp,       "pp6"  , "IRQPP6"   ),
++	LIMA_IP_DESC(pp7,         false, false, -1,      0x2E000, pp,       "pp7"  , "IRQPP7"   ),
++	LIMA_IP_DESC(gpmmu,       true,  true,  0x03000, 0x03000, mmu,      "gpmmu", "IRQGPMMU" ),
++	LIMA_IP_DESC(ppmmu0,      true,  true,  0x04000, 0x04000, mmu,      "ppmmu0","IRQPPMMU0"),
++	LIMA_IP_DESC(ppmmu1,      false, false, 0x05000, 0x05000, mmu,      "ppmmu1","IRQPPMMU1"),
++	LIMA_IP_DESC(ppmmu2,      false, false, 0x06000, 0x06000, mmu,      "ppmmu2","IRQPPMMU2"),
++	LIMA_IP_DESC(ppmmu3,      false, false, 0x07000, 0x07000, mmu,      "ppmmu3","IRQPPMMU3"),
++	LIMA_IP_DESC(ppmmu4,      false, false, -1,      0x1C000, mmu,      "ppmmu4","IRQPPMMU4"),
++	LIMA_IP_DESC(ppmmu5,      false, false, -1,      0x1D000, mmu,      "ppmmu5","IRQPPMMU5"),
++	LIMA_IP_DESC(ppmmu6,      false, false, -1,      0x1E000, mmu,      "ppmmu6","IRQPPMMU6"),
++	LIMA_IP_DESC(ppmmu7,      false, false, -1,      0x1F000, mmu,      "ppmmu7","IRQPPMMU7"),
++	LIMA_IP_DESC(dlbu,        false, true,  -1,      0x14000, dlbu,     NULL    , NULL      ),
++	LIMA_IP_DESC(bcast,       false, true,  -1,      0x13000, bcast,    NULL    , NULL      ),
++	LIMA_IP_DESC(pp_bcast,    false, true,  -1,      0x16000, pp_bcast, "pp"    , "IRQPP"   ),
++	LIMA_IP_DESC(ppmmu_bcast, false, true,  -1,      0x15000, mmu,      NULL    , NULL      ),
+ };
+ 
+ const char *lima_ip_name(struct lima_ip *ip)
+@@ -225,7 +226,8 @@ static int lima_init_ip(struct lima_device *dev, int index)
+ 	struct platform_device *pdev = to_platform_device(dev->dev);
+ 	struct lima_ip_desc *desc = lima_ip_desc + index;
+ 	struct lima_ip *ip = dev->ip + index;
+-	const char *irq_name = desc->irq_name;
++	const char *irq_name0 = desc->irq_name[0];
++	const char *irq_name1 = desc->irq_name[1];
+ 	int offset = desc->offset[dev->id];
+ 	bool must = desc->must_have[dev->id];
+ 	int err;
+@@ -236,9 +238,20 @@ static int lima_init_ip(struct lima_device *dev, int index)
+ 	ip->dev = dev;
+ 	ip->id = index;
+ 	ip->iomem = dev->iomem + offset;
+-	if (irq_name) {
+-		err = must ? platform_get_irq_byname(pdev, irq_name) :
+-			     platform_get_irq_byname_optional(pdev, irq_name);
++	err = -1;
++	if (irq_name1) {
++		if (must && !irq_name0)
++			err = platform_get_irq_byname(pdev, irq_name1);
++		else
++			err = platform_get_irq_byname_optional(pdev, irq_name1);
++	}
++	if (irq_name0 && err < 0) {
++		if (must)
++			err = platform_get_irq_byname(pdev, irq_name0);
++		else
++			err = platform_get_irq_byname_optional(pdev, irq_name0);
++	}
++	if (irq_name0 || irq_name1) {
+ 		if (err < 0)
+ 			goto out;
+ 		ip->irq = err;
