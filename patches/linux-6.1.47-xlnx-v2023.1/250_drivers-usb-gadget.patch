@@ -1,5 +1,5 @@
 diff --git a/drivers/usb/gadget/composite.c b/drivers/usb/gadget/composite.c
-index 403563c06..5fd0f7b16 100644
+index cb0a4e2cd..67e29800e 100644
 --- a/drivers/usb/gadget/composite.c
 +++ b/drivers/usb/gadget/composite.c
 @@ -741,6 +741,17 @@ static int bos_desc(struct usb_composite_dev *cdev)
@@ -69,10 +69,10 @@ index c21acebe8..f31cdc72f 100644
  {
  	struct f_uas		*fu = to_f_uas(f);
 diff --git a/drivers/usb/gadget/function/uvc_video.c b/drivers/usb/gadget/function/uvc_video.c
-index dd1c6b2ca..63563e3cd 100644
+index e81865978..5303c3464 100644
 --- a/drivers/usb/gadget/function/uvc_video.c
 +++ b/drivers/usb/gadget/function/uvc_video.c
-@@ -430,11 +430,13 @@ static void uvcg_video_pump(struct work_struct *work)
+@@ -448,11 +448,13 @@ static void uvcg_video_pump(struct work_struct *work)
  			req->no_interrupt = 1;
  		}
  

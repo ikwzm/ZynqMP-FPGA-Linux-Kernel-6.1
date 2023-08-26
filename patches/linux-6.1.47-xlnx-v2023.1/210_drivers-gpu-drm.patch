@@ -1494,7 +1494,7 @@ index 2dd97473c..f3a716c58 100644
  		return ERR_PTR(-EINVAL);
  	}
 diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
-index f851aaf2c..af1ff1081 100644
+index 5e067ba7e..207cd2a74 100644
 --- a/drivers/gpu/drm/panel/panel-simple.c
 +++ b/drivers/gpu/drm/panel/panel-simple.c
 @@ -4402,6 +4402,33 @@ static const struct panel_desc_dsi auo_b080uan01 = {

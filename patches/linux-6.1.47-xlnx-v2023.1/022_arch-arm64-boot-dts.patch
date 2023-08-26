@@ -7317,7 +7317,7 @@ index e172fa05c..ac8ed4a43 100644
  		#clock-cells = <1>;
  		compatible = "xlnx,zynqmp-clk";
  		clocks = <&pss_ref_clk>, <&video_clk>, <&pss_alt_ref_clk>,
-@@ -95,6 +132,10 @@
+@@ -95,6 +132,10 @@ &fpd_dma_chan8 {
  	clocks = <&zynqmp_clk GDMA_REF>, <&zynqmp_clk LPD_LSBUS>;
  };
  
@@ -7328,7 +7328,7 @@ index e172fa05c..ac8ed4a43 100644
  &lpd_dma_chan1 {
  	clocks = <&zynqmp_clk ADMA_REF>, <&zynqmp_clk LPD_LSBUS>;
  };
-@@ -135,28 +176,24 @@
+@@ -135,28 +176,24 @@ &gem0 {
  	clocks = <&zynqmp_clk LPD_LSBUS>, <&zynqmp_clk GEM0_REF>,
  		 <&zynqmp_clk GEM0_TX>, <&zynqmp_clk GEM0_RX>,
  		 <&zynqmp_clk GEM_TSU>;
@@ -7357,7 +7357,7 @@ index e172fa05c..ac8ed4a43 100644
  };
  
  &gpio {
-@@ -171,6 +208,22 @@
+@@ -171,6 +208,22 @@ &i2c1 {
  	clocks = <&zynqmp_clk I2C1_REF>;
  };
  
@@ -7380,7 +7380,7 @@ index e172fa05c..ac8ed4a43 100644
  &pcie {
  	clocks = <&zynqmp_clk PCIE_REF>;
  };
-@@ -185,10 +238,12 @@
+@@ -185,10 +238,12 @@ &sata {
  
  &sdhci0 {
  	clocks = <&zynqmp_clk SDIO0_REF>, <&zynqmp_clk LPD_LSBUS>;
@@ -7393,7 +7393,7 @@ index e172fa05c..ac8ed4a43 100644
  };
  
  &spi0 {
-@@ -223,12 +278,22 @@
+@@ -223,12 +278,22 @@ &uart1 {
  	clocks = <&zynqmp_clk UART1_REF>, <&zynqmp_clk LPD_LSBUS>;
  };
  
@@ -7418,7 +7418,7 @@ index e172fa05c..ac8ed4a43 100644
  };
  
  &watchdog0 {
-@@ -243,12 +308,24 @@
+@@ -243,12 +308,24 @@ &xilinx_ams {
  	clocks = <&zynqmp_clk AMS_REF>;
  };
  
@@ -15628,7 +15628,7 @@ index b610e65e0..0be5b29c0 100644
  &i2c1 { /* I2C_SCK C23/C24 - MIO from SOM */
  	#address-cells = <1>;
  	#size-cells = <0>;
-@@ -29,11 +37,21 @@
+@@ -29,11 +37,21 @@ &i2c1 { /* I2C_SCK C23/C24 - MIO from SOM */
  	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
  	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
  
@@ -15651,7 +15651,7 @@ index b610e65e0..0be5b29c0 100644
  	si5332_0: si5332_0 { /* u17 */
  		compatible = "fixed-clock";
  		#clock-cells = <0>;
-@@ -95,13 +113,15 @@
+@@ -95,13 +113,15 @@ &sata {
  };
  
  &zynqmp_dpsub {
@@ -15668,7 +15668,7 @@ index b610e65e0..0be5b29c0 100644
  };
  
  &usb0 {
-@@ -110,7 +130,10 @@
+@@ -110,7 +130,10 @@ &usb0 {
  	pinctrl-0 = <&pinctrl_usb0_default>;
  	phy-names = "usb3-phy";
  	phys = <&psgtr 2 PHY_TYPE_USB3 0 1>;
@@ -15680,7 +15680,7 @@ index b610e65e0..0be5b29c0 100644
  };
  
  &dwc3_0 {
-@@ -132,6 +155,8 @@
+@@ -132,6 +155,8 @@ &sdhci1 { /* on CC with tuned parameters */
  	no-1-8-v;
  	disable-wp;
  	xlnx,mio-bank = <1>;
@@ -15689,7 +15689,7 @@ index b610e65e0..0be5b29c0 100644
  };
  
  &gem3 { /* required by spec */
-@@ -144,16 +169,18 @@
+@@ -144,16 +169,18 @@ &gem3 { /* required by spec */
  	mdio: mdio {
  		#address-cells = <1>;
  		#size-cells = <0>;
@@ -15710,7 +15710,7 @@ index b610e65e0..0be5b29c0 100644
  		};
  	};
  };
-@@ -259,19 +286,22 @@
+@@ -259,19 +286,22 @@ mux {
  	pinctrl_usb0_default: usb0-default {
  		conf {
  			groups = "usb0_0_grp";
@@ -15753,7 +15753,7 @@ index a52dafbfd..3d2e42af6 100644
  &i2c1 { /* I2C_SCK C23/C24 - MIO from SOM */
  	#address-cells = <1>;
  	#size-cells = <0>;
-@@ -24,12 +32,22 @@
+@@ -24,12 +32,22 @@ &i2c1 { /* I2C_SCK C23/C24 - MIO from SOM */
  	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
  	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
  
@@ -15778,7 +15778,7 @@ index a52dafbfd..3d2e42af6 100644
  	si5332_0: si5332_0 { /* u17 */
  		compatible = "fixed-clock";
  		#clock-cells = <0>;
-@@ -76,13 +94,15 @@
+@@ -76,13 +94,15 @@ &psgtr {
  };
  
  &zynqmp_dpsub {
@@ -15795,7 +15795,7 @@ index a52dafbfd..3d2e42af6 100644
  };
  
  &usb0 {
-@@ -91,6 +111,14 @@
+@@ -91,6 +111,14 @@ &usb0 {
  	pinctrl-0 = <&pinctrl_usb0_default>;
  	phy-names = "usb3-phy";
  	phys = <&psgtr 2 PHY_TYPE_USB3 0 1>;
@@ -15810,7 +15810,7 @@ index a52dafbfd..3d2e42af6 100644
  };
  
  &dwc3_0 {
-@@ -115,6 +143,8 @@
+@@ -115,6 +143,8 @@ &sdhci1 { /* on CC with tuned parameters */
  	clk-phase-sd-hs = <126>, <60>;
  	clk-phase-uhs-sdr25 = <120>, <60>;
  	clk-phase-uhs-ddr50 = <126>, <48>;
@@ -15819,7 +15819,7 @@ index a52dafbfd..3d2e42af6 100644
  };
  
  &gem3 { /* required by spec */
-@@ -127,16 +157,18 @@
+@@ -127,16 +157,18 @@ &gem3 { /* required by spec */
  	mdio: mdio {
  		#address-cells = <1>;
  		#size-cells = <0>;
@@ -15840,7 +15840,7 @@ index a52dafbfd..3d2e42af6 100644
  		};
  	};
  };
-@@ -242,19 +274,22 @@
+@@ -242,19 +274,22 @@ mux {
  	pinctrl_usb0_default: usb0-default {
  		conf {
  			groups = "usb0_0_grp";
@@ -15904,7 +15904,7 @@ index 20e83ca47..aafaaec3f 100644
  
  / {
  	model = "ZynqMP SM-K26 Rev1/B/A";
-@@ -55,6 +56,9 @@
+@@ -55,6 +56,9 @@ gpio-keys {
  		key-fwuen {
  			label = "fwuen";
  			gpios = <&gpio 12 GPIO_ACTIVE_LOW>;
@@ -15914,7 +15914,7 @@ index 20e83ca47..aafaaec3f 100644
  		};
  	};
  
-@@ -72,109 +76,169 @@
+@@ -72,109 +76,169 @@ ds36-led {
  			default-state = "on";
  		};
  	};
@@ -16163,7 +16163,7 @@ index 20e83ca47..aafaaec3f 100644
  };
  
  &spi1 { /* MIO6, 9-11 */
-@@ -190,17 +254,20 @@
+@@ -190,17 +254,20 @@ tpm@0 { /* slm9670 - U144 */
  
  &i2c1 {
  	status = "okay";
@@ -16184,7 +16184,7 @@ index 20e83ca47..aafaaec3f 100644
  		compatible = "st,24c64", "atmel,24c64"; /* st m24c64 */
  		reg = <0x51>;
  	};
-@@ -285,5 +352,116 @@
+@@ -285,5 +352,116 @@ &gpio {
  			  "", "", "", "", "", /* 155 - 159 */
  			  "", "", "", "", "", /* 160 - 164 */
  			  "", "", "", "", "", /* 165 - 169 */
@@ -17385,7 +17385,7 @@ diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zc1232-revA.dts b/arch/arm64/boot
 index f1598527e..63c553f77 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zc1232-revA.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zc1232-revA.dts
-@@ -40,13 +40,29 @@
+@@ -40,13 +40,29 @@ &dcc {
  &qspi {
  	status = "okay";
  	flash@0 {
@@ -17430,7 +17430,7 @@ index 04efa1683..343033cc7 100644
   *
   * Michal Simek <michal.simek@xilinx.com>
   * Siva Durga Prasad Paladugu <sivadur@xilinx.com>
-@@ -45,9 +45,25 @@
+@@ -45,9 +45,25 @@ flash@0 {
  		#address-cells = <1>;
  		#size-cells = <1>;
  		reg = <0x0>;
@@ -17525,7 +17525,7 @@ diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm015-dc1.dts b/arch/arm64
 index b05be2552..7ea2a1c96 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm015-dc1.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm015-dc1.dts
-@@ -108,6 +108,9 @@
+@@ -108,6 +108,9 @@ &gpio {
  	pinctrl-0 = <&pinctrl_gpio_default>;
  };
  
@@ -17535,7 +17535,7 @@ index b05be2552..7ea2a1c96 100644
  
  &i2c1 {
  	status = "okay";
-@@ -184,19 +187,22 @@
+@@ -184,19 +187,22 @@ mux {
  
  		conf {
  			groups = "usb0_0_grp";
@@ -17559,7 +17559,7 @@ index b05be2552..7ea2a1c96 100644
  		};
  	};
  
-@@ -348,9 +354,25 @@
+@@ -348,9 +354,25 @@ flash@0 {
  		#address-cells = <1>;
  		#size-cells = <1>;
  		reg = <0x0>;
@@ -17590,7 +17590,7 @@ diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm016-dc2.dts b/arch/arm64
 index 938b76bd0..b6bc2f5be 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm016-dc2.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm016-dc2.dts
-@@ -140,6 +140,34 @@
+@@ -140,6 +140,34 @@ nand@0 {
  		nand-ecc-algo = "bch";
  		nand-rb = <0>;
  		label = "main-storage-0";
@@ -17625,7 +17625,7 @@ index 938b76bd0..b6bc2f5be 100644
  	};
  	nand@1 {
  		reg = <0x1>;
-@@ -149,6 +177,34 @@
+@@ -149,6 +177,34 @@ nand@1 {
  		nand-ecc-algo = "bch";
  		nand-rb = <0>;
  		label = "main-storage-1";
@@ -17660,7 +17660,7 @@ index 938b76bd0..b6bc2f5be 100644
  	};
  };
  
-@@ -281,19 +337,22 @@
+@@ -281,19 +337,22 @@ mux {
  
  		conf {
  			groups = "usb1_0_grp";
@@ -17684,7 +17684,7 @@ index 938b76bd0..b6bc2f5be 100644
  		};
  	};
  
-@@ -485,8 +544,6 @@
+@@ -485,8 +544,6 @@ &usb1 {
  &dwc3_1 {
  	status = "okay";
  	dr_mode = "host";
@@ -17697,7 +17697,7 @@ diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm017-dc3.dts b/arch/arm64
 index 381cc682c..6021f8b4e 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm017-dc3.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm017-dc3.dts
-@@ -127,6 +127,81 @@
+@@ -127,6 +127,81 @@ &nand0 {
  	status = "okay";
  	arasan,has-mdma;
  	num-cs = <2>;
@@ -17783,7 +17783,7 @@ diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm018-dc4.dts b/arch/arm64
 index 05a2b7973..e153a64f4 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm018-dc4.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm018-dc4.dts
-@@ -152,6 +152,10 @@
+@@ -152,6 +152,10 @@ &gpio {
  	status = "okay";
  };
  
@@ -17794,7 +17794,7 @@ index 05a2b7973..e153a64f4 100644
  &i2c0 {
  	clock-frequency = <400000>;
  	status = "okay";
-@@ -169,9 +173,25 @@
+@@ -169,9 +173,25 @@ flash@0 {
  		#address-cells = <1>;
  		#size-cells = <1>;
  		reg = <0x0>;
@@ -17825,7 +17825,7 @@ diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu100-revC.dts b/arch/arm64/boot
 index d61a297a2..c0559af44 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu100-revC.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu100-revC.dts
-@@ -58,6 +58,15 @@
+@@ -58,6 +58,15 @@ switch-4 {
  		};
  	};
  
@@ -17841,7 +17841,7 @@ index d61a297a2..c0559af44 100644
  	leds {
  		compatible = "gpio-leds";
  		led-ds2 {
-@@ -86,13 +95,22 @@
+@@ -86,13 +95,22 @@ led-ds5 {
  			linux,default-trigger = "bluetooth-power";
  		};
  
@@ -17865,7 +17865,7 @@ index d61a297a2..c0559af44 100644
  	wmmcsdio_fixed: fixedregulator-mmcsdio {
  		compatible = "regulator-fixed";
  		regulator-name = "wmmcsdio_fixed";
-@@ -161,6 +179,10 @@
+@@ -161,6 +179,10 @@ &gpio {
  			  "", "", "", "";
  };
  
@@ -17876,7 +17876,7 @@ index d61a297a2..c0559af44 100644
  &i2c1 {
  	status = "okay";
  	pinctrl-names = "default", "gpio";
-@@ -419,19 +441,22 @@
+@@ -419,19 +441,22 @@ mux {
  
  		conf {
  			groups = "usb0_0_grp";
@@ -17900,7 +17900,7 @@ index d61a297a2..c0559af44 100644
  		};
  	};
  
-@@ -443,19 +468,22 @@
+@@ -443,19 +468,22 @@ mux {
  
  		conf {
  			groups = "usb1_0_grp";
@@ -17924,7 +17924,7 @@ index d61a297a2..c0559af44 100644
  		};
  	};
  };
-@@ -541,6 +569,7 @@
+@@ -541,6 +569,7 @@ &usb0 {
  	pinctrl-0 = <&pinctrl_usb0_default>;
  	phy-names = "usb3-phy";
  	phys = <&psgtr 2 PHY_TYPE_USB3 0 0>;
@@ -17932,7 +17932,7 @@ index d61a297a2..c0559af44 100644
  };
  
  &dwc3_0 {
-@@ -556,6 +585,7 @@
+@@ -556,6 +585,7 @@ &usb1 {
  	pinctrl-0 = <&pinctrl_usb1_default>;
  	phy-names = "usb3-phy";
  	phys = <&psgtr 3 PHY_TYPE_USB3 1 0>;
@@ -17940,7 +17940,7 @@ index d61a297a2..c0559af44 100644
  };
  
  &dwc3_1 {
-@@ -568,6 +598,14 @@
+@@ -568,6 +598,14 @@ &watchdog0 {
  	status = "okay";
  };
  
@@ -17972,7 +17972,7 @@ diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts b/arch/arm64/boot
 index 5fd6b70a1..85a20c6b2 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts
-@@ -200,13 +200,19 @@
+@@ -200,13 +200,19 @@ &gem3 {
  	phy-mode = "rgmii-id";
  	pinctrl-names = "default";
  	pinctrl-0 = <&pinctrl_gem3_default>;
@@ -17999,7 +17999,7 @@ index 5fd6b70a1..85a20c6b2 100644
  	};
  };
  
-@@ -216,6 +222,10 @@
+@@ -216,6 +222,10 @@ &gpio {
  	pinctrl-0 = <&pinctrl_gpio_default>;
  };
  
@@ -18010,7 +18010,7 @@ index 5fd6b70a1..85a20c6b2 100644
  &i2c0 {
  	status = "okay";
  	clock-frequency = <400000>;
-@@ -600,7 +610,26 @@
+@@ -600,7 +610,26 @@ i2c@4 {
  			#address-cells = <1>;
  			#size-cells = <0>;
  			reg = <4>;
@@ -18038,7 +18038,7 @@ index 5fd6b70a1..85a20c6b2 100644
  		};
  		/* 5 - 7 unconnected */
  	};
-@@ -772,19 +801,22 @@
+@@ -772,19 +801,22 @@ mux {
  
  		conf {
  			groups = "usb0_0_grp";
@@ -18062,7 +18062,7 @@ index 5fd6b70a1..85a20c6b2 100644
  		};
  	};
  
-@@ -938,14 +970,33 @@
+@@ -938,14 +970,33 @@ &psgtr {
  
  &qspi {
  	status = "okay";
@@ -18099,7 +18099,7 @@ index 5fd6b70a1..85a20c6b2 100644
  	};
  };
  
-@@ -1013,6 +1064,18 @@
+@@ -1013,6 +1064,18 @@ &watchdog0 {
  	status = "okay";
  };
  
@@ -18131,7 +18131,7 @@ index f7d718ff1..de3b5ab9d 100644
   *
   * Michal Simek <michal.simek@xilinx.com>
   */
-@@ -16,16 +16,20 @@
+@@ -16,16 +16,20 @@ / {
  
  &gem3 {
  	phy-handle = <&phyc>;
@@ -18165,7 +18165,7 @@ diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revA.dts b/arch/arm64/boot
 index bd8f20f32..b9d82afc5 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revA.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revA.dts
-@@ -109,12 +109,19 @@
+@@ -109,12 +109,19 @@ &gem3 {
  	phy-mode = "rgmii-id";
  	pinctrl-names = "default";
  	pinctrl-0 = <&pinctrl_gem3_default>;
@@ -18191,7 +18191,7 @@ index bd8f20f32..b9d82afc5 100644
  	};
  };
  
-@@ -122,6 +129,10 @@
+@@ -122,6 +129,10 @@ &gpio {
  	status = "okay";
  };
  
@@ -18202,7 +18202,7 @@ index bd8f20f32..b9d82afc5 100644
  &i2c1 {
  	status = "okay";
  	clock-frequency = <400000>;
-@@ -398,20 +409,22 @@
+@@ -398,20 +409,22 @@ mux {
  
  		conf {
  			groups = "usb0_0_grp";
@@ -18227,7 +18227,7 @@ index bd8f20f32..b9d82afc5 100644
  		};
  	};
  };
-@@ -430,9 +443,25 @@
+@@ -430,9 +443,25 @@ flash@0 {
  		#address-cells = <1>;
  		#size-cells = <1>;
  		reg = <0x0>;
@@ -18254,7 +18254,7 @@ index bd8f20f32..b9d82afc5 100644
  	};
  };
  
-@@ -497,6 +526,18 @@
+@@ -497,6 +526,18 @@ &watchdog0 {
  	status = "okay";
  };
  
@@ -18283,7 +18283,7 @@ index 96feaad30..6f24e335a 100644
  /*
   * dts file for Xilinx ZynqMP ZCU104
   *
-@@ -114,12 +114,19 @@
+@@ -114,12 +114,19 @@ &gem3 {
  	phy-mode = "rgmii-id";
  	pinctrl-names = "default";
  	pinctrl-0 = <&pinctrl_gem3_default>;
@@ -18309,7 +18309,7 @@ index 96feaad30..6f24e335a 100644
  	};
  };
  
-@@ -127,6 +134,10 @@
+@@ -127,6 +134,10 @@ &gpio {
  	status = "okay";
  };
  
@@ -18320,7 +18320,7 @@ index 96feaad30..6f24e335a 100644
  &i2c1 {
  	status = "okay";
  	clock-frequency = <400000>;
-@@ -410,20 +421,22 @@
+@@ -410,20 +421,22 @@ mux {
  
  		conf {
  			groups = "usb0_0_grp";
@@ -18345,7 +18345,7 @@ index 96feaad30..6f24e335a 100644
  		};
  	};
  };
-@@ -442,9 +455,25 @@
+@@ -442,9 +455,25 @@ flash@0 {
  		#address-cells = <1>;
  		#size-cells = <1>;
  		reg = <0x0>;
@@ -18372,7 +18372,7 @@ index 96feaad30..6f24e335a 100644
  	};
  };
  
-@@ -509,6 +538,18 @@
+@@ -509,6 +538,18 @@ &watchdog0 {
  	status = "okay";
  };
  
@@ -18395,7 +18395,7 @@ diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu106-revA.dts b/arch/arm64/boot
 index e2dd72fe3..9c1524557 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu106-revA.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu106-revA.dts
-@@ -200,12 +200,19 @@
+@@ -200,12 +200,19 @@ &gem3 {
  	phy-mode = "rgmii-id";
  	pinctrl-names = "default";
  	pinctrl-0 = <&pinctrl_gem3_default>;
@@ -18421,7 +18421,7 @@ index e2dd72fe3..9c1524557 100644
  	};
  };
  
-@@ -215,6 +222,10 @@
+@@ -215,6 +222,10 @@ &gpio {
  	pinctrl-0 = <&pinctrl_gpio_default>;
  };
  
@@ -18432,7 +18432,7 @@ index e2dd72fe3..9c1524557 100644
  &i2c0 {
  	status = "okay";
  	clock-frequency = <400000>;
-@@ -589,7 +600,26 @@
+@@ -589,7 +600,26 @@ i2c@4 {
  			#address-cells = <1>;
  			#size-cells = <0>;
  			reg = <4>;
@@ -18460,7 +18460,7 @@ index e2dd72fe3..9c1524557 100644
  		};
  		i2c@5 {
  			#address-cells = <1>;
-@@ -770,19 +800,22 @@
+@@ -770,19 +800,22 @@ mux {
  
  		conf {
  			groups = "usb0_0_grp";
@@ -18484,7 +18484,7 @@ index e2dd72fe3..9c1524557 100644
  		};
  	};
  
-@@ -932,14 +965,33 @@
+@@ -932,14 +965,33 @@ &psgtr {
  
  &qspi {
  	status = "okay";
@@ -18525,7 +18525,7 @@ diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu111-revA.dts b/arch/arm64/boot
 index d685d8fbc..a460da923 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu111-revA.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu111-revA.dts
-@@ -172,12 +172,19 @@
+@@ -172,12 +172,19 @@ &gem3 {
  	phy-mode = "rgmii-id";
  	pinctrl-names = "default";
  	pinctrl-0 = <&pinctrl_gem3_default>;
@@ -18551,7 +18551,7 @@ index d685d8fbc..a460da923 100644
  	};
  };
  
-@@ -187,6 +194,10 @@
+@@ -187,6 +194,10 @@ &gpio {
  	pinctrl-0 = <&pinctrl_gpio_default>;
  };
  
@@ -18562,7 +18562,7 @@ index d685d8fbc..a460da923 100644
  &i2c0 {
  	status = "okay";
  	clock-frequency = <400000>;
-@@ -648,19 +659,22 @@
+@@ -648,19 +659,22 @@ mux {
  
  		conf {
  			groups = "usb0_0_grp";
@@ -18586,7 +18586,7 @@ index d685d8fbc..a460da923 100644
  		};
  	};
  
-@@ -774,14 +788,33 @@
+@@ -774,14 +788,33 @@ &psgtr {
  
  &qspi {
  	status = "okay";
@@ -21912,7 +21912,7 @@ index 7c1af75f3..6a210cb9b 100644
  #include <dt-bindings/power/xlnx-zynqmp-power.h>
  #include <dt-bindings/reset/xlnx-zynqmp-resets.h>
  
-@@ -32,6 +33,7 @@
+@@ -32,6 +33,7 @@ cpu0: cpu@0 {
  			operating-points-v2 = <&cpu_opp_table>;
  			reg = <0x0>;
  			cpu-idle-states = <&CPU_SLEEP_0>;
@@ -21920,7 +21920,7 @@ index 7c1af75f3..6a210cb9b 100644
  		};
  
  		cpu1: cpu@1 {
-@@ -41,6 +43,7 @@
+@@ -41,6 +43,7 @@ cpu1: cpu@1 {
  			reg = <0x1>;
  			operating-points-v2 = <&cpu_opp_table>;
  			cpu-idle-states = <&CPU_SLEEP_0>;
@@ -21928,7 +21928,7 @@ index 7c1af75f3..6a210cb9b 100644
  		};
  
  		cpu2: cpu@2 {
-@@ -50,6 +53,7 @@
+@@ -50,6 +53,7 @@ cpu2: cpu@2 {
  			reg = <0x2>;
  			operating-points-v2 = <&cpu_opp_table>;
  			cpu-idle-states = <&CPU_SLEEP_0>;
@@ -21936,7 +21936,7 @@ index 7c1af75f3..6a210cb9b 100644
  		};
  
  		cpu3: cpu@3 {
-@@ -59,6 +63,12 @@
+@@ -59,6 +63,12 @@ cpu3: cpu@3 {
  			reg = <0x3>;
  			operating-points-v2 = <&cpu_opp_table>;
  			cpu-idle-states = <&CPU_SLEEP_0>;
@@ -21949,7 +21949,7 @@ index 7c1af75f3..6a210cb9b 100644
  		};
  
  		idle-states {
-@@ -75,7 +85,7 @@
+@@ -75,7 +85,7 @@ CPU_SLEEP_0: cpu-sleep-0 {
  		};
  	};
  
@@ -21958,7 +21958,7 @@ index 7c1af75f3..6a210cb9b 100644
  		compatible = "operating-points-v2";
  		opp-shared;
  		opp00 {
-@@ -101,6 +111,7 @@
+@@ -101,6 +111,7 @@ opp03 {
  	};
  
  	zynqmp_ipi: zynqmp_ipi {
@@ -21966,7 +21966,7 @@ index 7c1af75f3..6a210cb9b 100644
  		compatible = "xlnx,zynqmp-ipi-mailbox";
  		interrupt-parent = <&gic>;
  		interrupts = <0 35 4>;
-@@ -109,7 +120,8 @@
+@@ -109,7 +120,8 @@ zynqmp_ipi: zynqmp_ipi {
  		#size-cells = <2>;
  		ranges;
  
@@ -21976,7 +21976,7 @@ index 7c1af75f3..6a210cb9b 100644
  			reg = <0x0 0xff9905c0 0x0 0x20>,
  			      <0x0 0xff9905e0 0x0 0x20>,
  			      <0x0 0xff990e80 0x0 0x20>,
-@@ -126,6 +138,7 @@
+@@ -126,6 +138,7 @@ ipi_mailbox_pmu1: mailbox@ff990400 {
  	dcc: dcc {
  		compatible = "arm,dcc";
  		status = "disabled";
@@ -21984,7 +21984,7 @@ index 7c1af75f3..6a210cb9b 100644
  	};
  
  	pmu {
-@@ -135,6 +148,10 @@
+@@ -135,6 +148,10 @@ pmu {
  			     <0 144 4>,
  			     <0 145 4>,
  			     <0 146 4>;
@@ -21995,7 +21995,7 @@ index 7c1af75f3..6a210cb9b 100644
  	};
  
  	psci {
-@@ -147,8 +164,10 @@
+@@ -147,8 +164,10 @@ zynqmp_firmware: zynqmp-firmware {
  			compatible = "xlnx,zynqmp-firmware";
  			#power-domain-cells = <1>;
  			method = "smc";
@@ -22006,7 +22006,7 @@ index 7c1af75f3..6a210cb9b 100644
  				compatible = "xlnx,zynqmp-power";
  				interrupt-parent = <&gic>;
  				interrupts = <0 35 4>;
-@@ -164,14 +183,60 @@
+@@ -164,14 +183,60 @@ nvmem_firmware {
  				soc_revision: soc_revision@0 {
  					reg = <0x0 0x4>;
  				};
@@ -22071,7 +22071,7 @@ index 7c1af75f3..6a210cb9b 100644
  			};
  
  			zynqmp_reset: reset-controller {
-@@ -183,6 +248,12 @@
+@@ -183,6 +248,12 @@ pinctrl0: pinctrl {
  				compatible = "xlnx,zynqmp-pinctrl";
  				status = "disabled";
  			};
@@ -22084,7 +22084,7 @@ index 7c1af75f3..6a210cb9b 100644
  		};
  	};
  
-@@ -195,6 +266,10 @@
+@@ -195,6 +266,10 @@ timer {
  			     <1 10 0xf08>;
  	};
  
@@ -22095,7 +22095,7 @@ index 7c1af75f3..6a210cb9b 100644
  	fpga_full: fpga-full {
  		compatible = "fpga-region";
  		fpga-mgr = <&zynqmp_pcap>;
-@@ -205,6 +280,7 @@
+@@ -205,6 +280,7 @@ fpga_full: fpga-full {
  
  	amba: axi {
  		compatible = "simple-bus";
@@ -22103,7 +22103,7 @@ index 7c1af75f3..6a210cb9b 100644
  		#address-cells = <2>;
  		#size-cells = <2>;
  		ranges;
-@@ -360,7 +436,6 @@
+@@ -360,7 +436,6 @@ fpd_dma_chan8: dma-controller@fd570000 {
  
  		gic: interrupt-controller@f9010000 {
  			compatible = "arm,gic-400";
@@ -22111,7 +22111,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#interrupt-cells = <3>;
  			reg = <0x0 0xf9010000 0x0 0x10000>,
  			      <0x0 0xf9020000 0x0 0x20000>,
-@@ -371,6 +446,17 @@
+@@ -371,6 +446,17 @@ gic: interrupt-controller@f9010000 {
  			interrupts = <1 9 0xf04>;
  		};
  
@@ -22129,7 +22129,7 @@ index 7c1af75f3..6a210cb9b 100644
  		/* LPDDMA default allows only secured access. inorder to enable
  		 * These dma channels, Users should ensure that these dma
  		 * Channels are allowed for non secure access.
-@@ -384,7 +470,7 @@
+@@ -384,7 +470,7 @@ lpd_dma_chan1: dma-controller@ffa80000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22138,7 +22138,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -397,7 +483,7 @@
+@@ -397,7 +483,7 @@ lpd_dma_chan2: dma-controller@ffa90000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22147,7 +22147,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -410,7 +496,7 @@
+@@ -410,7 +496,7 @@ lpd_dma_chan3: dma-controller@ffaa0000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22156,7 +22156,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -423,7 +509,7 @@
+@@ -423,7 +509,7 @@ lpd_dma_chan4: dma-controller@ffab0000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22165,7 +22165,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -436,7 +522,7 @@
+@@ -436,7 +522,7 @@ lpd_dma_chan5: dma-controller@ffac0000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22174,7 +22174,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -449,7 +535,7 @@
+@@ -449,7 +535,7 @@ lpd_dma_chan6: dma-controller@ffad0000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22183,7 +22183,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -462,7 +548,7 @@
+@@ -462,7 +548,7 @@ lpd_dma_chan7: dma-controller@ffae0000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22192,7 +22192,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -475,7 +561,7 @@
+@@ -475,7 +561,7 @@ lpd_dma_chan8: dma-controller@ffaf0000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22201,7 +22201,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -500,12 +586,12 @@
+@@ -500,12 +586,12 @@ nand0: nand-controller@ff100000 {
  		};
  
  		gem0: ethernet@ff0b0000 {
@@ -22216,7 +22216,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#address-cells = <1>;
  			#size-cells = <0>;
  			iommus = <&smmu 0x874>;
-@@ -515,12 +601,12 @@
+@@ -515,12 +601,12 @@ gem0: ethernet@ff0b0000 {
  		};
  
  		gem1: ethernet@ff0c0000 {
@@ -22231,7 +22231,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#address-cells = <1>;
  			#size-cells = <0>;
  			iommus = <&smmu 0x875>;
-@@ -530,12 +616,12 @@
+@@ -530,12 +616,12 @@ gem1: ethernet@ff0c0000 {
  		};
  
  		gem2: ethernet@ff0d0000 {
@@ -22246,7 +22246,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#address-cells = <1>;
  			#size-cells = <0>;
  			iommus = <&smmu 0x876>;
-@@ -545,12 +631,12 @@
+@@ -545,12 +631,12 @@ gem2: ethernet@ff0d0000 {
  		};
  
  		gem3: ethernet@ff0e0000 {
@@ -22261,7 +22261,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#address-cells = <1>;
  			#size-cells = <0>;
  			iommus = <&smmu 0x877>;
-@@ -562,7 +648,6 @@
+@@ -562,7 +648,6 @@ gem3: ethernet@ff0e0000 {
  		gpio: gpio@ff0a0000 {
  			compatible = "xlnx,zynqmp-gpio-1.0";
  			status = "disabled";
@@ -22269,7 +22269,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#gpio-cells = <0x2>;
  			gpio-controller;
  			interrupt-parent = <&gic>;
-@@ -595,6 +680,85 @@
+@@ -595,6 +680,85 @@ i2c1: i2c@ff030000 {
  			power-domains = <&zynqmp_firmware PD_I2C_1>;
  		};
  
@@ -22355,7 +22355,7 @@ index 7c1af75f3..6a210cb9b 100644
  		pcie: pcie@fd0e0000 {
  			compatible = "xlnx,nwl-pcie-2.11";
  			status = "disabled";
-@@ -634,6 +798,7 @@
+@@ -634,6 +798,7 @@ pcie_intc: legacy-interrupt-controller {
  		};
  
  		qspi: spi@ff0f0000 {
@@ -22363,7 +22363,7 @@ index 7c1af75f3..6a210cb9b 100644
  			compatible = "xlnx,zynqmp-qspi-1.0";
  			status = "disabled";
  			clock-names = "ref_clk", "pclk";
-@@ -675,11 +840,13 @@
+@@ -675,11 +840,13 @@ sata: ahci@fd0c0000 {
  			interrupts = <0 133 4>;
  			power-domains = <&zynqmp_firmware PD_SATA>;
  			resets = <&zynqmp_reset ZYNQMP_RESET_SATA>;
@@ -22379,7 +22379,7 @@ index 7c1af75f3..6a210cb9b 100644
  			compatible = "xlnx,zynqmp-8.9a", "arasan,sdhci-8.9a";
  			status = "disabled";
  			interrupt-parent = <&gic>;
-@@ -690,9 +857,11 @@
+@@ -690,9 +857,11 @@ sdhci0: mmc@ff160000 {
  			#clock-cells = <1>;
  			clock-output-names = "clk_out_sd0", "clk_in_sd0";
  			power-domains = <&zynqmp_firmware PD_SD_0>;
@@ -22391,7 +22391,7 @@ index 7c1af75f3..6a210cb9b 100644
  			compatible = "xlnx,zynqmp-8.9a", "arasan,sdhci-8.9a";
  			status = "disabled";
  			interrupt-parent = <&gic>;
-@@ -703,6 +872,7 @@
+@@ -703,6 +872,7 @@ sdhci1: mmc@ff170000 {
  			#clock-cells = <1>;
  			clock-output-names = "clk_out_sd1", "clk_in_sd1";
  			power-domains = <&zynqmp_firmware PD_SD_1>;
@@ -22399,7 +22399,7 @@ index 7c1af75f3..6a210cb9b 100644
  		};
  
  		smmu: iommu@fd800000 {
-@@ -784,6 +954,7 @@
+@@ -784,6 +954,7 @@ ttc3: timer@ff140000 {
  		};
  
  		uart0: serial@ff000000 {
@@ -22407,7 +22407,7 @@ index 7c1af75f3..6a210cb9b 100644
  			compatible = "xlnx,zynqmp-uart", "cdns,uart-r1p12";
  			status = "disabled";
  			interrupt-parent = <&gic>;
-@@ -794,6 +965,7 @@
+@@ -794,6 +965,7 @@ uart0: serial@ff000000 {
  		};
  
  		uart1: serial@ff010000 {
@@ -22415,7 +22415,7 @@ index 7c1af75f3..6a210cb9b 100644
  			compatible = "xlnx,zynqmp-uart", "cdns,uart-r1p12";
  			status = "disabled";
  			interrupt-parent = <&gic>;
-@@ -809,22 +981,27 @@
+@@ -809,22 +981,27 @@ usb0: usb@ff9d0000 {
  			status = "disabled";
  			compatible = "xlnx,zynqmp-dwc3";
  			reg = <0x0 0xff9d0000 0x0 0x100>;
@@ -22446,7 +22446,7 @@ index 7c1af75f3..6a210cb9b 100644
  				snps,resume-hs-terminations;
  				/* dma-coherent; */
  			};
-@@ -836,6 +1013,7 @@
+@@ -836,6 +1013,7 @@ usb1: usb@ff9e0000 {
  			status = "disabled";
  			compatible = "xlnx,zynqmp-dwc3";
  			reg = <0x0 0xff9e0000 0x0 0x100>;
@@ -22454,7 +22454,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_USB_1>;
  			resets = <&zynqmp_reset ZYNQMP_RESET_USB1_CORERESET>,
  				 <&zynqmp_reset ZYNQMP_RESET_USB1_HIBERRESET>,
-@@ -845,13 +1023,16 @@
+@@ -845,13 +1023,16 @@ usb1: usb@ff9e0000 {
  
  			dwc3_1: usb@fe300000 {
  				compatible = "snps,dwc3";
@@ -22474,7 +22474,7 @@ index 7c1af75f3..6a210cb9b 100644
  				snps,resume-hs-terminations;
  				/* dma-coherent; */
  			};
-@@ -881,7 +1062,9 @@
+@@ -881,7 +1062,9 @@ xilinx_ams: ams@ffa50000 {
  			status = "disabled";
  			interrupt-parent = <&gic>;
  			interrupts = <0 56 4>;
@@ -22484,7 +22484,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#address-cells = <1>;
  			#size-cells = <1>;
  			#io-channel-cells = <1>;
-@@ -897,8 +1080,6 @@
+@@ -897,8 +1080,6 @@ ams_pl: ams_pl@400 {
  				compatible = "xlnx,zynqmp-ams-pl";
  				status = "disabled";
  				reg = <0x400 0x400>;
@@ -22493,7 +22493,7 @@ index 7c1af75f3..6a210cb9b 100644
  			};
  		};
  
-@@ -910,21 +1091,32 @@
+@@ -910,21 +1091,32 @@ zynqmp_dpdma: dma-controller@fd4c0000 {
  			interrupt-parent = <&gic>;
  			clock-names = "axi_clk";
  			power-domains = <&zynqmp_firmware PD_DP>;
@@ -22529,7 +22529,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_DP>;
  			resets = <&zynqmp_reset ZYNQMP_RESET_DP>;
  			dma-names = "vid0", "vid1", "vid2", "gfx0";
-@@ -932,6 +1124,34 @@
+@@ -932,6 +1124,34 @@ zynqmp_dpsub: display@fd4a0000 {
  			       <&zynqmp_dpdma ZYNQMP_DPDMA_VIDEO1>,
  			       <&zynqmp_dpdma ZYNQMP_DPDMA_VIDEO2>,
  			       <&zynqmp_dpdma ZYNQMP_DPDMA_GRAPHICS>;

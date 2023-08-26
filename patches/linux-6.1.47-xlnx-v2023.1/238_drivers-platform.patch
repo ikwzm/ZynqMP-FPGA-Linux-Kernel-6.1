@@ -1,8 +1,8 @@
 diff --git a/drivers/platform/x86/serial-multi-instantiate.c b/drivers/platform/x86/serial-multi-instantiate.c
-index 5362f1a7b..270a4700d 100644
+index 7a9c758e9..a7457f4b8 100644
 --- a/drivers/platform/x86/serial-multi-instantiate.c
 +++ b/drivers/platform/x86/serial-multi-instantiate.c
-@@ -139,7 +139,8 @@ static int smi_spi_probe(struct platform_device *pdev, struct smi *smi,
+@@ -152,7 +152,8 @@ static int smi_spi_probe(struct platform_device *pdev, struct smi *smi,
  			goto error;
  		}
  

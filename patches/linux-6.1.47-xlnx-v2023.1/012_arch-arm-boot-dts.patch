@@ -14,7 +14,7 @@ index c193264a8..db127023d 100644
   */
  
  / {
-@@ -93,6 +96,7 @@
+@@ -93,6 +96,7 @@ replicator_in_port0: endpoint {
  	};
  
  	amba: axi {
@@ -22,7 +22,7 @@ index c193264a8..db127023d 100644
  		compatible = "simple-bus";
  		#address-cells = <1>;
  		#size-cells = <1>;
-@@ -188,6 +192,17 @@
+@@ -188,6 +192,17 @@ mc: memory-controller@f8006000 {
  			reg = <0xf8006000 0x1000>;
  		};
  
@@ -40,7 +40,7 @@ index c193264a8..db127023d 100644
  		uart0: serial@e0000000 {
  			compatible = "xlnx,xuartps", "cdns,uart-r1p8";
  			status = "disabled";
-@@ -230,8 +245,20 @@
+@@ -230,8 +245,20 @@ spi1: spi@e0007000 {
  			#size-cells = <0>;
  		};
  
@@ -62,7 +62,7 @@ index c193264a8..db127023d 100644
  			reg = <0xe000b000 0x1000>;
  			status = "disabled";
  			interrupts = <0 22 4>;
-@@ -242,7 +269,7 @@
+@@ -242,7 +269,7 @@ gem0: ethernet@e000b000 {
  		};
  
  		gem1: ethernet@e000c000 {
@@ -71,7 +71,7 @@ index c193264a8..db127023d 100644
  			reg = <0xe000c000 0x1000>;
  			status = "disabled";
  			interrupts = <0 45 4>;
-@@ -263,6 +290,8 @@
+@@ -263,6 +290,8 @@ smcc: memory-controller@e000e000 {
  				  0x2 0x0 0xe4000000 0x2000000>; /* SRAM/NOR CS1 region */
  			#address-cells = <2>;
  			#size-cells = <1>;
@@ -80,7 +80,7 @@ index c193264a8..db127023d 100644
  
  			nfc0: nand-controller@0,0 {
  				compatible = "arm,pl353-nand-r2p1";
-@@ -271,6 +300,13 @@
+@@ -271,6 +300,13 @@ nfc0: nand-controller@0,0 {
  				#address-cells = <1>;
  				#size-cells = <0>;
  			};
@@ -94,7 +94,7 @@ index c193264a8..db127023d 100644
  		};
  
  		sdhci0: mmc@e0100000 {
-@@ -294,15 +330,17 @@
+@@ -294,15 +330,17 @@ sdhci1: mmc@e0101000 {
  		};
  
  		slcr: slcr@f8000000 {
@@ -113,7 +113,7 @@ index c193264a8..db127023d 100644
  				clock-output-names = "armpll", "ddrpll", "iopll", "cpu_6or4x",
  						"cpu_3or2x", "cpu_2x", "cpu_1x", "ddr2x", "ddr3x",
  						"dci", "lqspi", "smc", "pcap", "gem0", "gem1",
-@@ -331,12 +369,14 @@
+@@ -331,12 +369,14 @@ pinctrl0: pinctrl@700 {
  			};
  		};
  
@@ -131,7 +131,7 @@ index c193264a8..db127023d 100644
  			interrupts = <0 13 4>,
  			             <0 14 4>, <0 15 4>,
  			             <0 16 4>, <0 17 4>,
-@@ -352,11 +392,16 @@
+@@ -352,11 +392,16 @@ devcfg: devcfg@f8007000 {
  			reg = <0xf8007000 0x100>;
  			interrupt-parent = <&intc>;
  			interrupts = <0 8 4>;
@@ -150,7 +150,7 @@ index c193264a8..db127023d 100644
  		global_timer: timer@f8f00200 {
  			compatible = "arm,cortex-a9-global-timer";
  			reg = <0xf8f00200 0x20>;
-@@ -382,6 +427,7 @@
+@@ -382,6 +427,7 @@ ttc1: timer@f8002000 {
  		};
  
  		scutimer: timer@f8f00600 {
@@ -162,7 +162,7 @@ diff --git a/arch/arm/boot/dts/zynq-cc108.dts b/arch/arm/boot/dts/zynq-cc108.dts
 index 8b9ab9bba..036106e22 100644
 --- a/arch/arm/boot/dts/zynq-cc108.dts
 +++ b/arch/arm/boot/dts/zynq-cc108.dts
-@@ -18,6 +18,7 @@
+@@ -18,6 +18,7 @@ / {
  	aliases {
  		ethernet0 = &gem0;
  		serial0 = &uart0;
@@ -170,7 +170,7 @@ index 8b9ab9bba..036106e22 100644
  	};
  
  	chosen {
-@@ -52,6 +53,45 @@
+@@ -52,6 +53,45 @@ ethernet_phy: ethernet-phy@1 {
  	};
  };
  
@@ -216,7 +216,7 @@ index 8b9ab9bba..036106e22 100644
  &sdhci1 {
  	status = "okay";
  	broken-cd ;
-@@ -59,6 +99,7 @@
+@@ -59,6 +99,7 @@ &sdhci1 {
  };
  
  &uart0 {
@@ -237,7 +237,7 @@ index d23201ba8..cd886ddc1 100644
   *  Copyright (C) 2012 National Instruments Corp.
   */
  /dts-v1/;
-@@ -14,7 +14,11 @@
+@@ -14,7 +14,11 @@ aliases {
  		ethernet0 = &gem0;
  		i2c0 = &i2c0;
  		serial0 = &uart1;
@@ -249,7 +249,7 @@ index d23201ba8..cd886ddc1 100644
  	};
  
  	memory@0 {
-@@ -56,22 +60,12 @@
+@@ -56,22 +60,12 @@ led-ds23 {
  		};
  	};
  
@@ -277,7 +277,7 @@ index d23201ba8..cd886ddc1 100644
  	};
  };
  
-@@ -91,6 +85,8 @@
+@@ -91,6 +85,8 @@ &gem0 {
  	phy-handle = <&ethernet_phy>;
  	pinctrl-names = "default";
  	pinctrl-0 = <&pinctrl_gem0_default>;
@@ -286,7 +286,7 @@ index d23201ba8..cd886ddc1 100644
  
  	ethernet_phy: ethernet-phy@7 {
  		reg = <7>;
-@@ -106,8 +102,11 @@
+@@ -106,8 +102,11 @@ &gpio0 {
  &i2c0 {
  	status = "okay";
  	clock-frequency = <400000>;
@@ -299,7 +299,7 @@ index d23201ba8..cd886ddc1 100644
  
  	i2c-mux@74 {
  		compatible = "nxp,pca9548";
-@@ -148,7 +147,7 @@
+@@ -148,7 +147,7 @@ i2c@2 {
  			#address-cells = <1>;
  			#size-cells = <0>;
  			reg = <2>;
@@ -308,7 +308,7 @@ index d23201ba8..cd886ddc1 100644
  				compatible = "atmel,24c08";
  				reg = <0x54>;
  			};
-@@ -170,7 +169,7 @@
+@@ -170,7 +169,7 @@ i2c@4 {
  			#address-cells = <1>;
  			#size-cells = <0>;
  			reg = <4>;
@@ -317,7 +317,7 @@ index d23201ba8..cd886ddc1 100644
  				compatible = "nxp,pcf8563";
  				reg = <0x51>;
  			};
-@@ -206,7 +205,7 @@
+@@ -206,7 +205,7 @@ mux {
  		conf {
  			groups = "can0_9_grp";
  			slew-rate = <0>;
@@ -326,7 +326,7 @@ index d23201ba8..cd886ddc1 100644
  		};
  
  		conf-rx {
-@@ -229,7 +228,7 @@
+@@ -229,7 +228,7 @@ mux {
  		conf {
  			groups = "ethernet0_0_grp";
  			slew-rate = <0>;
@@ -335,7 +335,7 @@ index d23201ba8..cd886ddc1 100644
  		};
  
  		conf-rx {
-@@ -252,7 +251,7 @@
+@@ -252,7 +251,7 @@ mux-mdio {
  		conf-mdio {
  			groups = "mdio0_0_grp";
  			slew-rate = <0>;
@@ -344,7 +344,7 @@ index d23201ba8..cd886ddc1 100644
  			bias-disable;
  		};
  	};
-@@ -270,7 +269,7 @@
+@@ -270,7 +269,7 @@ conf {
  				 "gpio0_10_grp", "gpio0_11_grp", "gpio0_12_grp",
  				 "gpio0_13_grp", "gpio0_14_grp";
  			slew-rate = <0>;
@@ -353,7 +353,7 @@ index d23201ba8..cd886ddc1 100644
  		};
  
  		conf-pull-up {
-@@ -294,7 +293,20 @@
+@@ -294,7 +293,20 @@ conf {
  			groups = "i2c0_10_grp";
  			bias-pull-up;
  			slew-rate = <0>;
@@ -375,7 +375,7 @@ index d23201ba8..cd886ddc1 100644
  		};
  	};
  
-@@ -307,7 +319,7 @@
+@@ -307,7 +319,7 @@ mux {
  		conf {
  			groups = "sdio0_2_grp";
  			slew-rate = <0>;
@@ -384,7 +384,7 @@ index d23201ba8..cd886ddc1 100644
  			bias-disable;
  		};
  
-@@ -321,7 +333,7 @@
+@@ -321,7 +333,7 @@ conf-cd {
  			bias-high-impedance;
  			bias-pull-up;
  			slew-rate = <0>;
@@ -393,7 +393,7 @@ index d23201ba8..cd886ddc1 100644
  		};
  
  		mux-wp {
-@@ -334,7 +346,7 @@
+@@ -334,7 +346,7 @@ conf-wp {
  			bias-high-impedance;
  			bias-pull-up;
  			slew-rate = <0>;
@@ -402,7 +402,7 @@ index d23201ba8..cd886ddc1 100644
  		};
  	};
  
-@@ -347,7 +359,7 @@
+@@ -347,7 +359,7 @@ mux {
  		conf {
  			groups = "uart1_10_grp";
  			slew-rate = <0>;
@@ -411,7 +411,7 @@ index d23201ba8..cd886ddc1 100644
  		};
  
  		conf-rx {
-@@ -370,7 +382,7 @@
+@@ -370,7 +382,7 @@ mux {
  		conf {
  			groups = "usb0_0_grp";
  			slew-rate = <0>;
@@ -420,7 +420,7 @@ index d23201ba8..cd886ddc1 100644
  		};
  
  		conf-rx {
-@@ -386,13 +398,51 @@
+@@ -386,13 +398,51 @@ conf-tx {
  	};
  };
  
@@ -485,7 +485,7 @@ index 77943c16d..eaa478b3d 100644
   *  Copyright (C) 2012 National Instruments Corp.
   */
  /dts-v1/;
-@@ -14,7 +14,10 @@
+@@ -14,7 +14,10 @@ aliases {
  		ethernet0 = &gem0;
  		i2c0 = &i2c0;
  		serial0 = &uart1;
@@ -496,7 +496,7 @@ index 77943c16d..eaa478b3d 100644
  	};
  
  	memory@0 {
-@@ -27,9 +30,12 @@
+@@ -27,9 +30,12 @@ chosen {
  		stdout-path = "serial0:115200n8";
  	};
  
@@ -511,7 +511,7 @@ index 77943c16d..eaa478b3d 100644
  	};
  };
  
-@@ -100,7 +106,7 @@
+@@ -100,7 +106,7 @@ i2c@2 {
  			#address-cells = <1>;
  			#size-cells = <0>;
  			reg = <2>;
@@ -520,7 +520,7 @@ index 77943c16d..eaa478b3d 100644
  				compatible = "atmel,24c08";
  				reg = <0x54>;
  			};
-@@ -122,7 +128,7 @@
+@@ -122,7 +128,7 @@ i2c@4 {
  			#address-cells = <1>;
  			#size-cells = <0>;
  			reg = <4>;
@@ -529,7 +529,7 @@ index 77943c16d..eaa478b3d 100644
  				compatible = "nxp,pcf8563";
  				reg = <0x51>;
  			};
-@@ -150,7 +156,7 @@
+@@ -150,7 +156,7 @@ mux {
  		conf {
  			groups = "ethernet0_0_grp";
  			slew-rate = <0>;
@@ -538,7 +538,7 @@ index 77943c16d..eaa478b3d 100644
  		};
  
  		conf-rx {
-@@ -173,7 +179,7 @@
+@@ -173,7 +179,7 @@ mux-mdio {
  		conf-mdio {
  			groups = "mdio0_0_grp";
  			slew-rate = <0>;
@@ -547,7 +547,7 @@ index 77943c16d..eaa478b3d 100644
  			bias-disable;
  		};
  	};
-@@ -187,7 +193,7 @@
+@@ -187,7 +193,7 @@ mux {
  		conf {
  			groups = "gpio0_7_grp", "gpio0_46_grp", "gpio0_47_grp";
  			slew-rate = <0>;
@@ -556,7 +556,7 @@ index 77943c16d..eaa478b3d 100644
  		};
  
  		conf-pull-up {
-@@ -211,7 +217,7 @@
+@@ -211,7 +217,7 @@ conf {
  			groups = "i2c0_10_grp";
  			bias-pull-up;
  			slew-rate = <0>;
@@ -565,7 +565,7 @@ index 77943c16d..eaa478b3d 100644
  		};
  	};
  
-@@ -224,7 +230,7 @@
+@@ -224,7 +230,7 @@ mux {
  		conf {
  			groups = "sdio0_2_grp";
  			slew-rate = <0>;
@@ -574,7 +574,7 @@ index 77943c16d..eaa478b3d 100644
  			bias-disable;
  		};
  
-@@ -238,7 +244,7 @@
+@@ -238,7 +244,7 @@ conf-cd {
  			bias-high-impedance;
  			bias-pull-up;
  			slew-rate = <0>;
@@ -583,7 +583,7 @@ index 77943c16d..eaa478b3d 100644
  		};
  
  		mux-wp {
-@@ -251,7 +257,7 @@
+@@ -251,7 +257,7 @@ conf-wp {
  			bias-high-impedance;
  			bias-pull-up;
  			slew-rate = <0>;
@@ -592,7 +592,7 @@ index 77943c16d..eaa478b3d 100644
  		};
  	};
  
-@@ -264,7 +270,7 @@
+@@ -264,7 +270,7 @@ mux {
  		conf {
  			groups = "uart1_10_grp";
  			slew-rate = <0>;
@@ -601,7 +601,7 @@ index 77943c16d..eaa478b3d 100644
  		};
  
  		conf-rx {
-@@ -287,7 +293,7 @@
+@@ -287,7 +293,7 @@ mux {
  		conf {
  			groups = "usb0_0_grp";
  			slew-rate = <0>;
@@ -610,7 +610,7 @@ index 77943c16d..eaa478b3d 100644
  		};
  
  		conf-rx {
-@@ -303,13 +309,52 @@
+@@ -303,13 +309,52 @@ conf-tx {
  	};
  };
  
@@ -663,7 +663,7 @@ index 77943c16d..eaa478b3d 100644
  	status = "okay";
  	pinctrl-names = "default";
  	pinctrl-0 = <&pinctrl_uart1_default>;
-@@ -322,3 +367,7 @@
+@@ -322,3 +367,7 @@ &usb0 {
  	pinctrl-names = "default";
  	pinctrl-0 = <&pinctrl_usb0_default>;
  };
@@ -675,7 +675,7 @@ diff --git a/arch/arm/boot/dts/zynq-zc770-xm010.dts b/arch/arm/boot/dts/zynq-zc7
 index 0dd352289..82888141b 100644
 --- a/arch/arm/boot/dts/zynq-zc770-xm010.dts
 +++ b/arch/arm/boot/dts/zynq-zc770-xm010.dts
-@@ -15,6 +15,7 @@
+@@ -15,6 +15,7 @@ aliases {
  		ethernet0 = &gem0;
  		i2c0 = &i2c0;
  		serial0 = &uart1;
@@ -683,7 +683,7 @@ index 0dd352289..82888141b 100644
  		spi1 = &spi1;
  	};
  
-@@ -57,7 +58,41 @@
+@@ -57,7 +58,41 @@ eeprom: eeprom@52 {
  		compatible = "atmel,24c02";
  		reg = <0x52>;
  	};
@@ -725,7 +725,7 @@ index 0dd352289..82888141b 100644
  };
  
  &sdhci0 {
-@@ -85,6 +120,7 @@
+@@ -85,6 +120,7 @@ partition@0 {
  };
  
  &uart1 {
@@ -737,7 +737,7 @@ diff --git a/arch/arm/boot/dts/zynq-zc770-xm011.dts b/arch/arm/boot/dts/zynq-zc7
 index 56732e8f6..6d8964b03 100644
 --- a/arch/arm/boot/dts/zynq-zc770-xm011.dts
 +++ b/arch/arm/boot/dts/zynq-zc770-xm011.dts
-@@ -47,6 +47,33 @@
+@@ -47,6 +47,33 @@ eeprom: eeprom@52 {
  	};
  };
  
@@ -771,7 +771,7 @@ index 56732e8f6..6d8964b03 100644
  &spi0 {
  	status = "okay";
  	num-cs = <4>;
-@@ -54,6 +81,7 @@
+@@ -54,6 +81,7 @@ &spi0 {
  };
  
  &uart1 {
@@ -783,7 +783,7 @@ diff --git a/arch/arm/boot/dts/zynq-zc770-xm012.dts b/arch/arm/boot/dts/zynq-zc7
 index d2359b789..5f693a924 100644
 --- a/arch/arm/boot/dts/zynq-zc770-xm012.dts
 +++ b/arch/arm/boot/dts/zynq-zc770-xm012.dts
-@@ -53,6 +53,35 @@
+@@ -53,6 +53,35 @@ eeprom1: eeprom@52 {
  	};
  };
  
@@ -819,7 +819,7 @@ index d2359b789..5f693a924 100644
  &spi1 {
  	status = "okay";
  	num-cs = <4>;
-@@ -60,5 +89,6 @@
+@@ -60,5 +89,6 @@ &spi1 {
  };
  
  &uart1 {
@@ -830,7 +830,7 @@ diff --git a/arch/arm/boot/dts/zynq-zc770-xm013.dts b/arch/arm/boot/dts/zynq-zc7
 index 38d96adc8..c9b5bef2c 100644
 --- a/arch/arm/boot/dts/zynq-zc770-xm013.dts
 +++ b/arch/arm/boot/dts/zynq-zc770-xm013.dts
-@@ -15,6 +15,7 @@
+@@ -15,6 +15,7 @@ aliases {
  		ethernet0 = &gem1;
  		i2c0 = &i2c1;
  		serial0 = &uart0;
@@ -838,7 +838,7 @@ index 38d96adc8..c9b5bef2c 100644
  		spi1 = &spi0;
  	};
  
-@@ -58,6 +59,41 @@
+@@ -58,6 +59,41 @@ si570: clock-generator@55 {
  	};
  };
  
@@ -880,7 +880,7 @@ index 38d96adc8..c9b5bef2c 100644
  &spi0 {
  	status = "okay";
  	num-cs = <4>;
-@@ -73,5 +109,6 @@
+@@ -73,5 +109,6 @@ eeprom: eeprom@2 {
  };
  
  &uart0 {
@@ -900,7 +900,7 @@ index 6a5a93aa6..2d531a6ea 100644
   *  Copyright (C) 2012 National Instruments Corp.
   */
  /dts-v1/;
-@@ -13,6 +13,7 @@
+@@ -13,6 +13,7 @@ / {
  	aliases {
  		ethernet0 = &gem0;
  		serial0 = &uart1;
@@ -908,7 +908,7 @@ index 6a5a93aa6..2d531a6ea 100644
  		mmc0 = &sdhci0;
  	};
  
-@@ -26,9 +27,12 @@
+@@ -26,9 +27,12 @@ chosen {
  		stdout-path = "serial0:115200n8";
  	};
  
@@ -923,7 +923,7 @@ index 6a5a93aa6..2d531a6ea 100644
  	};
  };
  
-@@ -47,11 +51,50 @@
+@@ -47,11 +51,50 @@ ethernet_phy: ethernet-phy@0 {
  	};
  };
  
@@ -987,7 +987,7 @@ index 755f6f109..0ac54ebbd 100644
   *  Copyright (C) 2012 National Instruments Corp.
   */
  /dts-v1/;
-@@ -13,6 +13,7 @@
+@@ -13,6 +13,7 @@ / {
  	aliases {
  		ethernet0 = &gem0;
  		serial0 = &uart1;
@@ -995,7 +995,7 @@ index 755f6f109..0ac54ebbd 100644
  		mmc0 = &sdhci0;
  	};
  
-@@ -48,11 +49,18 @@
+@@ -48,11 +49,18 @@ ethernet_phy: ethernet-phy@0 {
  	};
  };
  

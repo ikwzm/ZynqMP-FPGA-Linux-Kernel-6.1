@@ -351,7 +351,7 @@ index 9c410f93a..39baaae41 100644
  
  	struct phy		*sgmii_phy;	/* for ZynqMP SGMII mode */
 diff --git a/drivers/net/ethernet/cadence/macb_main.c b/drivers/net/ethernet/cadence/macb_main.c
-index abd6cc0cd..50bfaac01 100644
+index 5fb991835..50bfaac01 100644
 --- a/drivers/net/ethernet/cadence/macb_main.c
 +++ b/drivers/net/ethernet/cadence/macb_main.c
 @@ -39,6 +39,8 @@
@@ -783,12 +783,12 @@ index abd6cc0cd..50bfaac01 100644
 -		phylink_ethtool_get_wol(bp->phylink, wol);
 -		wol->supported |= WAKE_MAGIC;
 +	memset(wol, 0, sizeof(struct ethtool_wolinfo));
-+
-+	if (bp->caps & MACB_CAPS_WOL) {
-+		wol->supported = WAKE_ARP;
  
 -		if (bp->wol & MACB_WOL_ENABLED)
 -			wol->wolopts |= WAKE_MAGIC;
++	if (bp->caps & MACB_CAPS_WOL) {
++		wol->supported = WAKE_ARP;
++
 +		if (bp->wol)
 +			wol->wolopts |= WAKE_ARP;
  	}
@@ -981,16 +981,16 @@ index abd6cc0cd..50bfaac01 100644
  	phy_exit(bp->sgmii_phy);
  
  err_out_free_netdev:
-@@ -5068,55 +5160,55 @@ static int __maybe_unused macb_suspend(struct device *dev)
+@@ -5068,7 +5160,7 @@ static int __maybe_unused macb_suspend(struct device *dev)
  	struct macb_queue *queue;
  	unsigned long flags;
  	unsigned int q;
 -	int err;
 +	u32 ctrl, arpipmask;
-+
-+	if (!device_may_wakeup(&bp->dev->dev))
-+		phy_exit(bp->sgmii_phy);
  
+ 	if (!device_may_wakeup(&bp->dev->dev))
+ 		phy_exit(bp->sgmii_phy);
+@@ -5076,50 +5168,47 @@ static int __maybe_unused macb_suspend(struct device *dev)
  	if (!netif_running(netdev))
  		return 0;
  
@@ -1076,7 +1076,7 @@ index abd6cc0cd..50bfaac01 100644
  		enable_irq_wake(bp->queues[0].irq);
  	}
  
-@@ -5127,10 +5219,9 @@ static int __maybe_unused macb_suspend(struct device *dev)
+@@ -5130,7 +5219,7 @@ static int __maybe_unused macb_suspend(struct device *dev)
  		napi_disable(&queue->napi_tx);
  	}
  
@@ -1084,11 +1084,8 @@ index abd6cc0cd..50bfaac01 100644
 +	if (!device_may_wakeup(&bp->dev->dev)) {
  		rtnl_lock();
  		phylink_stop(bp->phylink);
--		phy_exit(bp->sgmii_phy);
  		rtnl_unlock();
- 		spin_lock_irqsave(&bp->lock, flags);
- 		macb_reset_hw(bp);
-@@ -5145,7 +5236,7 @@ static int __maybe_unused macb_suspend(struct device *dev)
+@@ -5147,7 +5236,7 @@ static int __maybe_unused macb_suspend(struct device *dev)
  
  	if (bp->ptp_info)
  		bp->ptp_info->ptp_remove(netdev);
@@ -1097,15 +1094,15 @@ index abd6cc0cd..50bfaac01 100644
  		pm_runtime_force_suspend(dev);
  
  	return 0;
-@@ -5158,43 +5249,25 @@ static int __maybe_unused macb_resume(struct device *dev)
+@@ -5160,7 +5249,6 @@ static int __maybe_unused macb_resume(struct device *dev)
  	struct macb_queue *queue;
  	unsigned long flags;
  	unsigned int q;
 -	int err;
-+
-+	if (!device_may_wakeup(&bp->dev->dev))
-+		phy_init(bp->sgmii_phy);
  
+ 	if (!device_may_wakeup(&bp->dev->dev))
+ 		phy_init(bp->sgmii_phy);
+@@ -5168,38 +5256,18 @@ static int __maybe_unused macb_resume(struct device *dev)
  	if (!netif_running(netdev))
  		return 0;
  
@@ -1151,16 +1148,7 @@ index abd6cc0cd..50bfaac01 100644
  		/* Now make sure we disable phy before moving
  		 * to common restore path
  		 */
-@@ -5220,8 +5293,6 @@ static int __maybe_unused macb_resume(struct device *dev)
- 	macb_set_rx_mode(netdev);
- 	macb_restore_features(bp);
- 	rtnl_lock();
--	if (!device_may_wakeup(&bp->dev->dev))
--		phy_init(bp->sgmii_phy);
- 
- 	phylink_start(bp->phylink);
- 	rtnl_unlock();
-@@ -5238,7 +5309,7 @@ static int __maybe_unused macb_runtime_suspend(struct device *dev)
+@@ -5241,7 +5309,7 @@ static int __maybe_unused macb_runtime_suspend(struct device *dev)
  	struct net_device *netdev = dev_get_drvdata(dev);
  	struct macb *bp = netdev_priv(netdev);
  
@@ -1169,7 +1157,7 @@ index abd6cc0cd..50bfaac01 100644
  		macb_clks_disable(bp->pclk, bp->hclk, bp->tx_clk, bp->rx_clk, bp->tsu_clk);
  	else if (!(bp->caps & MACB_CAPS_NEED_TSUCLK))
  		macb_clks_disable(NULL, NULL, NULL, NULL, bp->tsu_clk);
-@@ -5251,7 +5322,7 @@ static int __maybe_unused macb_runtime_resume(struct device *dev)
+@@ -5254,7 +5322,7 @@ static int __maybe_unused macb_runtime_resume(struct device *dev)
  	struct net_device *netdev = dev_get_drvdata(dev);
  	struct macb *bp = netdev_priv(netdev);
  

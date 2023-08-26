@@ -216,7 +216,7 @@ index 8b02d3108..e7163f31f 100644
  
  	/*
 diff --git a/arch/arm64/tools/cpucaps b/arch/arm64/tools/cpucaps
-index f1c0347ec..a86ee3769 100644
+index 14d31d1b2..fd3fa2f8c 100644
 --- a/arch/arm64/tools/cpucaps
 +++ b/arch/arm64/tools/cpucaps
 @@ -20,6 +20,7 @@ HAS_CNP

@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index 4dfe902b7..1c3c1f8d4 100644
+index 375efcfb9..2ef9e4eff 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1281,6 +1281,11 @@ prepare0: archprepare
+@@ -1288,6 +1288,11 @@ prepare0: archprepare
  	$(Q)$(MAKE) $(build)=scripts/mod
  	$(Q)$(MAKE) $(build)=. prepare
  
