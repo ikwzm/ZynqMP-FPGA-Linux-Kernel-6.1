@@ -4474,6 +4474,16 @@ CONFIG_XILINX_SDFEC=m
 #### CONFIG_HISI_HIKEY_USB is not set
 
 ####
+#### Open Profile for DICE driver
+####
+#### CONFIG_OPEN_DICE is not set
+
+####
+#### Guest vCPU stall detector
+####
+#### CONFIG_VCPU_STALL_DETECTOR is not set
+
+####
 #### Silicon Labs C2 port support
 ####
 #### CONFIG_C2PORT is not set
