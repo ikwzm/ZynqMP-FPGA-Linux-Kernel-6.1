@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 375efcfb9..2ef9e4eff 100644
+index 9ceda3dad..3a7cc2b22 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1288,6 +1288,11 @@ prepare0: archprepare

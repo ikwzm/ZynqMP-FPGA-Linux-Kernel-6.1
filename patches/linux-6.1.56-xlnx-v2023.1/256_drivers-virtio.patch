@@ -1,5 +1,5 @@
 diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
-index 90d514c14..c3e6b1deb 100644
+index 7d320f799..bf7090dea 100644
 --- a/drivers/virtio/virtio_ring.c
 +++ b/drivers/virtio/virtio_ring.c
 @@ -279,7 +279,7 @@ static bool vring_use_dma_api(struct virtio_device *vdev)

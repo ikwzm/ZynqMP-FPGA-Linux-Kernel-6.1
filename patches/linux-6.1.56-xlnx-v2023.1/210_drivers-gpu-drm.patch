@@ -1303,10 +1303,10 @@ index 27de2a97f..c6dc173fe 100644
  }
  
 diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
-index 739e0d40c..933af4ac9 100644
+index 5ed77e336..7b13534fc 100644
 --- a/drivers/gpu/drm/drm_edid.c
 +++ b/drivers/gpu/drm/drm_edid.c
-@@ -2866,6 +2866,57 @@ mode_is_rb(const struct drm_display_mode *mode)
+@@ -2867,6 +2867,57 @@ mode_is_rb(const struct drm_display_mode *mode)
  	       (mode->vsync_start - mode->vdisplay == 3);
  }
  
@@ -1494,10 +1494,10 @@ index 2dd97473c..f3a716c58 100644
  		return ERR_PTR(-EINVAL);
  	}
 diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
-index 5e067ba7e..207cd2a74 100644
+index 0e8622ccd..99f1923ca 100644
 --- a/drivers/gpu/drm/panel/panel-simple.c
 +++ b/drivers/gpu/drm/panel/panel-simple.c
-@@ -4402,6 +4402,33 @@ static const struct panel_desc_dsi auo_b080uan01 = {
+@@ -4404,6 +4404,33 @@ static const struct panel_desc_dsi auo_b080uan01 = {
  	.lanes = 4,
  };
  
@@ -1531,7 +1531,7 @@ index 5e067ba7e..207cd2a74 100644
  static const struct drm_display_mode boe_tv080wum_nl0_mode = {
  	.clock = 160000,
  	.hdisplay = 1200,
-@@ -4580,6 +4607,9 @@ static const struct of_device_id dsi_of_match[] = {
+@@ -4582,6 +4609,9 @@ static const struct of_device_id dsi_of_match[] = {
  	{
  		.compatible = "auo,b080uan01",
  		.data = &auo_b080uan01
@@ -31147,10 +31147,10 @@ index 450774009..a80bc6ea2 100644
  
  #endif /* _ZYNQMP_DP_H_ */
 diff --git a/drivers/gpu/drm/xlnx/zynqmp_dpsub.c b/drivers/gpu/drm/xlnx/zynqmp_dpsub.c
-index 1de2d927c..101c23d61 100644
+index fcaa958d8..101c23d61 100644
 --- a/drivers/gpu/drm/xlnx/zynqmp_dpsub.c
 +++ b/drivers/gpu/drm/xlnx/zynqmp_dpsub.c
-@@ -9,267 +9,174 @@
+@@ -9,269 +9,174 @@
   * - Laurent Pinchart <laurent.pinchart@ideasonboard.com>
   */
  
@@ -31298,30 +31298,30 @@ index 1de2d927c..101c23d61 100644
 -err_poll_fini:
 -	drm_kms_helper_poll_fini(drm);
 -	return ret;
--}
--
+ }
+ 
 -/* -----------------------------------------------------------------------------
 - * Power Management
 - */
 -
 -static int __maybe_unused zynqmp_dpsub_suspend(struct device *dev)
--{
--	struct zynqmp_dpsub *dpsub = dev_get_drvdata(dev);
--
--	return drm_mode_config_helper_suspend(&dpsub->drm);
- }
- 
--static int __maybe_unused zynqmp_dpsub_resume(struct device *dev)
 +static void
 +zynqmp_dpsub_unbind(struct device *dev, struct device *master, void *data)
  {
 -	struct zynqmp_dpsub *dpsub = dev_get_drvdata(dev);
 -
--	return drm_mode_config_helper_resume(&dpsub->drm);
+-	return drm_mode_config_helper_suspend(&dpsub->drm);
 +	zynqmp_dp_unbind(dev, master, data);
 +	zynqmp_disp_unbind(dev, master, data);
  }
  
+-static int __maybe_unused zynqmp_dpsub_resume(struct device *dev)
+-{
+-	struct zynqmp_dpsub *dpsub = dev_get_drvdata(dev);
+-
+-	return drm_mode_config_helper_resume(&dpsub->drm);
+-}
+-
 -static const struct dev_pm_ops zynqmp_dpsub_pm_ops = {
 -	SET_SYSTEM_SLEEP_PM_OPS(zynqmp_dpsub_suspend, zynqmp_dpsub_resume)
 +static const struct component_ops zynqmp_dpsub_component_ops = {
@@ -31373,7 +31373,9 @@ index 1de2d927c..101c23d61 100644
 +	/* Sub-driver will access dpsub from drvdata */
  	platform_set_drvdata(pdev, dpsub);
 -
--	dma_set_mask(dpsub->dev, DMA_BIT_MASK(ZYNQMP_DISP_MAX_DMA_BIT));
+-	ret = dma_set_mask(dpsub->dev, DMA_BIT_MASK(ZYNQMP_DISP_MAX_DMA_BIT));
+-	if (ret)
+-		return ret;
 -
 -	/* Try the reserved memory. Proceed if there's none. */
 -	of_reserved_mem_device_init(&pdev->dev);
@@ -31509,7 +31511,7 @@ index 1de2d927c..101c23d61 100644
  static const struct of_device_id zynqmp_dpsub_of_match[] = {
  	{ .compatible = "xlnx,zynqmp-dpsub-1.7", },
  	{ /* end of table */ },
-@@ -279,15 +186,14 @@ MODULE_DEVICE_TABLE(of, zynqmp_dpsub_of_match);
+@@ -281,15 +186,14 @@ MODULE_DEVICE_TABLE(of, zynqmp_dpsub_of_match);
  static struct platform_driver zynqmp_dpsub_driver = {
  	.probe			= zynqmp_dpsub_probe,
  	.remove			= zynqmp_dpsub_remove,
@@ -31579,7 +31581,7 @@ index c04026d82..839aded7c 100644
 -
  #endif /* _ZYNQMP_DPSUB_H_ */
 diff --git a/include/drm/display/drm_dp.h b/include/drm/display/drm_dp.h
-index 05f2cc03d..92ed9c41f 100644
+index b235d6833..1e1ea4897 100644
 --- a/include/drm/display/drm_dp.h
 +++ b/include/drm/display/drm_dp.h
 @@ -1100,6 +1100,7 @@

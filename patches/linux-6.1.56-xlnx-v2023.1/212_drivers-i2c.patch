@@ -25,7 +25,7 @@ index 8d241a703..92cb9006e 100644
    - compatible
    - reg
 diff --git a/drivers/i2c/busses/i2c-xiic.c b/drivers/i2c/busses/i2c-xiic.c
-index b41a6709e..ecc3afc85 100644
+index b27bfc776..18877e9f5 100644
 --- a/drivers/i2c/busses/i2c-xiic.c
 +++ b/drivers/i2c/busses/i2c-xiic.c
 @@ -32,6 +32,8 @@

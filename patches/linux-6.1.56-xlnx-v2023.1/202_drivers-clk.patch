@@ -339,10 +339,10 @@ index 000000000..825d4523c
 +		clock-names = "pll_ref", "aclk";
 +	};
 diff --git a/Documentation/devicetree/bindings/clock/xlnx,versal-clk.yaml b/Documentation/devicetree/bindings/clock/xlnx,versal-clk.yaml
-index 229af98b1..f61ecef26 100644
+index 7cd88bc3a..36fb24e09 100644
 --- a/Documentation/devicetree/bindings/clock/xlnx,versal-clk.yaml
 +++ b/Documentation/devicetree/bindings/clock/xlnx,versal-clk.yaml
-@@ -20,7 +20,12 @@ select: false
+@@ -18,7 +18,12 @@ description: |
  
  properties:
    compatible:
@@ -356,7 +356,7 @@ index 229af98b1..f61ecef26 100644
  
    "#clock-cells":
      const: 1
-@@ -30,13 +35,11 @@ properties:
+@@ -28,13 +33,11 @@ properties:
        clocks to the given clock controller.
      items:
        - description: reference clock
@@ -370,7 +370,7 @@ index 229af98b1..f61ecef26 100644
        - const: pl_alt_ref
  
  required:
-@@ -50,14 +53,14 @@ additionalProperties: false
+@@ -48,14 +51,14 @@ additionalProperties: false
  examples:
    - |
      firmware {
@@ -454,7 +454,7 @@ index 000000000..00d657280
 +    };
 +...
 diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
-index 5da82f2bd..dbdcde8f6 100644
+index a5dcc7293..554afbf0f 100644
 --- a/drivers/clk/Kconfig
 +++ b/drivers/clk/Kconfig
 @@ -171,6 +171,38 @@ config COMMON_CLK_BM1880
@@ -496,7 +496,7 @@ index 5da82f2bd..dbdcde8f6 100644
  config COMMON_CLK_CDCE706
  	tristate "Clock driver for TI CDCE706 clock synthesizer"
  	depends on I2C
-@@ -437,6 +469,22 @@ config COMMON_CLK_K210
+@@ -438,6 +470,22 @@ config COMMON_CLK_K210
  	help
  	  Support for the Canaan Kendryte K210 RISC-V SoC clocks.
  

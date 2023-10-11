@@ -173,7 +173,7 @@ index b3eb53847..519c4f21c 100644
  };
  
 diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
-index 3671d9521..80d763e16 100644
+index beb4db21c..16c057dae 100644
 --- a/arch/arm64/kernel/entry.S
 +++ b/arch/arm64/kernel/entry.S
 @@ -197,6 +197,9 @@ alternative_cb_end

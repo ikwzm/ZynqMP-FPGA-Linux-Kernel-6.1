@@ -14,7 +14,7 @@ index dc86b1206..abab2e1ca 100644
  
  	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
-index 71f172ecf..348cdc3f9 100644
+index b9227f41c..97a41aa0d 100644
 --- a/drivers/usb/chipidea/core.c
 +++ b/drivers/usb/chipidea/core.c
 @@ -326,7 +326,8 @@ static int _ci_usb_phy_init(struct ci_hdrc *ci)

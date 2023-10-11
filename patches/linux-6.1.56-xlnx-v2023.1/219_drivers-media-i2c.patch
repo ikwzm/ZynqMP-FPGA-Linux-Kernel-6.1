@@ -207,10 +207,10 @@ index 000000000..d96e9dbb5
 +
 +...
 diff --git a/drivers/media/i2c/Kconfig b/drivers/media/i2c/Kconfig
-index 7806d4b81..c684888cd 100644
+index a34afb521..0827ca202 100644
 --- a/drivers/media/i2c/Kconfig
 +++ b/drivers/media/i2c/Kconfig
-@@ -34,6 +34,17 @@ config VIDEO_APTINA_PLL
+@@ -41,6 +41,17 @@ config VIDEO_APTINA_PLL
  config VIDEO_CCS_PLL
  	tristate
  
@@ -3775,10 +3775,10 @@ index 000000000..e2e7f66b6
 +MODULE_DESCRIPTION("ON Semiconductor AP1302 ISP driver");
 +MODULE_LICENSE("GPL");
 diff --git a/drivers/media/i2c/ov5640.c b/drivers/media/i2c/ov5640.c
-index 267f51402..42869b407 100644
+index 2ee832426..9fd8349aa 100644
 --- a/drivers/media/i2c/ov5640.c
 +++ b/drivers/media/i2c/ov5640.c
-@@ -1972,6 +1972,7 @@ static int ov5640_get_light_freq(struct ov5640_dev *sensor)
+@@ -1971,6 +1971,7 @@ static int ov5640_get_light_freq(struct ov5640_dev *sensor)
  			light_freq = 50;
  		} else {
  			/* 60Hz */

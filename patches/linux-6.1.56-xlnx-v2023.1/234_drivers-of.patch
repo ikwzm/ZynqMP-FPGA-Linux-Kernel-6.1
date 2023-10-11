@@ -368,10 +368,10 @@ index 000000000..6d8f58e5c
 +}
 +late_initcall(of_cfs_init);
 diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-index 5289975ba..484502c6d 100644
+index 4402871b5..e65779a81 100644
 --- a/drivers/of/overlay.c
 +++ b/drivers/of/overlay.c
-@@ -1226,6 +1226,9 @@ int of_overlay_remove(int *ovcs_id)
+@@ -1225,6 +1225,9 @@ int of_overlay_remove(int *ovcs_id)
  		if (!ret)
  			ret = ret_tmp;
  

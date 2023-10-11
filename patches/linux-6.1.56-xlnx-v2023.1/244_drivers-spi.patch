@@ -996,7 +996,7 @@ index 9c8c79480..092afc767 100644
  			status = gpiod_direction_output(cs,
  						  !(spi->mode & SPI_CS_HIGH));
 diff --git a/drivers/spi/spi-gxp.c b/drivers/spi/spi-gxp.c
-index c900c2f39..684d63f40 100644
+index 21b07e251..aba08d06c 100644
 --- a/drivers/spi/spi-gxp.c
 +++ b/drivers/spi/spi-gxp.c
 @@ -201,7 +201,7 @@ static ssize_t gxp_spi_write(struct gxp_spi_chip *chip, const struct spi_mem_op
@@ -1554,7 +1554,7 @@ index 49f6424e3..f7c6d746c 100644
  
  	fiu->clkrate = clk_get_rate(fiu->clk);
 diff --git a/drivers/spi/spi-nxp-fspi.c b/drivers/spi/spi-nxp-fspi.c
-index d6a65a989..0da8ee3fd 100644
+index c7a4a3606..9ca22b7ba 100644
 --- a/drivers/spi/spi-nxp-fspi.c
 +++ b/drivers/spi/spi-nxp-fspi.c
 @@ -663,7 +663,7 @@ static void nxp_fspi_select_mem(struct nxp_fspi *f, struct spi_device *spi)
@@ -1587,7 +1587,7 @@ index d6a65a989..0da8ee3fd 100644
  }
  
  static int nxp_fspi_read_ahb(struct nxp_fspi *f, const struct spi_mem_op *op)
-@@ -1055,7 +1055,7 @@ static const char *nxp_fspi_get_name(struct spi_mem *mem)
+@@ -1062,7 +1062,7 @@ static const char *nxp_fspi_get_name(struct spi_mem *mem)
  
  	name = devm_kasprintf(dev, GFP_KERNEL,
  			      "%s-%d", dev_name(f->dev),
@@ -2181,10 +2181,10 @@ index 6000d0761..1e3b19220 100644
  	/* We want to control the chip select manually */
  	reg |= SUN4I_CTL_CS_MANUAL;
 diff --git a/drivers/spi/spi-sun6i.c b/drivers/spi/spi-sun6i.c
-index 23ad05252..46e7c4465 100644
+index d79853ba7..1c7ef6143 100644
 --- a/drivers/spi/spi-sun6i.c
 +++ b/drivers/spi/spi-sun6i.c
-@@ -174,7 +174,7 @@ static void sun6i_spi_set_cs(struct spi_device *spi, bool enable)
+@@ -175,7 +175,7 @@ static void sun6i_spi_set_cs(struct spi_device *spi, bool enable)
  
  	reg = sun6i_spi_read(sspi, SUN6I_TFR_CTL_REG);
  	reg &= ~SUN6I_TFR_CTL_CS_MASK;
@@ -2318,7 +2318,7 @@ index d9be80e3e..e33418324 100644
  	if (!tspi->use_hw_based_cs) {
  		if (cs_val)
 diff --git a/drivers/spi/spi-tegra20-sflash.c b/drivers/spi/spi-tegra20-sflash.c
-index 220ee08c4..f67d0aafa 100644
+index d4bebb431..fd7c1b686 100644
 --- a/drivers/spi/spi-tegra20-sflash.c
 +++ b/drivers/spi/spi-tegra20-sflash.c
 @@ -280,7 +280,7 @@ static int tegra_sflash_start_transfer_one(struct spi_device *spi,
@@ -4524,7 +4524,7 @@ index c760aac07..6a3e447ab 100644
  
  static struct platform_driver zynqmp_qspi_driver = {
 diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-index 5f9aedd1f..687aafa7c 100644
+index 151fef199..09edc4788 100644
 --- a/drivers/spi/spi.c
 +++ b/drivers/spi/spi.c
 @@ -592,7 +592,7 @@ static void spi_dev_set_name(struct spi_device *spi)
