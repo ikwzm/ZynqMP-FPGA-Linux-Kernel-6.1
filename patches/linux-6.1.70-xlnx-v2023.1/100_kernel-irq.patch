@@ -29,10 +29,10 @@ index fd0996274..46197cf93 100644
  static void delete_irq_desc(unsigned int irq)
  {
 diff --git a/kernel/irq/msi.c b/kernel/irq/msi.c
-index 77e513e2e..397af786c 100644
+index 4e462b5f7..da316e9c1 100644
 --- a/kernel/irq/msi.c
 +++ b/kernel/irq/msi.c
-@@ -1037,6 +1037,7 @@ void msi_domain_free_irqs(struct irq_domain *domain, struct device *dev)
+@@ -1027,6 +1027,7 @@ void msi_domain_free_irqs(struct irq_domain *domain, struct device *dev)
  	msi_domain_free_irqs_descs_locked(domain, dev);
  	msi_unlock_descs(dev);
  }

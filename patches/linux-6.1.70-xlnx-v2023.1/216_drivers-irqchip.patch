@@ -732,7 +732,7 @@ index 7899607fb..0cc55f4c6 100644
 +EXPORT_SYMBOL_GPL(platform_irqchip_remove);
 +#endif
 diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-index 2be2091c2..1849f2b44 100644
+index 67575bc8a..55a1c8a9e 100644
 --- a/include/linux/cpuhotplug.h
 +++ b/include/linux/cpuhotplug.h
 @@ -152,6 +152,7 @@ enum cpuhp_state {
@@ -752,10 +752,10 @@ index 2be2091c2..1849f2b44 100644
  	CPUHP_AP_HYPERV_TIMER_STARTING,
  	CPUHP_AP_KVM_STARTING,
 diff --git a/include/linux/irq.h b/include/linux/irq.h
-index c3eb89606..967530ed9 100644
+index 06c692cc0..0685b774c 100644
 --- a/include/linux/irq.h
 +++ b/include/linux/irq.h
-@@ -1122,6 +1122,21 @@ struct irq_domain_chip_generic {
+@@ -1104,6 +1104,21 @@ struct irq_domain_chip_generic {
  	struct irq_chip_generic	*gc[];
  };
  
@@ -777,7 +777,7 @@ index c3eb89606..967530ed9 100644
  /* Generic chip callback functions */
  void irq_gc_noop(struct irq_data *d);
  void irq_gc_mask_disable_reg(struct irq_data *d);
-@@ -1275,7 +1290,11 @@ int ipi_send_mask(unsigned int virq, const struct cpumask *dest);
+@@ -1257,7 +1272,11 @@ int ipi_send_mask(unsigned int virq, const struct cpumask *dest);
   * Returns 0 on success, or -EBUSY if an IRQ handler has already been
   * registered.
   */

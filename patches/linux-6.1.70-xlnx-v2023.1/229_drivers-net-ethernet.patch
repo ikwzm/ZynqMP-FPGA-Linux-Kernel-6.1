@@ -225,7 +225,7 @@ index 1aa4c6006..0368d85bd 100644
 +		xlnx,rxmem = <0x8000>;
  	};
 diff --git a/drivers/net/ethernet/adi/adin1110.c b/drivers/net/ethernet/adi/adin1110.c
-index ed2863ed6..320b396e7 100644
+index 7474afc0e..6c1ecde58 100644
 --- a/drivers/net/ethernet/adi/adin1110.c
 +++ b/drivers/net/ethernet/adi/adin1110.c
 @@ -515,7 +515,7 @@ static int adin1110_register_mdiobus(struct adin1110_priv *priv,
@@ -1202,10 +1202,10 @@ index de7105a84..70728b2e5 100644
  	ret = devm_mdiobus_register(&spi->dev, db->mdiobus);
  	if (ret)
 diff --git a/drivers/net/ethernet/qualcomm/qca_debug.c b/drivers/net/ethernet/qualcomm/qca_debug.c
-index f62c39544..6f2fa2a42 100644
+index a739c06ed..1822f2ad8 100644
 --- a/drivers/net/ethernet/qualcomm/qca_debug.c
 +++ b/drivers/net/ethernet/qualcomm/qca_debug.c
-@@ -119,7 +119,7 @@ qcaspi_info_show(struct seq_file *s, void *what)
+@@ -121,7 +121,7 @@ qcaspi_info_show(struct seq_file *s, void *what)
  	seq_printf(s, "SPI mode         : %x\n",
  		   qca->spi_dev->mode);
  	seq_printf(s, "SPI chip select  : %u\n",
@@ -2843,7 +2843,7 @@ index 000000000..5f186d2cf
 +	lp->axienet_config->setoptions(ndev, lp->options);
 +}
 diff --git a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
-index d14648558..1d36699b7 100644
+index 5ea9dc251..3af38f868 100644
 --- a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
 +++ b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
 @@ -7,8 +7,9 @@

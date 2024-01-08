@@ -4641,7 +4641,7 @@ index c0d3bcb99..62dc988df 100644
  	return 0;
  }
 diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-index 111d5464c..9893e9fc8 100644
+index 39e2c8883..57958acb9 100644
 --- a/scripts/mod/file2alias.c
 +++ b/scripts/mod/file2alias.c
 @@ -1452,6 +1452,17 @@ static int do_dfl_entry(const char *filename, void *symval, char *alias)

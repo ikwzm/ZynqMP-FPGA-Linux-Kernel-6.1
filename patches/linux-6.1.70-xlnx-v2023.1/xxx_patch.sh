@@ -21,6 +21,8 @@ run_patch()
         run_command "patch -p1 < ${PATCH_DIR}/${1}"
         run_command "git add --all"
         run_command "git commit -m '[patch] ${1}'"
+    else
+	echo "## not found ${PATCH_DIR}/${1}"
     fi
 }
 

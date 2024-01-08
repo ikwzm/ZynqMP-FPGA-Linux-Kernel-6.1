@@ -44,7 +44,7 @@ index 4619d5e89..5d6ccad67 100644
  	for_each_set_bit(port_index, &bus_state->bus_suspended, BITS_PER_LONG) {
  		sret = xhci_handshake(ports[port_index]->addr, PORT_PLC,
 diff --git a/drivers/usb/host/xhci-plat.c b/drivers/usb/host/xhci-plat.c
-index 5fb55bf19..43014a617 100644
+index c9438dc56..156403105 100644
 --- a/drivers/usb/host/xhci-plat.c
 +++ b/drivers/usb/host/xhci-plat.c
 @@ -19,6 +19,7 @@
@@ -146,7 +146,7 @@ index 5fb55bf19..43014a617 100644
  		device_property_read_u32(tmpdev, "imod-interval-ns",
  					 &xhci->imod_interval);
  	}
-@@ -350,6 +400,10 @@ static int xhci_plat_probe(struct platform_device *pdev)
+@@ -357,6 +407,10 @@ static int xhci_plat_probe(struct platform_device *pdev)
  			goto put_usb3_hcd;
  	}
  
@@ -157,7 +157,7 @@ index 5fb55bf19..43014a617 100644
  	device_enable_async_suspend(&pdev->dev);
  	pm_runtime_put_noidle(&pdev->dev);
  
-@@ -405,6 +459,9 @@ static int xhci_plat_remove(struct platform_device *dev)
+@@ -412,6 +466,9 @@ static int xhci_plat_remove(struct platform_device *dev)
  
  	usb_phy_shutdown(hcd->usb_phy);
  
@@ -167,7 +167,7 @@ index 5fb55bf19..43014a617 100644
  	usb_remove_hcd(hcd);
  
  	if (shared_hcd)
-@@ -433,6 +490,17 @@ static int __maybe_unused xhci_plat_suspend(struct device *dev)
+@@ -440,6 +497,17 @@ static int __maybe_unused xhci_plat_suspend(struct device *dev)
  	ret = xhci_priv_suspend_quirk(hcd);
  	if (ret)
  		return ret;
@@ -185,7 +185,7 @@ index 5fb55bf19..43014a617 100644
  	/*
  	 * xhci_suspend() needs `do_wakeup` to know whether host is allowed
  	 * to do wakeup during suspend.
-@@ -493,6 +561,9 @@ static int __maybe_unused xhci_plat_runtime_resume(struct device *dev)
+@@ -515,6 +583,9 @@ static int __maybe_unused xhci_plat_runtime_resume(struct device *dev)
  	struct usb_hcd  *hcd = dev_get_drvdata(dev);
  	struct xhci_hcd *xhci = hcd_to_xhci(hcd);
  

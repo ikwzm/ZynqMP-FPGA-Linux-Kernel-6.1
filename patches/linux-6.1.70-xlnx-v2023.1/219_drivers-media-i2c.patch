@@ -3775,7 +3775,7 @@ index 000000000..e2e7f66b6
 +MODULE_DESCRIPTION("ON Semiconductor AP1302 ISP driver");
 +MODULE_LICENSE("GPL");
 diff --git a/drivers/media/i2c/ov5640.c b/drivers/media/i2c/ov5640.c
-index 2ee832426..9fd8349aa 100644
+index e0019668a..ea4e02ead 100644
 --- a/drivers/media/i2c/ov5640.c
 +++ b/drivers/media/i2c/ov5640.c
 @@ -1971,6 +1971,7 @@ static int ov5640_get_light_freq(struct ov5640_dev *sensor)
