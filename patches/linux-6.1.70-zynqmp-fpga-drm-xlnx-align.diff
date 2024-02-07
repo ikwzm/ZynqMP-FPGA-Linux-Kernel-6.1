@@ -25,7 +25,7 @@ index 628f96c0e..dfff48dad 100644
  	tristate "Xilinx DRM KMS bridge"
  	depends on DRM_XLNX
 diff --git a/drivers/gpu/drm/xlnx/xlnx_drv.c b/drivers/gpu/drm/xlnx/xlnx_drv.c
-index 4079349b8..999dd47ca 100644
+index 4079349b8..694ed1eb8 100644
 --- a/drivers/gpu/drm/xlnx/xlnx_drv.c
 +++ b/drivers/gpu/drm/xlnx/xlnx_drv.c
 @@ -26,6 +26,7 @@
@@ -63,7 +63,7 @@ index 4079349b8..999dd47ca 100644
  /**
   * struct xlnx_drm - Xilinx DRM private data
   * @drm: DRM core
-@@ -72,6 +81,54 @@ struct xlnx_drm {
+@@ -72,6 +81,57 @@ struct xlnx_drm {
  	u32 master_count;
  };
  
@@ -84,6 +84,9 @@ index 4079349b8..999dd47ca 100644
 +		break;
 +	case DRM_XLNX_PARAM_DUMB_ALIGNMENT_SIZE:
 +		args->value = (__u64)xlnx_dumb_alignment_size;
++		break;
++	case DRM_XLNX_PARAM_DUMB_ALIGNMENT_MODE:
++		args->value = 1;
 +		break;
 +	default:
 +		return -EINVAL;
@@ -118,7 +121,7 @@ index 4079349b8..999dd47ca 100644
  /**
   * xlnx_get_crtc_helper - Return the crtc helper instance
   * @drm: DRM device
-@@ -88,14 +145,18 @@ struct xlnx_crtc_helper *xlnx_get_crtc_helper(struct drm_device *drm)
+@@ -88,14 +148,18 @@ struct xlnx_crtc_helper *xlnx_get_crtc_helper(struct drm_device *drm)
  /**
   * xlnx_get_align - Return the align requirement through CRTC helper
   * @drm: DRM device
@@ -139,7 +142,7 @@ index 4079349b8..999dd47ca 100644
  }
  
  /**
-@@ -199,6 +260,8 @@ static struct drm_driver xlnx_drm_driver = {
+@@ -199,6 +263,8 @@ static struct drm_driver xlnx_drm_driver = {
  	.lastclose			= xlnx_lastclose,
  
  	DRM_GEM_DMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE(xlnx_gem_cma_dumb_create),
@@ -162,7 +165,7 @@ index d016e169f..a262d192e 100644
  struct xlnx_bridge_helper *xlnx_get_bridge_helper(struct drm_device *drm);
  
 diff --git a/drivers/gpu/drm/xlnx/xlnx_gem.c b/drivers/gpu/drm/xlnx/xlnx_gem.c
-index 98419cecc..26cea80b8 100644
+index 98419cecc..307f57831 100644
 --- a/drivers/gpu/drm/xlnx/xlnx_gem.c
 +++ b/drivers/gpu/drm/xlnx/xlnx_gem.c
 @@ -17,6 +17,7 @@
@@ -189,7 +192,7 @@ index 98419cecc..26cea80b8 100644
 -	int pitch = DIV_ROUND_UP(args->width * args->bpp, 8);
 -	unsigned int align = xlnx_get_align(drm);
 +	bool scanout = (((args->flags) & DRM_XLNX_GEM_DUMB_SCANOUT_MASK) == DRM_XLNX_GEM_DUMB_SCANOUT);
-+	int  align   = xlnx_get_align(drm, scanout);
++	int  align   = (((args->flags) & DRM_XLNX_GEM_DUMB_ALIGN_MODE_MASK) == DRM_XLNX_GEM_DUMB_ALIGN_NOCHECK)? 1 : xlnx_get_align(drm, scanout);
  
  	if (!args->pitch || !IS_ALIGNED(args->pitch, align))
 -		args->pitch = ALIGN(pitch, align);
@@ -202,16 +205,16 @@ index 98419cecc..26cea80b8 100644
  }
 diff --git a/include/uapi/drm/xlnx_drm.h b/include/uapi/drm/xlnx_drm.h
 new file mode 100644
-index 000000000..b9186c9a4
+index 000000000..1f392bccb
 --- /dev/null
 +++ b/include/uapi/drm/xlnx_drm.h
-@@ -0,0 +1,76 @@
+@@ -0,0 +1,82 @@
 +/* SPDX-License-Identifier: GPL-2.0+ WITH Linux-syscall-note */
 +/* xrt_drm.h 
 + *
 + * Xilinx DRM KMS Driver Public Header
 + *
-+ * Copyright (c) 2022 ikwzm <ichiro_k@ca2.so-net.ne.jp> 
++ * Copyright (c) 2022-2024 ikwzm <ichiro_k@ca2.so-net.ne.jp> 
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
@@ -235,6 +238,7 @@ index 000000000..b9186c9a4
 +	DRM_XLNX_PARAM_DRIVER_IDENTIFIER      = 0,
 +	DRM_XLNX_PARAM_SCANOUT_ALIGNMENT_SIZE = 1,
 +	DRM_XLNX_PARAM_DUMB_ALIGNMENT_SIZE    = 2,
++	DRM_XLNX_PARAM_DUMB_ALIGNMENT_MODE    = 5,
 +};
 +
 +/**
@@ -272,11 +276,16 @@ index 000000000..b9186c9a4
 +/**
 + * Xilinx DRM KMS Driver Create Dumb Flags
 + */
-+#define DRM_XLNX_GEM_DUMB_SCANOUT_BIT   (0)
-+#define DRM_XLNX_GEM_DUMB_SCANOUT_MASK  (1 << DRM_XLNX_GEM_DUMB_SCANOUT_BIT)
-+#define DRM_XLNX_GEM_DUMB_SCANOUT       (1 << DRM_XLNX_GEM_DUMB_SCANOUT_BIT)
-+#define DRM_XLNX_GEM_DUMB_NON_SCANOUT   (0 << DRM_XLNX_GEM_DUMB_SCANOUT_BIT)
-+	
++#define DRM_XLNX_GEM_DUMB_SCANOUT_BIT       (0)
++#define DRM_XLNX_GEM_DUMB_SCANOUT_MASK      (1 << DRM_XLNX_GEM_DUMB_SCANOUT_BIT)
++#define DRM_XLNX_GEM_DUMB_SCANOUT           (1 << DRM_XLNX_GEM_DUMB_SCANOUT_BIT)
++#define DRM_XLNX_GEM_DUMB_NON_SCANOUT       (0 << DRM_XLNX_GEM_DUMB_SCANOUT_BIT)
++
++#define DRM_XLNX_GEM_DUMB_ALIGN_MODE_BIT    (3)
++#define DRM_XLNX_GEM_DUMB_ALIGN_MODE_MASK   (1 << DRM_XLNX_GEM_DUMB_ALIGN_MODE_BIT)
++#define DRM_XLNX_GEM_DUMB_ALIGN_NOCHECK     (1 << DRM_XLNX_GEM_DUMB_ALIGN_MODE_BIT)
++#define DRM_XLNX_GEM_DUMB_ALIGN_DEFAULT     (0 << DRM_XLNX_GEM_DUMB_ALIGN_MODE_BIT)
++    
 +#if defined(__cplusplus)
 +}
 +#endif
