@@ -6532,7 +6532,7 @@ index d66b13151..b4fe0b270 100644
  
  	clk_disable_unprepare(xvcu->aclk);
 diff --git a/drivers/clk/zynq/clkc.c b/drivers/clk/zynq/clkc.c
-index 7bdeaff2b..bcc1bddaf 100644
+index c28d3dacf..b841f73de 100644
 --- a/drivers/clk/zynq/clkc.c
 +++ b/drivers/clk/zynq/clkc.c
 @@ -37,6 +37,7 @@ static void __iomem *zynq_clkc_base;
@@ -6543,7 +6543,7 @@ index 7bdeaff2b..bcc1bddaf 100644
  #define SLCR_FPGA0_CLK_CTRL		(zynq_clkc_base + 0x70)
  #define SLCR_621_TRUE			(zynq_clkc_base + 0xc4)
  #define SLCR_SWDT_CLK_SEL		(zynq_clkc_base + 0x204)
-@@ -99,6 +100,48 @@ static const char *const gem1_emio_input_names[] __initconst = {
+@@ -100,6 +101,48 @@ static const char *const gem1_emio_input_names[] __initconst = {
  static const char *const swdt_ext_clk_input_names[] __initconst = {
  	"swdt_ext_clk"};
  

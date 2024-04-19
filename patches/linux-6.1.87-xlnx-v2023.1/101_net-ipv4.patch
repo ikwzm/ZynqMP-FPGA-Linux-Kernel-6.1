@@ -1,5 +1,5 @@
 diff --git a/net/ipv4/af_inet.c b/net/ipv4/af_inet.c
-index 5d379df90..da32d74ee 100644
+index 9408dc3bb..b365e6ce6 100644
 --- a/net/ipv4/af_inet.c
 +++ b/net/ipv4/af_inet.c
 @@ -120,6 +120,7 @@
@@ -10,7 +10,7 @@ index 5d379df90..da32d74ee 100644
  
  /* The inetsw table contains everything that inet_create needs to
   * build a new socket.
-@@ -1991,6 +1992,11 @@ static int __init inet_init(void)
+@@ -2015,6 +2016,11 @@ static int __init inet_init(void)
  	for (r = &inetsw[0]; r < &inetsw[SOCK_MAX]; ++r)
  		INIT_LIST_HEAD(r);
  

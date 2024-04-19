@@ -1470,7 +1470,7 @@ index 0f17dfa87..bf5de1e5d 100644
 +}
 +EXPORT_SYMBOL(drm_format_plane_width_bytes);
 diff --git a/drivers/gpu/drm/drm_framebuffer.c b/drivers/gpu/drm/drm_framebuffer.c
-index 2dd97473c..f3a716c58 100644
+index 72ad1715f..b73ebaccd 100644
 --- a/drivers/gpu/drm/drm_framebuffer.c
 +++ b/drivers/gpu/drm/drm_framebuffer.c
 @@ -198,7 +198,8 @@ static int framebuffer_check(struct drm_device *dev,
@@ -1494,10 +1494,10 @@ index 2dd97473c..f3a716c58 100644
  		return ERR_PTR(-EINVAL);
  	}
 diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
-index 005377f58..3a5c0c4a2 100644
+index b714ee1bc..546efd1b4 100644
 --- a/drivers/gpu/drm/panel/panel-simple.c
 +++ b/drivers/gpu/drm/panel/panel-simple.c
-@@ -4405,6 +4405,33 @@ static const struct panel_desc_dsi auo_b080uan01 = {
+@@ -4407,6 +4407,33 @@ static const struct panel_desc_dsi auo_b080uan01 = {
  	.lanes = 4,
  };
  
@@ -1531,7 +1531,7 @@ index 005377f58..3a5c0c4a2 100644
  static const struct drm_display_mode boe_tv080wum_nl0_mode = {
  	.clock = 160000,
  	.hdisplay = 1200,
-@@ -4583,6 +4610,9 @@ static const struct of_device_id dsi_of_match[] = {
+@@ -4585,6 +4612,9 @@ static const struct of_device_id dsi_of_match[] = {
  	{
  		.compatible = "auo,b080uan01",
  		.data = &auo_b080uan01

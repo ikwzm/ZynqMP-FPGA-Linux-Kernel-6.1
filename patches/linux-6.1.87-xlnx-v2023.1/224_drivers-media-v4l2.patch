@@ -1641,10 +1641,10 @@ index 000000000..61ca19573
 +
 +#endif
 diff --git a/include/media/media-entity.h b/include/media/media-entity.h
-index 28c9de8a1..c93d3ca58 100644
+index 03bb09639..284f0c754 100644
 --- a/include/media/media-entity.h
 +++ b/include/media/media-entity.h
-@@ -245,6 +245,9 @@ struct media_pad {
+@@ -247,6 +247,9 @@ struct media_pad {
   *			guaranteed to not both be sinks or sources.
   *			Optional: If the operation isn't implemented all pads
   *			will be considered as interdependent.
@@ -1654,7 +1654,7 @@ index 28c9de8a1..c93d3ca58 100644
   *
   * .. note::
   *
-@@ -260,6 +263,8 @@ struct media_entity_operations {
+@@ -262,6 +265,8 @@ struct media_entity_operations {
  	int (*link_validate)(struct media_link *link);
  	bool (*has_pad_interdep)(struct media_entity *entity, unsigned int pad0,
  				 unsigned int pad1);
@@ -1663,7 +1663,7 @@ index 28c9de8a1..c93d3ca58 100644
  };
  
  /**
-@@ -1081,6 +1086,9 @@ __must_check int media_graph_walk_init(
+@@ -1083,6 +1088,9 @@ __must_check int media_graph_walk_init(
   */
  void media_graph_walk_cleanup(struct media_graph *graph);
  
