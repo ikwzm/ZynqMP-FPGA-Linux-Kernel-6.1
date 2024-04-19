@@ -131,7 +131,7 @@ index 000000000..e00942cf3
 +	xlnx,afi-buswidth = <1>;
 +};
 diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index bbe0a7cab..f583086b9 100644
+index bbe0a7cab..e973fd764 100644
 --- a/drivers/fpga/Kconfig
 +++ b/drivers/fpga/Kconfig
 @@ -12,6 +12,16 @@ menuconfig FPGA
@@ -176,16 +176,6 @@ index bbe0a7cab..f583086b9 100644
  config FPGA_BRIDGE
  	tristate "FPGA Bridge Framework"
  	help
-@@ -115,8 +143,8 @@ config ALTERA_FREEZE_BRIDGE
- 
- config XILINX_PR_DECOUPLER
- 	tristate "Xilinx LogiCORE PR Decoupler"
--	depends on FPGA_BRIDGE
- 	depends on HAS_IOMEM
-+	select FPGA_BRIDGE
- 	help
- 	  Say Y to enable drivers for Xilinx LogiCORE PR Decoupler
- 	  or Xilinx Dynamic Function eXchange AIX Shutdown Manager.
 diff --git a/drivers/fpga/Makefile b/drivers/fpga/Makefile
 index 42ae8b58a..21afd43a1 100644
 --- a/drivers/fpga/Makefile
@@ -253,7 +243,7 @@ index 833ce13ff..43e5534f2 100644
  };
  ATTRIBUTE_GROUPS(fpga_bridge);
 diff --git a/drivers/fpga/fpga-mgr.c b/drivers/fpga/fpga-mgr.c
-index 8efa67620..bc9b96d6c 100644
+index 8efa67620..37b32ce40 100644
 --- a/drivers/fpga/fpga-mgr.c
 +++ b/drivers/fpga/fpga-mgr.c
 @@ -8,6 +8,9 @@
@@ -412,7 +402,7 @@ index 8efa67620..bc9b96d6c 100644
  	return sprintf(buf, "%s\n", state_str[mgr->state]);
  }
  
-@@ -648,18 +706,105 @@ static ssize_t status_show(struct device *dev,
+@@ -648,18 +706,107 @@ static ssize_t status_show(struct device *dev,
  		len += sprintf(buf + len, "reconfig IP protocol error\n");
  	if (status & FPGA_MGR_STATUS_FIFO_OVERFLOW_ERR)
  		len += sprintf(buf + len, "reconfig fifo overflow error\n");
@@ -446,6 +436,8 @@ index 8efa67620..bc9b96d6c 100644
 +
 +	/* struct with information about the FPGA image to program. */
 +	struct fpga_image_info info = {0};
++
++	info.header_size = mgr->mops->initial_header_size;
 +
 +	/* lose terminating \n */
 +	strcpy(image_name, buf);
@@ -518,7 +510,7 @@ index 8efa67620..bc9b96d6c 100644
  	NULL,
  };
  ATTRIBUTE_GROUPS(fpga_mgr);
-@@ -732,6 +877,106 @@ void fpga_mgr_put(struct fpga_manager *mgr)
+@@ -732,6 +879,106 @@ void fpga_mgr_put(struct fpga_manager *mgr)
  }
  EXPORT_SYMBOL_GPL(fpga_mgr_put);
  
@@ -625,7 +617,7 @@ index 8efa67620..bc9b96d6c 100644
  /**
   * fpga_mgr_lock - Lock FPGA manager for exclusive use
   * @mgr:	fpga manager
-@@ -779,6 +1024,9 @@ struct fpga_manager *
+@@ -779,6 +1026,9 @@ struct fpga_manager *
  fpga_mgr_register_full(struct device *parent, const struct fpga_manager_info *info)
  {
  	const struct fpga_manager_ops *mops = info->mops;
@@ -635,7 +627,7 @@ index 8efa67620..bc9b96d6c 100644
  	struct fpga_manager *mgr;
  	int id, ret;
  
-@@ -815,10 +1063,28 @@ fpga_mgr_register_full(struct device *parent, const struct fpga_manager_info *in
+@@ -815,10 +1065,28 @@ fpga_mgr_register_full(struct device *parent, const struct fpga_manager_info *in
  	mgr->dev.of_node = parent->of_node;
  	mgr->dev.id = id;
  
@@ -664,7 +656,7 @@ index 8efa67620..bc9b96d6c 100644
  	/*
  	 * Initialize framework state by requesting low level driver read state
  	 * from device.  FPGA may be in reset mode or may have been programmed
-@@ -832,6 +1098,28 @@ fpga_mgr_register_full(struct device *parent, const struct fpga_manager_info *in
+@@ -832,6 +1100,28 @@ fpga_mgr_register_full(struct device *parent, const struct fpga_manager_info *in
  		return ERR_PTR(ret);
  	}
  
@@ -693,7 +685,7 @@ index 8efa67620..bc9b96d6c 100644
  	return mgr;
  
  error_device:
-@@ -882,6 +1170,10 @@ void fpga_mgr_unregister(struct fpga_manager *mgr)
+@@ -882,6 +1172,10 @@ void fpga_mgr_unregister(struct fpga_manager *mgr)
  {
  	dev_info(&mgr->dev, "%s %s\n", __func__, mgr->name);
  
@@ -726,7 +718,7 @@ index ae82532fc..67de5ecc5 100644
  				     &firmware_name)) {
  		info->firmware_name = devm_kstrdup(dev, firmware_name,
 diff --git a/drivers/fpga/versal-fpga.c b/drivers/fpga/versal-fpga.c
-index e1601b3a3..3f5e43709 100644
+index e1601b3a3..bf4fb4426 100644
 --- a/drivers/fpga/versal-fpga.c
 +++ b/drivers/fpga/versal-fpga.c
 @@ -19,6 +19,18 @@ static int versal_fpga_ops_write_init(struct fpga_manager *mgr,
@@ -756,6 +748,15 @@ index e1601b3a3..3f5e43709 100644
  };
  
  static int versal_fpga_probe(struct platform_device *pdev)
+@@ -48,7 +61,7 @@ static int versal_fpga_probe(struct platform_device *pdev)
+ 	struct fpga_manager *mgr;
+ 	int ret;
+ 
+-	ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
++	ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(44));
+ 	if (ret < 0) {
+ 		dev_err(dev, "no usable DMA configuration\n");
+ 		return ret;
 diff --git a/drivers/fpga/xilinx-afi.c b/drivers/fpga/xilinx-afi.c
 new file mode 100644
 index 000000000..587552bc2
@@ -948,7 +949,7 @@ index 000000000..7ce0d089e
 +MODULE_AUTHOR("Nava kishore Manne <nava.manne@xilinx.com>");
 +MODULE_LICENSE("GPL v2");
 diff --git a/drivers/fpga/zynq-fpga.c b/drivers/fpga/zynq-fpga.c
-index 426aa34c6..89c4ecfc3 100644
+index 426aa34c6..25ee223ae 100644
 --- a/drivers/fpga/zynq-fpga.c
 +++ b/drivers/fpga/zynq-fpga.c
 @@ -248,6 +248,21 @@ static bool zynq_fpga_has_sync(const u8 *buf, size_t count)
@@ -973,21 +974,16 @@ index 426aa34c6..89c4ecfc3 100644
  static int zynq_fpga_ops_write_init(struct fpga_manager *mgr,
  				    struct fpga_image_info *info,
  				    const char *buf, size_t count)
-@@ -275,13 +290,6 @@ static int zynq_fpga_ops_write_init(struct fpga_manager *mgr,
+@@ -275,7 +290,7 @@ static int zynq_fpga_ops_write_init(struct fpga_manager *mgr,
  
  	/* don't globally reset PL if we're doing partial reconfig */
  	if (!(info->flags & FPGA_MGR_PARTIAL_RECONFIG)) {
 -		if (!zynq_fpga_has_sync(buf, count)) {
--			dev_err(&mgr->dev,
--				"Invalid bitstream, could not find a sync word. Bitstream must be a byte swapped .bin file\n");
--			err = -EINVAL;
--			goto out_err;
--		}
--
- 		/* assert AXI interface resets */
- 		regmap_write(priv->slcr, SLCR_FPGA_RST_CTRL_OFFSET,
- 			     FPGA_RST_ALL_MASK);
-@@ -493,15 +501,16 @@ static int zynq_fpga_ops_write_complete(struct fpga_manager *mgr,
++		if (!zynq_fpga_has_sync((u8 *)buf, count)) {
+ 			dev_err(&mgr->dev,
+ 				"Invalid bitstream, could not find a sync word. Bitstream must be a byte swapped .bin file\n");
+ 			err = -EINVAL;
+@@ -493,15 +508,16 @@ static int zynq_fpga_ops_write_complete(struct fpga_manager *mgr,
  	if (err)
  		return err;
  
@@ -1008,7 +1004,7 @@ index 426aa34c6..89c4ecfc3 100644
  	clk_disable(priv->clk);
  
  	if (err)
-@@ -545,6 +554,7 @@ static enum fpga_mgr_states zynq_fpga_ops_state(struct fpga_manager *mgr)
+@@ -545,6 +561,7 @@ static enum fpga_mgr_states zynq_fpga_ops_state(struct fpga_manager *mgr)
  static const struct fpga_manager_ops zynq_fpga_ops = {
  	.initial_header_size = 128,
  	.state = zynq_fpga_ops_state,
