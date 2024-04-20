@@ -554,10 +554,10 @@ index 9be9535ad..438684f3e 100644
  static const struct of_device_id xpsgtr_of_match[] = {
 diff --git a/drivers/phy/xilinx/xhdmiphy.c b/drivers/phy/xilinx/xhdmiphy.c
 new file mode 100644
-index 000000000..28e5bd467
+index 000000000..3c0326c90
 --- /dev/null
 +++ b/drivers/phy/xilinx/xhdmiphy.c
-@@ -0,0 +1,898 @@
+@@ -0,0 +1,903 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Xilinx HDMI PHY
@@ -781,6 +781,11 @@ index 000000000..28e5bd467
 +					     cfg->linerate, cfg->nchannels);
 +			xhdmiphy_clkdet_freq_reset(phy_dev, XHDMIPHY_DIR_TX);
 +			cfg->config_hdmi21 = 0;
++		} else if (cfg->resetgtpll) {
++			xhdmiphy_set(phy_dev, XHDMIPHY_TX_INIT_REG,
++				     XHDMIPHY_TXRX_INIT_PLLGTRESET_ALL_MASK);
++			xhdmiphy_clr(phy_dev, XHDMIPHY_TX_INIT_REG,
++				     XHDMIPHY_TXRX_INIT_PLLGTRESET_ALL_MASK);
 +		}
 +		count_tx = 0;
 +	}
@@ -1458,10 +1463,10 @@ index 000000000..28e5bd467
 +MODULE_DESCRIPTION("Xilinx HDMI PHY driver");
 diff --git a/drivers/phy/xilinx/xhdmiphy.h b/drivers/phy/xilinx/xhdmiphy.h
 new file mode 100644
-index 000000000..c65a05561
+index 000000000..6ce1e2c23
 --- /dev/null
 +++ b/drivers/phy/xilinx/xhdmiphy.h
-@@ -0,0 +1,1161 @@
+@@ -0,0 +1,1163 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +
 +#ifndef _XHDMIPHY_H_
@@ -2512,6 +2517,8 @@ index 000000000..c65a05561
 +	u8 phy_ready;
 +};
 +
++void xhdmiphy_set(struct xhdmiphy_dev *inst, u32 addr, u32 set);
++void xhdmiphy_clr(struct xhdmiphy_dev *inst, u32 addr, u32 clr);
 +void xhdmiphy_set_clr(struct xhdmiphy_dev *inst, u32 addr, u32 reg_val,
 +		      u32 mask_val, u8 set_clr);
 +void xhdmiphy_ch2ids(struct xhdmiphy_dev *inst, enum chid chid, u8 *id0,
@@ -2625,10 +2632,10 @@ index 000000000..c65a05561
 +/** @} */
 diff --git a/drivers/phy/xilinx/xhdmiphy_core.c b/drivers/phy/xilinx/xhdmiphy_core.c
 new file mode 100644
-index 000000000..0b40e6370
+index 000000000..14840e73d
 --- /dev/null
 +++ b/drivers/phy/xilinx/xhdmiphy_core.c
-@@ -0,0 +1,1113 @@
+@@ -0,0 +1,1123 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +
 +#include <linux/delay.h>
@@ -2645,6 +2652,16 @@ index 000000000..0b40e6370
 +void xhdmiphy_write(struct xhdmiphy_dev *inst, u32 addr, u32 value)
 +{
 +	iowrite32(value, inst->phy_base + addr);
++}
++
++void xhdmiphy_set(struct xhdmiphy_dev *inst, u32 addr, u32 val)
++{
++	xhdmiphy_write(inst, addr, xhdmiphy_read(inst, addr) | val);
++}
++
++void xhdmiphy_clr(struct xhdmiphy_dev *inst, u32 addr, u32 val)
++{
++	xhdmiphy_write(inst, addr, xhdmiphy_read(inst, addr) & ~val);
 +}
 +
 +void xhdmiphy_set_clr(struct xhdmiphy_dev *inst, u32 addr, u32 reg_val,
@@ -7031,10 +7048,10 @@ index 000000000..db7428423
 +}
 diff --git a/drivers/phy/xilinx/xhdmiphy_modules.c b/drivers/phy/xilinx/xhdmiphy_modules.c
 new file mode 100644
-index 000000000..05b2c0adf
+index 000000000..3727100a8
 --- /dev/null
 +++ b/drivers/phy/xilinx/xhdmiphy_modules.c
-@@ -0,0 +1,2037 @@
+@@ -0,0 +1,2027 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +
 +#include <linux/device.h>
@@ -7056,16 +7073,6 @@ index 000000000..05b2c0adf
 +	reg_val = xhdmiphy_read(inst, XHDMIPHY_INTR_DIS_REG);
 +	reg_val |= intr;
 +	xhdmiphy_write(inst, XHDMIPHY_INTR_DIS_REG, reg_val);
-+}
-+
-+static void xhdmiphy_set(struct xhdmiphy_dev *inst, u32 addr, u32 set)
-+{
-+	xhdmiphy_write(inst, addr, xhdmiphy_read(inst, addr) | set);
-+}
-+
-+inline void xhdmiphy_clr(struct xhdmiphy_dev *inst, u32 addr, u32 clr)
-+{
-+	xhdmiphy_write(inst, addr, xhdmiphy_read(inst, addr) & ~clr);
 +}
 +
 +/**
@@ -9261,10 +9268,10 @@ index 000000000..db04f9760
 +MODULE_DESCRIPTION("Xilinx driver for GT Quad Base");
 diff --git a/include/linux/phy/phy-hdmi.h b/include/linux/phy/phy-hdmi.h
 new file mode 100644
-index 000000000..626cb0e79
+index 000000000..7c29260ca
 --- /dev/null
 +++ b/include/linux/phy/phy-hdmi.h
-@@ -0,0 +1,227 @@
+@@ -0,0 +1,233 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +
 +#ifndef __PHY_HDMI_H_
@@ -9489,6 +9496,12 @@ index 000000000..626cb0e79
 +	 * Allowed values: 1, 2, 3, 5
 +	 */
 +	u8 samplerate;
++	/**
++	 * @resetgtpll
++	 * Flag to reset gtpll from PHY driver
++	 * Allowed values : 0, 1
++	 */
++	u8 resetgtpll : 1;
 +};
 +
 +#endif /* __PHY_HDMI_H_ */
