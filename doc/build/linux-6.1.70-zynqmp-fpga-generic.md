@@ -98,8 +98,8 @@ shell$ git commit -m "[add] zynqmp_fpga_generic_defconfig to arch/arm64/configs"
 ### Create tag and .version
 
 ```console
-shell$ git tag -a 6.1.70-zynqmp-fpga-generic-3 -m "release 6.1.70-zynqmp-fpga-generic-3"
-shell$ echo 2 > .version
+shell$ git tag -a 6.1.70-zynqmp-fpga-generic-4 -m "release 6.1.70-zynqmp-fpga-generic-4"
+shell$ echo 3 > .version
 ```
 
 ## Build
@@ -124,8 +124,8 @@ shell$ make deb-pkg
 ### Install kernel image to this repository
 
 ```console
-shell$ cp arch/arm64/boot/Image.gz ../vmlinuz-6.1.70-zynqmp-fpga-generic-3
-shell$ cp .config             ../files/config-6.1.70-zynqmp-fpga-generic-3
+shell$ cp arch/arm64/boot/Image.gz ../vmlinuz-6.1.70-zynqmp-fpga-generic-4
+shell$ cp .config             ../files/config-6.1.70-zynqmp-fpga-generic-4
 ```
 
 ### Install devicetree to this repository
