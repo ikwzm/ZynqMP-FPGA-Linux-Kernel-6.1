@@ -179,6 +179,7 @@ group:
     - "drivers/platform/"
   "239_drivers-ptp"                 :
     - "drivers/ptp/"                                    
+    - "include/linux/ptp/"                                    
     - "Documentation/devicetree/bindings/ptp/"     
   "240_drivers-pwm"                 :
     - "drivers/pwm/"
