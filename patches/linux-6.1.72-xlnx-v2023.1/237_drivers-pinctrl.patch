@@ -405,7 +405,7 @@ index 2722dc7bb..041f3799c 100644
  
            bias-pull-up: true
 diff --git a/drivers/pinctrl/pinctrl-zynqmp.c b/drivers/pinctrl/pinctrl-zynqmp.c
-index c98f35ad8..6380f252f 100644
+index c98f35ad8..b4d531a13 100644
 --- a/drivers/pinctrl/pinctrl-zynqmp.c
 +++ b/drivers/pinctrl/pinctrl-zynqmp.c
 @@ -40,6 +40,12 @@
@@ -421,7 +421,30 @@ index c98f35ad8..6380f252f 100644
  /**
   * struct zynqmp_pmux_function - a pinmux function
   * @name:	Name of the pin mux function
-@@ -706,7 +712,7 @@ static int zynqmp_pinctrl_prepare_group_pins(struct device *dev,
+@@ -412,6 +418,10 @@ static int zynqmp_pinconf_cfg_set(struct pinctrl_dev *pctldev,
+ 
+ 			break;
+ 		case PIN_CONFIG_BIAS_HIGH_IMPEDANCE:
++			param = PM_PINCTRL_CONFIG_TRI_STATE;
++			arg = PM_PINCTRL_TRI_STATE_ENABLE;
++			ret = zynqmp_pm_pinctrl_set_config(pin, param, arg);
++			break;
+ 		case PIN_CONFIG_MODE_LOW_POWER:
+ 			/*
+ 			 * These cases are mentioned in dts but configurable
+@@ -420,6 +430,11 @@ static int zynqmp_pinconf_cfg_set(struct pinctrl_dev *pctldev,
+ 			 */
+ 			ret = 0;
+ 			break;
++		case PIN_CONFIG_OUTPUT_ENABLE:
++			param = PM_PINCTRL_CONFIG_TRI_STATE;
++			arg = PM_PINCTRL_TRI_STATE_DISABLE;
++			ret = zynqmp_pm_pinctrl_set_config(pin, param, arg);
++			break;
+ 		default:
+ 			dev_warn(pctldev->dev,
+ 				 "unsupported configuration parameter '%u'\n",
+@@ -706,7 +721,7 @@ static int zynqmp_pinctrl_prepare_group_pins(struct device *dev,
  	int ret;
  
  	for (pin = 0; pin < zynqmp_desc.npins; pin++) {
@@ -430,7 +453,7 @@ index c98f35ad8..6380f252f 100644
  		if (ret)
  			return ret;
  	}
-@@ -794,6 +800,43 @@ static int zynqmp_pinctrl_get_num_pins(unsigned int *npins)
+@@ -794,6 +809,43 @@ static int zynqmp_pinctrl_get_num_pins(unsigned int *npins)
  	return 0;
  }
  
@@ -474,7 +497,7 @@ index c98f35ad8..6380f252f 100644
  /**
   * zynqmp_pinctrl_prepare_pin_desc() - prepare pin description info
   * @dev:		Device pointer.
-@@ -845,9 +888,18 @@ static int zynqmp_pinctrl_probe(struct platform_device *pdev)
+@@ -845,9 +897,18 @@ static int zynqmp_pinctrl_probe(struct platform_device *pdev)
  	if (!pctrl)
  		return -ENOMEM;
  
@@ -496,7 +519,7 @@ index c98f35ad8..6380f252f 100644
  	if (ret) {
  		dev_err(&pdev->dev, "pin desc prepare fail with %d\n", ret);
  		return ret;
-@@ -870,6 +922,7 @@ static int zynqmp_pinctrl_probe(struct platform_device *pdev)
+@@ -870,6 +931,7 @@ static int zynqmp_pinctrl_probe(struct platform_device *pdev)
  
  static const struct of_device_id zynqmp_pinctrl_of_match[] = {
  	{ .compatible = "xlnx,zynqmp-pinctrl" },
