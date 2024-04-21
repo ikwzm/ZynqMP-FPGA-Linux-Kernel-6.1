@@ -284,10 +284,10 @@ index 000000000..4bad79d1d
 +obj-$(CONFIG_CDX_BUS) += cdx.o cdx_msi.o controller/
 diff --git a/drivers/cdx/cdx.c b/drivers/cdx/cdx.c
 new file mode 100644
-index 000000000..affd5d2a0
+index 000000000..acbd21e24
 --- /dev/null
 +++ b/drivers/cdx/cdx.c
-@@ -0,0 +1,817 @@
+@@ -0,0 +1,808 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * CDX bus driver.
@@ -353,6 +353,8 @@ index 000000000..affd5d2a0
 +#include <linux/mm.h>
 +#include <linux/xarray.h>
 +#include <linux/cdx/cdx_bus.h>
++#include <linux/iommu.h>
++#include <linux/dma-map-ops.h>
 +#include "cdx.h"
 +
 +/* Default DMA mask for devices on a CDX bus */
@@ -374,7 +376,7 @@ index 000000000..affd5d2a0
 +{
 +	struct cdx_device *cdx_dev = to_cdx_device(dev);
 +	struct cdx_controller *cdx = cdx_dev->cdx;
-+	struct cdx_device_config dev_config;
++	struct cdx_device_config dev_config = {0};
 +	struct cdx_driver *cdx_drv;
 +	int ret;
 +
@@ -410,7 +412,7 @@ index 000000000..affd5d2a0
 + *	  the passed function (cdx_unregister_device) to have this
 + *	  as an argument.
 + *
-+ * Return: -errno on failure, 0 on success.
++ * Return: 0 on success.
 + */
 +static int cdx_unregister_device(struct device *dev,
 +				 void *data)
@@ -529,7 +531,7 @@ index 000000000..affd5d2a0
 +	int error;
 +
 +	error = cdx_drv->probe(cdx_dev);
-+	if (error < 0) {
++	if (error) {
 +		dev_err_probe(dev, error, "%s failed\n", __func__);
 +		return error;
 +	}
@@ -557,6 +559,7 @@ index 000000000..affd5d2a0
 +
 +static int cdx_dma_configure(struct device *dev)
 +{
++	struct cdx_driver *cdx_drv = to_cdx_driver(dev->driver);
 +	struct cdx_device *cdx_dev = to_cdx_device(dev);
 +	u32 input_id = cdx_dev->req_id;
 +	int ret;
@@ -567,7 +570,21 @@ index 000000000..affd5d2a0
 +		return ret;
 +	}
 +
++	if (!ret && !cdx_drv->driver_managed_dma) {
++		ret = iommu_device_use_default_domain(dev);
++		if (ret)
++			arch_teardown_dma_ops(dev);
++	}
++
 +	return 0;
++}
++
++static void cdx_dma_cleanup(struct device *dev)
++{
++	struct cdx_driver *cdx_drv = to_cdx_driver(dev->driver);
++
++	if (!cdx_drv->driver_managed_dma)
++		iommu_device_unuse_default_domain(dev);
 +}
 +
 +/* show configuration fields */
@@ -591,9 +608,9 @@ index 000000000..affd5d2a0
 +			    struct device_attribute *attr,
 +			    const char *buf, size_t count)
 +{
-+	unsigned long val = 0;
++	bool val;
 +
-+	if (kstrtoul(buf, 0, &val) < 0)
++	if (kstrtobool(buf, &val) < 0)
 +		return -EINVAL;
 +
 +	if (!val)
@@ -614,10 +631,10 @@ index 000000000..affd5d2a0
 +static ssize_t reset_store(struct device *dev, struct device_attribute *attr,
 +			   const char *buf, size_t count)
 +{
-+	unsigned long val = 0;
-+	int ret = 0;
++	bool val;
++	int ret;
 +
-+	if (kstrtoul(buf, 0, &val) < 0)
++	if (kstrtobool(buf, &val) < 0)
 +		return -EINVAL;
 +
 +	if (!val)
@@ -646,32 +663,14 @@ index 000000000..affd5d2a0
 +				     const char *buf, size_t count)
 +{
 +	struct cdx_device *cdx_dev = to_cdx_device(dev);
-+	const char *old = cdx_dev->driver_override;
-+	char *driver_override;
-+	char *cp;
++	int ret;
 +
 +	if (WARN_ON(dev->bus != &cdx_bus_type))
 +		return -EINVAL;
 +
-+	if (count >= (PAGE_SIZE - 1))
-+		return -EINVAL;
-+
-+	driver_override = kstrndup(buf, count, GFP_KERNEL);
-+	if (!driver_override)
-+		return -ENOMEM;
-+
-+	cp = strchr(driver_override, '\n');
-+	if (cp)
-+		*cp = '\0';
-+
-+	if (strlen(driver_override)) {
-+		cdx_dev->driver_override = driver_override;
-+	} else {
-+		kfree(driver_override);
-+		cdx_dev->driver_override = NULL;
-+	}
-+
-+	kfree(old);
++	ret = driver_set_override(dev, &cdx_dev->driver_override, buf, count);
++	if (ret)
++		return ret;
 +
 +	return count;
 +}
@@ -725,8 +724,8 @@ index 000000000..affd5d2a0
 +{
 +	struct cdx_controller *cdx;
 +	unsigned long index;
-+	bool enable = 0;
-+	int ret = 0;
++	bool enable;
++	int ret;
 +
 +	if (kstrtobool(buf, &enable) < 0)
 +		return -EINVAL;
@@ -747,10 +746,11 @@ index 000000000..affd5d2a0
 +static ssize_t rescan_store(struct bus_type *bus,
 +			    const char *buf, size_t count)
 +{
-+	unsigned long index, val = 0;
 +	struct cdx_controller *cdx;
++	unsigned long index;
++	bool val;
 +
-+	if (kstrtoul(buf, 0, &val) < 0)
++	if (kstrtobool(buf, &val) < 0)
 +		return -EINVAL;
 +
 +	if (!val)
@@ -775,10 +775,10 @@ index 000000000..affd5d2a0
 +static ssize_t reset_all_store(struct bus_type *bus,
 +			       const char *buf, size_t count)
 +{
-+	unsigned long val = 0;
++	bool val;
 +	int ret;
 +
-+	if (kstrtoul(buf, 0, &val) < 0)
++	if (kstrtobool(buf, &val) < 0)
 +		return -EINVAL;
 +
 +	if (!val)
@@ -810,6 +810,7 @@ index 000000000..affd5d2a0
 +	.remove		= cdx_remove,
 +	.shutdown	= cdx_shutdown,
 +	.dma_configure	= cdx_dma_configure,
++	.dma_cleanup	= cdx_dma_cleanup,
 +	.bus_groups	= cdx_bus_groups,
 +	.dev_groups	= cdx_dev_groups,
 +};
@@ -824,7 +825,7 @@ index 000000000..affd5d2a0
 +	cdx_driver->driver.bus = &cdx_bus_type;
 +
 +	error = driver_register(&cdx_driver->driver);
-+	if (error < 0) {
++	if (error) {
 +		pr_err("driver_register() failed for %s: %d\n",
 +		       cdx_driver->driver.name, error);
 +		return error;
@@ -948,7 +949,7 @@ index 000000000..affd5d2a0
 +{
 +	struct bin_attribute *res_attr;
 +	char *res_attr_name;
-+	int retval;
++	int ret;
 +
 +	res_attr = kzalloc(sizeof(*res_attr) + CDX_RES_ATTR_NAME_LEN, GFP_ATOMIC);
 +	if (!res_attr)
@@ -966,17 +967,16 @@ index 000000000..affd5d2a0
 +	res_attr->attr.mode = 0600;
 +	res_attr->size = cdx_resource_len(cdx_dev, num);
 +	res_attr->private = (void *)(unsigned long)num;
-+	retval = sysfs_create_bin_file(&cdx_dev->dev.kobj, res_attr);
-+	if (retval)
++	ret = sysfs_create_bin_file(&cdx_dev->dev.kobj, res_attr);
++	if (ret)
 +		kfree(res_attr);
 +
-+	return retval;
++	return ret;
 +}
 +
 +int cdx_device_add(struct cdx_dev_params *dev_params)
 +{
 +	struct cdx_controller *cdx = dev_params->cdx;
-+	struct irq_domain *cdx_msi_domain;
 +	struct device *parent = cdx->dev;
 +	struct cdx_device *cdx_dev;
 +	int ret, i;
@@ -992,7 +992,6 @@ index 000000000..affd5d2a0
 +
 +	/* Populate CDX dev params */
 +	cdx_dev->req_id = dev_params->req_id;
-+	cdx_dev->num_msi = dev_params->num_msi;
 +	cdx_dev->vendor = dev_params->vendor;
 +	cdx_dev->device = dev_params->device;
 +	cdx_dev->subsystem_vendor = dev_params->subsys_vendor;
@@ -1004,35 +1003,27 @@ index 000000000..affd5d2a0
 +	cdx_dev->cdx = dev_params->cdx;
 +	cdx_dev->dma_mask = CDX_DEFAULT_DMA_MASK;
 +
-+	/* Initiaize generic device */
++	/* Initialize generic device */
 +	device_initialize(&cdx_dev->dev);
 +	cdx_dev->dev.parent = parent;
 +	cdx_dev->dev.bus = &cdx_bus_type;
 +	cdx_dev->dev.dma_mask = &cdx_dev->dma_mask;
 +	cdx_dev->dev.release = cdx_device_release;
++	cdx_dev->msi_write_pending = false;
++	mutex_init(&cdx_dev->irqchip_lock);
 +
 +	/* Set Name */
 +	dev_set_name(&cdx_dev->dev, "cdx-%02x:%02x",
 +		     ((cdx->id << CDX_CONTROLLER_ID_SHIFT) | (cdx_dev->bus_num & CDX_BUS_NUM_MASK)),
 +		     cdx_dev->dev_num);
 +
-+	/* If CDX MSI domain is not created, create one. */
-+	cdx_msi_domain = irq_find_host(parent->of_node);
-+	if (!cdx_msi_domain) {
-+		cdx_msi_domain = cdx_msi_domain_init(parent);
-+		if (!cdx_msi_domain) {
-+			dev_err(&cdx_dev->dev,
-+				"cdx_msi_domain_init() failed");
-+			ret = -ENODEV;
-+			goto fail;
-+		}
++	if (cdx->msi_domain) {
++		cdx_dev->num_msi = dev_params->num_msi;
++		dev_set_msi_domain(&cdx_dev->dev, cdx->msi_domain);
 +	}
 +
-+	/* Set the MSI domain */
-+	dev_set_msi_domain(&cdx_dev->dev, cdx_msi_domain);
-+
 +	ret = device_add(&cdx_dev->dev);
-+	if (ret != 0) {
++	if (ret) {
 +		dev_err(&cdx_dev->dev,
 +			"cdx device add failed: %d", ret);
 +		goto fail;
@@ -1075,7 +1066,7 @@ index 000000000..affd5d2a0
 +
 +	ret = xa_alloc(&cdx_controllers, &cdx->id, cdx,
 +		       XA_LIMIT(0, MAX_CDX_CONTROLLERS - 1), GFP_KERNEL);
-+	if (ret < 0) {
++	if (ret) {
 +		dev_err(cdx->dev,
 +			"No free index available. Maximum controllers already registered\n");
 +		cdx->id = (u8)MAX_CDX_CONTROLLERS;
@@ -1193,10 +1184,10 @@ index 000000000..52711cf46
 +#endif /* _CDX_H_ */
 diff --git a/drivers/cdx/cdx_msi.c b/drivers/cdx/cdx_msi.c
 new file mode 100644
-index 000000000..ebc64529f
+index 000000000..611c61bd7
 --- /dev/null
 +++ b/drivers/cdx/cdx_msi.c
-@@ -0,0 +1,193 @@
+@@ -0,0 +1,225 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * AMD CDX bus driver MSI support
@@ -1238,14 +1229,43 @@ index 000000000..ebc64529f
 +{
 +	struct msi_desc *msi_desc = irq_data_get_msi_desc(irq_data);
 +	struct cdx_device *cdx_dev = to_cdx_device(msi_desc->dev);
++
++	/* We would not operate on msg here rather we wait for
++	 * irq_bus_sync_unlock() to be called from preemptible
++	 * task context.
++	 */
++	msi_desc->msg = *msg;
++	cdx_dev->msi_write_pending = true;
++}
++
++static void cdx_msi_write_irq_lock(struct irq_data *irq_data)
++{
++	struct msi_desc *msi_desc = irq_data_get_msi_desc(irq_data);
++	struct cdx_device *cdx_dev = to_cdx_device(msi_desc->dev);
++
++	mutex_lock(&cdx_dev->irqchip_lock);
++}
++
++static void cdx_msi_write_irq_unlock(struct irq_data *irq_data)
++{
++	struct msi_desc *msi_desc = irq_data_get_msi_desc(irq_data);
++	struct cdx_device *cdx_dev = to_cdx_device(msi_desc->dev);
 +	struct cdx_controller *cdx = cdx_dev->cdx;
 +	struct cdx_device_config dev_config;
 +	int ret;
 +
++	if (!cdx_dev->msi_write_pending) {
++		mutex_unlock(&cdx_dev->irqchip_lock);
++		return;
++	}
++
++	cdx_dev->msi_write_pending = false;
++	mutex_unlock(&cdx_dev->irqchip_lock);
++
 +	dev_config.msi.msi_index = msi_desc->msi_index;
 +	dev_config.msi.data = msi_desc->msg.data;
-+	dev_config.msi.addr = ((uint64_t)(msi_desc->msg.address_hi) << 32) |
-+	       msi_desc->msg.address_lo;
++	dev_config.msi.addr = ((u64)(msi_desc->msg.address_hi) << 32) |
++			      msi_desc->msg.address_lo;
 +
 +	dev_config.type = CDX_DEV_MSI_CONF;
 +	ret = cdx->ops->dev_configure(cdx, cdx_dev->bus_num, cdx_dev->dev_num,
@@ -1315,7 +1335,9 @@ index 000000000..ebc64529f
 +	.irq_unmask		= irq_chip_unmask_parent,
 +	.irq_eoi		= irq_chip_eoi_parent,
 +	.irq_set_affinity	= msi_domain_set_affinity,
-+	.irq_write_msi_msg	= cdx_msi_write_msg
++	.irq_write_msi_msg	= cdx_msi_write_msg,
++	.irq_bus_lock		= cdx_msi_write_irq_lock,
++	.irq_bus_sync_unlock	= cdx_msi_write_irq_unlock
 +};
 +
 +static int cdx_msi_prepare(struct irq_domain *msi_domain,
@@ -1390,12 +1412,13 @@ index 000000000..ebc64529f
 +
 +	return cdx_msi_domain;
 +}
++EXPORT_SYMBOL_GPL(cdx_msi_domain_init);
 diff --git a/drivers/cdx/controller/Kconfig b/drivers/cdx/controller/Kconfig
 new file mode 100644
-index 000000000..aea3ac86d
+index 000000000..61bf17fbe
 --- /dev/null
 +++ b/drivers/cdx/controller/Kconfig
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,21 @@
 +# SPDX-License-Identifier: GPL-2.0-only
 +#
 +# CDX controller configuration
@@ -1407,21 +1430,12 @@ index 000000000..aea3ac86d
 +
 +config CDX_CONTROLLER
 +	tristate "CDX bus controller"
++	select REMOTEPROC
 +	select RPMSG
 +	help
 +	  CDX controller drives the CDX bus. It interacts with
 +	  firmware to get the hardware devices and registers with
 +	  the CDX bus. Say Y to enable the CDX hardware driver.
-+
-+	  If unsure, say N.
-+
-+config MCDI_LOGGING
-+	bool "MCDI Logging for the CDX controller"
-+	depends on CDX_CONTROLLER
-+	help
-+	  Enable MCDI Logging for
-+	  the CDX Controller for debug
-+	  purpose.
 +
 +	  If unsure, say N.
 +
@@ -1539,10 +1553,10 @@ index 000000000..567f8ec47
 +#endif /* CDX_BITFIELD_H */
 diff --git a/drivers/cdx/controller/cdx_controller.c b/drivers/cdx/controller/cdx_controller.c
 new file mode 100644
-index 000000000..b32dee7ff
+index 000000000..dfc3241fa
 --- /dev/null
 +++ b/drivers/cdx/controller/cdx_controller.c
-@@ -0,0 +1,276 @@
+@@ -0,0 +1,288 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * CDX host controller driver for AMD versal-net platform.
@@ -1553,6 +1567,7 @@ index 000000000..b32dee7ff
 +#include <linux/of_platform.h>
 +#include <linux/slab.h>
 +#include <linux/cdx/cdx_bus.h>
++#include <linux/irqdomain.h>
 +
 +#include "cdx_controller.h"
 +#include "../cdx.h"
@@ -1568,7 +1583,8 @@ index 000000000..b32dee7ff
 +			     const struct cdx_dword *hdr, size_t hdr_len,
 +			     const struct cdx_dword *sdu, size_t sdu_len)
 +{
-+	cdx_rpmsg_send(cdx, hdr, hdr_len, sdu, sdu_len);
++	if (cdx_rpmsg_send(cdx, hdr, hdr_len, sdu, sdu_len))
++		dev_err(&cdx->rpdev->dev, "Failed to send rpmsg data\n");
 +}
 +
 +static const struct cdx_mcdi_ops mcdi_ops = {
@@ -1598,7 +1614,7 @@ index 000000000..b32dee7ff
 +	else
 +		ret = cdx_mcdi_bus_disable(cdx->priv, 0);
 +
-+	if (ret == 0)
++	if (!ret)
 +		cdx->enabled = enable;
 +
 +	return ret;
@@ -1620,7 +1636,7 @@ index 000000000..b32dee7ff
 +		addr = dev_config->msi.addr;
 +
 +		ret = cdx_mcdi_write_msi(cdx->priv, bus_num, dev_num,
-+					 msi_index, data, addr);
++					 msi_index, addr, data);
 +		break;
 +	case CDX_DEV_RESET_CONF:
 +		ret = cdx_mcdi_reset_device(cdx->priv, bus_num, dev_num);
@@ -1634,7 +1650,6 @@ index 000000000..b32dee7ff
 +					  dev_config->msi_enable);
 +		break;
 +	default:
-+		dev_err(cdx->dev, "Invalid device configuration flag\n");
 +		ret = -EINVAL;
 +	}
 +
@@ -1670,7 +1685,7 @@ index 000000000..b32dee7ff
 +		ret = cdx_mcdi_get_num_devs(cdx_mcdi, bus_num);
 +		if (ret < 0) {
 +			dev_err(cdx->dev,
-+				"CDX bus %d has no devices: %d\n", bus_num, ret);
++				"Get devices on CDX bus %d failed: %d\n", bus_num, ret);
 +			ret = cdx_mcdi_bus_disable(cdx_mcdi, bus_num);
 +			if (ret)
 +				dev_err(cdx->dev,
@@ -1745,6 +1760,14 @@ index 000000000..b32dee7ff
 +	cdx->priv = cdx_mcdi;
 +	cdx->ops = &cdx_ops;
 +
++	/* Create MSI domain */
++	cdx->msi_domain = cdx_msi_domain_init(&pdev->dev);
++	if (!cdx->msi_domain) {
++		dev_err(&pdev->dev, "cdx_msi_domain_init() failed");
++		ret = -ENODEV;
++		goto cdx_msi_fail;
++	}
++
 +	ret = cdx_setup_rpmsg(pdev);
 +	if (ret) {
 +		if (ret != -EPROBE_DEFER)
@@ -1756,6 +1779,8 @@ index 000000000..b32dee7ff
 +	return 0;
 +
 +cdx_rpmsg_fail:
++	irq_domain_remove(cdx->msi_domain);
++cdx_msi_fail:
 +	kfree(cdx);
 +cdx_alloc_fail:
 +	cdx_mcdi_finish(cdx_mcdi);
@@ -1772,6 +1797,7 @@ index 000000000..b32dee7ff
 +
 +	cdx_destroy_rpmsg(pdev);
 +
++	irq_domain_remove(cdx->msi_domain);
 +	kfree(cdx);
 +
 +	cdx_mcdi_finish(cdx_mcdi);
@@ -1802,7 +1828,7 @@ index 000000000..b32dee7ff
 +	int ret;
 +
 +	ret = platform_driver_register(&cdx_pdriver);
-+	if (ret < 0)
++	if (ret)
 +		pr_err("platform_driver_register() failed: %d\n", ret);
 +
 +	return ret;
@@ -1857,7 +1883,7 @@ index 000000000..43b7c742d
 +#endif /* _CDX_CONT_PRIV_H_ */
 diff --git a/drivers/cdx/controller/cdx_rpmsg.c b/drivers/cdx/controller/cdx_rpmsg.c
 new file mode 100644
-index 000000000..2be9bb279
+index 000000000..f37e639d6
 --- /dev/null
 +++ b/drivers/cdx/controller/cdx_rpmsg.c
 @@ -0,0 +1,202 @@
@@ -1890,7 +1916,7 @@ index 000000000..2be9bb279
 +		   const struct cdx_dword *sdu, size_t sdu_len)
 +{
 +	unsigned char *send_buf;
-+	int rc;
++	int ret;
 +
 +	send_buf = kzalloc(hdr_len + sdu_len, GFP_KERNEL);
 +	if (!send_buf)
@@ -1899,10 +1925,10 @@ index 000000000..2be9bb279
 +	memcpy(send_buf, hdr, hdr_len);
 +	memcpy(send_buf + hdr_len, sdu, sdu_len);
 +
-+	rc = rpmsg_send(cdx_mcdi->ept, send_buf, hdr_len + sdu_len);
++	ret = rpmsg_send(cdx_mcdi->ept, send_buf, hdr_len + sdu_len);
 +	kfree(send_buf);
 +
-+	return rc;
++	return ret;
 +}
 +
 +static int cdx_attach_to_rproc(struct platform_device *pdev)
@@ -2048,7 +2074,7 @@ index 000000000..2be9bb279
 +
 +	INIT_WORK(&cdx_mcdi->work, cdx_rpmsg_post_probe_work);
 +	ret = register_rpmsg_driver(&cdx_rpmsg_driver);
-+	if (ret < 0) {
++	if (ret) {
 +		dev_err(&pdev->dev,
 +			"Failed to register cdx RPMsg driver: %d\n", ret);
 +		cdx_detach_to_r5(pdev);
@@ -2779,10 +2805,10 @@ index 000000000..3ae1fdb94
 +#endif /* MC_CDX_PCOL_H */
 diff --git a/drivers/cdx/controller/mcdi.c b/drivers/cdx/controller/mcdi.c
 new file mode 100644
-index 000000000..96645fda8
+index 000000000..20f2d26d2
 --- /dev/null
 +++ b/drivers/cdx/controller/mcdi.c
-@@ -0,0 +1,911 @@
+@@ -0,0 +1,834 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Management-Controller-to-Driver Interface
@@ -2816,10 +2842,6 @@ index 000000000..96645fda8
 +	struct cdx_dword buffer[DIV_ROUND_UP(MCDI_CTL_SDU_LEN_MAX, 4)];
 +};
 +
-+#ifdef CONFIG_MCDI_LOGGING
-+#define LOG_LINE_MAX		(1024 - 32)
-+#endif
-+
 +static void cdx_mcdi_cancel_cmd(struct cdx_mcdi *cdx, struct cdx_mcdi_cmd *cmd);
 +static void cdx_mcdi_wait_for_cleanup(struct cdx_mcdi *cdx);
 +static int cdx_mcdi_rpc_async_internal(struct cdx_mcdi *cdx,
@@ -2829,8 +2851,6 @@ index 000000000..96645fda8
 +				    bool allow_retry);
 +static void cdx_mcdi_cmd_start_or_queue(struct cdx_mcdi_iface *mcdi,
 +					struct cdx_mcdi_cmd *cmd);
-+static void cdx_mcdi_cmd_start_or_queue_ext(struct cdx_mcdi_iface *mcdi,
-+					    struct cdx_mcdi_cmd *cmd);
 +static bool cdx_mcdi_complete_cmd(struct cdx_mcdi_iface *mcdi,
 +				  struct cdx_mcdi_cmd *cmd,
 +				  struct cdx_dword *outbuf,
@@ -2842,7 +2862,7 @@ index 000000000..96645fda8
 +static void cdx_mcdi_cmd_work(struct work_struct *context);
 +static void cdx_mcdi_mode_fail(struct cdx_mcdi *cdx, struct list_head *cleanup_list);
 +static void _cdx_mcdi_display_error(struct cdx_mcdi *cdx, unsigned int cmd,
-+				    size_t inlen, int raw, int arg, int rc);
++				    size_t inlen, int raw, int arg, int err_no);
 +
 +static bool cdx_cmd_cancelled(struct cdx_mcdi_cmd *cmd)
 +{
@@ -2906,14 +2926,9 @@ index 000000000..96645fda8
 +	mcdi = cdx_mcdi_if(cdx);
 +	mcdi->cdx = cdx;
 +
-+#ifdef CONFIG_MCDI_LOGGING
-+	mcdi->logging_buffer = kmalloc(LOG_LINE_MAX, GFP_KERNEL);
-+	if (!mcdi->logging_buffer)
-+		goto fail2;
-+#endif
 +	mcdi->workqueue = alloc_ordered_workqueue("mcdi_wq", 0);
 +	if (!mcdi->workqueue)
-+		goto fail3;
++		goto fail2;
 +	mutex_init(&mcdi->iface_lock);
 +	mcdi->mode = MCDI_MODE_EVENTS;
 +	INIT_LIST_HEAD(&mcdi->cmd_list);
@@ -2922,11 +2937,7 @@ index 000000000..96645fda8
 +	mcdi->new_epoch = true;
 +
 +	return 0;
-+fail3:
-+#ifdef CONFIG_MCDI_LOGGING
-+	kfree(mcdi->logging_buffer);
 +fail2:
-+#endif
 +	kfree(cdx->mcdi);
 +	cdx->mcdi = NULL;
 +fail:
@@ -2942,10 +2953,6 @@ index 000000000..96645fda8
 +		return;
 +
 +	cdx_mcdi_wait_for_cleanup(cdx);
-+
-+#ifdef CONFIG_MCDI_LOGGING
-+	kfree(mcdi->logging_buffer);
-+#endif
 +
 +	destroy_workqueue(mcdi->workqueue);
 +	kfree(cdx->mcdi);
@@ -2991,7 +2998,7 @@ index 000000000..96645fda8
 +
 +	while (!cdx_mcdi_flushed(mcdi, true)) {
 +		rc = wait_woken(&wait, TASK_IDLE, timeout_jiffies);
-+		if (rc != 0)
++		if (rc)
 +			continue;
 +		break;
 +	}
@@ -3033,15 +3040,9 @@ index 000000000..96645fda8
 +	size_t hdr_len;
 +	bool not_epoch;
 +	u32 xflags;
-+#ifdef CONFIG_MCDI_LOGGING
-+	char *buf;
-+#endif
 +
 +	if (!mcdi)
 +		return;
-+#ifdef CONFIG_MCDI_LOGGING
-+	buf = mcdi->logging_buffer; /* page-sized */
-+#endif
 +
 +	mcdi->prev_seq = cmd->seq;
 +	mcdi->seq_held_by[cmd->seq] = cmd;
@@ -3067,40 +3068,12 @@ index 000000000..96645fda8
 +			     MC_CMD_V2_EXTN_IN_MESSAGE_TYPE,
 +			     MC_CMD_V2_EXTN_IN_MCDI_MESSAGE_TYPE_PLATFORM);
 +	hdr_len = 8;
-+
-+#ifdef CONFIG_MCDI_LOGGING
-+	if (!WARN_ON_ONCE(!buf)) {
-+		const struct cdx_dword *frags[] = { hdr, inbuf };
-+		const size_t frag_len[] = { hdr_len, round_up(inlen, 4) };
-+		int bytes = 0;
-+		int i, j;
-+
-+		for (j = 0; j < ARRAY_SIZE(frags); j++) {
-+			const struct cdx_dword *frag;
-+
-+			frag = frags[j];
-+			for (i = 0;
-+			     i < frag_len[j] / 4;
-+			     i++) {
-+				/*
-+				 * Do not exceed the internal printk limit.
-+				 * The string before that is just over 70 bytes.
-+				 */
-+				if ((bytes + 75) > LOG_LINE_MAX) {
-+					pr_info("MCDI RPC REQ:%s \\\n", buf);
-+					bytes = 0;
-+				}
-+				bytes += snprintf(buf + bytes,
-+						  LOG_LINE_MAX - bytes, " %08x",
-+						  le32_to_cpu(frag[i].cdx_u32));
-+			}
-+		}
-+
-+		pr_info("MCDI RPC REQ:%s\n", buf);
-+	}
-+#endif
 +	hdr[0].cdx_u32 |= (__force __le32)(cdx_mcdi_payload_csum(hdr, hdr_len, inbuf, inlen) <<
 +			 MCDI_HEADER_XFLAGS_LBN);
++
++	print_hex_dump_debug("MCDI REQ HEADER: ", DUMP_PREFIX_NONE, 32, 4, hdr, hdr_len, false);
++	print_hex_dump_debug("MCDI REQ PAYLOAD: ", DUMP_PREFIX_NONE, 32, 4, inbuf, inlen, false);
++
 +	cdx->mcdi_ops->mcdi_request(cdx, hdr, hdr_len, inbuf, inlen);
 +
 +	mcdi->new_epoch = false;
@@ -3365,8 +3338,8 @@ index 000000000..96645fda8
 +	return 0;
 +}
 +
-+static void cdx_mcdi_cmd_start_or_queue_ext(struct cdx_mcdi_iface *mcdi,
-+					    struct cdx_mcdi_cmd *cmd)
++static void cdx_mcdi_cmd_start_or_queue(struct cdx_mcdi_iface *mcdi,
++					struct cdx_mcdi_cmd *cmd)
 +{
 +	struct cdx_mcdi *cdx = mcdi->cdx;
 +	u8 seq;
@@ -3380,12 +3353,6 @@ index 000000000..96645fda8
 +	} else {
 +		cmd->state = MCDI_STATE_QUEUED;
 +	}
-+}
-+
-+static void cdx_mcdi_cmd_start_or_queue(struct cdx_mcdi_iface *mcdi,
-+					struct cdx_mcdi_cmd *cmd)
-+{
-+	cdx_mcdi_cmd_start_or_queue_ext(mcdi, cmd);
 +}
 +
 +/* try to advance other commands */
@@ -3448,7 +3415,7 @@ index 000000000..96645fda8
 +
 +	cmd->handle = mcdi->prev_handle++;
 +	list_add_tail(&cmd->list, &mcdi->cmd_list);
-+	cdx_mcdi_cmd_start_or_queue_ext(mcdi, cmd);
++	cdx_mcdi_cmd_start_or_queue(mcdi, cmd);
 +
 +	mutex_unlock(&mcdi->iface_lock);
 +}
@@ -3493,28 +3460,10 @@ index 000000000..96645fda8
 +		resp_data_len = 0;
 +	}
 +
-+#ifdef CONFIG_MCDI_LOGGING
-+	if (!WARN_ON_ONCE(!mcdi->logging_buffer)) {
-+		char *log = mcdi->logging_buffer;
-+		int i, bytes = 0;
-+		size_t rlen;
-+
-+		WARN_ON_ONCE(resp_hdr_len % 4);
-+
-+		rlen = resp_hdr_len / 4 + DIV_ROUND_UP(resp_data_len, 4);
-+
-+		for (i = 0; i < rlen; i++) {
-+			if ((bytes + 75) > LOG_LINE_MAX) {
-+				pr_info("MCDI RPC RESP:%s \\\n", log);
-+				bytes = 0;
-+			}
-+			bytes += snprintf(log + bytes, LOG_LINE_MAX - bytes,
-+					  " %08x", le32_to_cpu(outbuf[i].cdx_u32));
-+		}
-+
-+		pr_info("MCDI RPC RESP:%s\n", log);
-+	}
-+#endif
++	print_hex_dump_debug("MCDI RESP HEADER: ", DUMP_PREFIX_NONE, 32, 4,
++			     outbuf, resp_hdr_len, false);
++	print_hex_dump_debug("MCDI RESP PAYLOAD: ", DUMP_PREFIX_NONE, 32, 4,
++			     outbuf + (resp_hdr_len / 4), resp_data_len, false);
 +
 +	if (error && resp_data_len == 0) {
 +		/* MC rebooted during command */
@@ -3666,10 +3615,10 @@ index 000000000..96645fda8
 +}
 +
 +static void _cdx_mcdi_display_error(struct cdx_mcdi *cdx, unsigned int cmd,
-+				    size_t inlen, int raw, int arg, int rc)
++				    size_t inlen, int raw, int arg, int err_no)
 +{
-+	pr_err("MC command 0x%x inlen %d failed rc=%d (raw=%d) arg=%d\n",
-+	       cmd, (int)inlen, rc, raw, arg);
++	pr_err("MC command 0x%x inlen %d failed err_no=%d (raw=%d) arg=%d\n",
++	       cmd, (int)inlen, err_no, raw, arg);
 +}
 +
 +/*
@@ -3696,10 +3645,10 @@ index 000000000..96645fda8
 +}
 diff --git a/drivers/cdx/controller/mcdi.h b/drivers/cdx/controller/mcdi.h
 new file mode 100644
-index 000000000..a4d750816
+index 000000000..54a65e976
 --- /dev/null
 +++ b/drivers/cdx/controller/mcdi.h
-@@ -0,0 +1,247 @@
+@@ -0,0 +1,242 @@
 +/* SPDX-License-Identifier: GPL-2.0
 + *
 + * Copyright 2008-2013 Solarflare Communications Inc.
@@ -3711,6 +3660,7 @@ index 000000000..a4d750816
 +
 +#include <linux/mutex.h>
 +#include <linux/kref.h>
++#include <linux/rpmsg.h>
 +
 +#include "bitfield.h"
 +#include "mc_cdx_pcol.h"
@@ -3854,8 +3804,6 @@ index 000000000..a4d750816
 + * @mode: Poll for mcdi completion, or wait for an mcdi_event
 + * @prev_seq: The last used sequence number
 + * @new_epoch: Indicates start of day or start of MC reboot recovery
-+ * @logging_buffer: Buffer that may be used to build MCDI tracing messages
-+ * @logging_enabled: Whether to trace MCDI
 + */
 +struct cdx_mcdi_iface {
 +	struct cdx_mcdi *cdx;
@@ -3871,10 +3819,6 @@ index 000000000..a4d750816
 +	enum cdx_mcdi_mode mode;
 +	u8 prev_seq;
 +	bool new_epoch;
-+#ifdef CONFIG_MCDI_LOGGING
-+	bool logging_enabled;
-+	char *logging_buffer;
-+#endif
 +};
 +
 +/**
@@ -3949,7 +3893,7 @@ index 000000000..a4d750816
 +#endif /* CDX_MCDI_H */
 diff --git a/drivers/cdx/controller/mcdi_functions.c b/drivers/cdx/controller/mcdi_functions.c
 new file mode 100644
-index 000000000..976c99a95
+index 000000000..398d8b9a8
 --- /dev/null
 +++ b/drivers/cdx/controller/mcdi_functions.c
 @@ -0,0 +1,253 @@
@@ -3967,12 +3911,12 @@ index 000000000..976c99a95
 +{
 +	MCDI_DECLARE_BUF(outbuf, MC_CMD_CDX_BUS_ENUM_BUSES_OUT_LEN);
 +	size_t outlen;
-+	int rc;
++	int ret;
 +
-+	rc = cdx_mcdi_rpc(cdx, MC_CMD_CDX_BUS_ENUM_BUSES, NULL, 0,
-+			  outbuf, sizeof(outbuf), &outlen);
-+	if (rc)
-+		return rc;
++	ret = cdx_mcdi_rpc(cdx, MC_CMD_CDX_BUS_ENUM_BUSES, NULL, 0,
++			   outbuf, sizeof(outbuf), &outlen);
++	if (ret)
++		return ret;
 +
 +	if (outlen != MC_CMD_CDX_BUS_ENUM_BUSES_OUT_LEN)
 +		return -EIO;
@@ -3985,14 +3929,14 @@ index 000000000..976c99a95
 +	MCDI_DECLARE_BUF(outbuf, MC_CMD_CDX_BUS_ENUM_DEVICES_OUT_LEN);
 +	MCDI_DECLARE_BUF(inbuf, MC_CMD_CDX_BUS_ENUM_DEVICES_IN_LEN);
 +	size_t outlen;
-+	int rc;
++	int ret;
 +
 +	MCDI_SET_DWORD(inbuf, CDX_BUS_ENUM_DEVICES_IN_BUS, bus_num);
 +
-+	rc = cdx_mcdi_rpc(cdx, MC_CMD_CDX_BUS_ENUM_DEVICES, inbuf, sizeof(inbuf),
-+			  outbuf, sizeof(outbuf), &outlen);
-+	if (rc)
-+		return rc;
++	ret = cdx_mcdi_rpc(cdx, MC_CMD_CDX_BUS_ENUM_DEVICES, inbuf, sizeof(inbuf),
++			   outbuf, sizeof(outbuf), &outlen);
++	if (ret)
++		return ret;
 +
 +	if (outlen != MC_CMD_CDX_BUS_ENUM_DEVICES_OUT_LEN)
 +		return -EIO;
@@ -4009,15 +3953,15 @@ index 000000000..976c99a95
 +	struct resource *res = &dev_params->res[0];
 +	size_t outlen;
 +	u32 req_id;
-+	int rc;
++	int ret;
 +
 +	MCDI_SET_DWORD(inbuf, CDX_BUS_GET_DEVICE_CONFIG_IN_BUS, bus_num);
 +	MCDI_SET_DWORD(inbuf, CDX_BUS_GET_DEVICE_CONFIG_IN_DEVICE, dev_num);
 +
-+	rc = cdx_mcdi_rpc(cdx, MC_CMD_CDX_BUS_GET_DEVICE_CONFIG, inbuf, sizeof(inbuf),
-+			  outbuf, sizeof(outbuf), &outlen);
-+	if (rc)
-+		return rc;
++	ret = cdx_mcdi_rpc(cdx, MC_CMD_CDX_BUS_GET_DEVICE_CONFIG, inbuf, sizeof(inbuf),
++			   outbuf, sizeof(outbuf), &outlen);
++	if (ret)
++		return ret;
 +
 +	if (outlen != MC_CMD_CDX_BUS_GET_DEVICE_CONFIG_OUT_LEN)
 +		return -EIO;
@@ -4090,32 +4034,32 @@ index 000000000..976c99a95
 +int cdx_mcdi_bus_enable(struct cdx_mcdi *cdx, u8 bus_num)
 +{
 +	MCDI_DECLARE_BUF(inbuf, MC_CMD_CDX_BUS_UP_IN_LEN);
-+	int rc;
++	int ret;
 +
 +	MCDI_SET_DWORD(inbuf, CDX_BUS_UP_IN_BUS, bus_num);
-+	rc = cdx_mcdi_rpc(cdx, MC_CMD_CDX_BUS_UP, inbuf, sizeof(inbuf),
-+			  NULL, 0, NULL);
++	ret = cdx_mcdi_rpc(cdx, MC_CMD_CDX_BUS_UP, inbuf, sizeof(inbuf),
++			   NULL, 0, NULL);
 +
-+	return rc;
++	return ret;
 +}
 +
 +int cdx_mcdi_bus_disable(struct cdx_mcdi *cdx, u8 bus_num)
 +{
 +	MCDI_DECLARE_BUF(inbuf, MC_CMD_CDX_BUS_DOWN_IN_LEN);
-+	int rc;
++	int ret;
 +
 +	MCDI_SET_DWORD(inbuf, CDX_BUS_DOWN_IN_BUS, bus_num);
-+	rc = cdx_mcdi_rpc(cdx, MC_CMD_CDX_BUS_DOWN, inbuf, sizeof(inbuf),
-+			  NULL, 0, NULL);
++	ret = cdx_mcdi_rpc(cdx, MC_CMD_CDX_BUS_DOWN, inbuf, sizeof(inbuf),
++			   NULL, 0, NULL);
 +
-+	return rc;
++	return ret;
 +}
 +
 +int cdx_mcdi_write_msi(struct cdx_mcdi *cdx, u8 bus_num, u8 dev_num,
 +		       u32 msi_vector, u64 msi_address, u32 msi_data)
 +{
 +	MCDI_DECLARE_BUF(inbuf, MC_CMD_CDX_DEVICE_WRITE_MSI_MSG_IN_LEN);
-+	int rc;
++	int ret;
 +
 +	MCDI_SET_DWORD(inbuf, CDX_DEVICE_WRITE_MSI_MSG_IN_BUS, bus_num);
 +	MCDI_SET_DWORD(inbuf, CDX_DEVICE_WRITE_MSI_MSG_IN_DEVICE, dev_num);
@@ -4123,24 +4067,24 @@ index 000000000..976c99a95
 +	MCDI_SET_QWORD(inbuf, CDX_DEVICE_WRITE_MSI_MSG_IN_MSI_ADDRESS, msi_address);
 +	MCDI_SET_DWORD(inbuf, CDX_DEVICE_WRITE_MSI_MSG_IN_MSI_DATA, msi_data);
 +
-+	rc = cdx_mcdi_rpc_async(cdx, MC_CMD_CDX_DEVICE_WRITE_MSI_MSG, inbuf,
-+				sizeof(inbuf), NULL, 0);
++	ret = cdx_mcdi_rpc(cdx, MC_CMD_CDX_DEVICE_WRITE_MSI_MSG, inbuf, sizeof(inbuf),
++			   NULL, 0, NULL);
 +
-+	return rc;
++	return ret;
 +}
 +
 +int cdx_mcdi_reset_device(struct cdx_mcdi *cdx, u8 bus_num, u8 dev_num)
 +{
 +	MCDI_DECLARE_BUF(inbuf, MC_CMD_CDX_DEVICE_RESET_IN_LEN);
-+	int rc;
++	int ret;
 +
 +	MCDI_SET_DWORD(inbuf, CDX_DEVICE_RESET_IN_BUS, bus_num);
 +	MCDI_SET_DWORD(inbuf, CDX_DEVICE_RESET_IN_DEVICE, dev_num);
 +
-+	rc = cdx_mcdi_rpc(cdx, MC_CMD_CDX_DEVICE_RESET, inbuf, sizeof(inbuf),
-+			  NULL, 0, NULL);
++	ret = cdx_mcdi_rpc(cdx, MC_CMD_CDX_DEVICE_RESET, inbuf, sizeof(inbuf),
++			   NULL, 0, NULL);
 +
-+	return rc;
++	return ret;
 +}
 +
 +static int cdx_mcdi_ctrl_flag_get(struct cdx_mcdi *cdx, u8 bus_num,
@@ -4149,14 +4093,14 @@ index 000000000..976c99a95
 +	MCDI_DECLARE_BUF(inbuf, MC_CMD_CDX_DEVICE_CONTROL_GET_IN_LEN);
 +	MCDI_DECLARE_BUF(outbuf, MC_CMD_CDX_DEVICE_CONTROL_GET_OUT_LEN);
 +	size_t outlen;
-+	int rc;
++	int ret;
 +
 +	MCDI_SET_DWORD(inbuf, CDX_DEVICE_CONTROL_GET_IN_BUS, bus_num);
 +	MCDI_SET_DWORD(inbuf, CDX_DEVICE_CONTROL_GET_IN_DEVICE, dev_num);
-+	rc = cdx_mcdi_rpc(cdx, MC_CMD_CDX_DEVICE_CONTROL_GET, inbuf,
-+			  sizeof(inbuf), outbuf, sizeof(outbuf), &outlen);
-+	if (rc)
-+		return rc;
++	ret = cdx_mcdi_rpc(cdx, MC_CMD_CDX_DEVICE_CONTROL_GET, inbuf,
++			   sizeof(inbuf), outbuf, sizeof(outbuf), &outlen);
++	if (ret)
++		return ret;
 +
 +	if (outlen != MC_CMD_CDX_DEVICE_CONTROL_GET_OUT_LEN)
 +		return -EIO;
@@ -4170,16 +4114,16 @@ index 000000000..976c99a95
 +				  u8 dev_num, bool enable, int lbn)
 +{
 +	MCDI_DECLARE_BUF(inbuf, MC_CMD_CDX_DEVICE_CONTROL_SET_IN_LEN);
-+	int rc, en;
++	int ret, en;
 +	u32 flags;
 +
 +	/*
 +	 * Get flags and then set/reset BUS_MASTER_BIT according to
 +	 * the input params.
 +	 */
-+	rc = cdx_mcdi_ctrl_flag_get(cdx, bus_num, dev_num, &flags);
-+	if (rc)
-+		return rc;
++	ret = cdx_mcdi_ctrl_flag_get(cdx, bus_num, dev_num, &flags);
++	if (ret)
++		return ret;
 +
 +	en = enable ? 1 : 0;
 +	flags = (flags & (u32)(~(BIT(lbn)))) | (en << lbn);
@@ -4187,10 +4131,10 @@ index 000000000..976c99a95
 +	MCDI_SET_DWORD(inbuf, CDX_DEVICE_CONTROL_SET_IN_BUS, bus_num);
 +	MCDI_SET_DWORD(inbuf, CDX_DEVICE_CONTROL_SET_IN_DEVICE, dev_num);
 +	MCDI_SET_DWORD(inbuf, CDX_DEVICE_CONTROL_SET_IN_FLAGS, flags);
-+	rc = cdx_mcdi_rpc(cdx, MC_CMD_CDX_DEVICE_CONTROL_SET, inbuf,
-+			  sizeof(inbuf), NULL, 0, NULL);
++	ret = cdx_mcdi_rpc(cdx, MC_CMD_CDX_DEVICE_CONTROL_SET, inbuf,
++			   sizeof(inbuf), NULL, 0, NULL);
 +
-+	return rc;
++	return ret;
 +}
 +
 +int cdx_mcdi_bus_master_enable(struct cdx_mcdi *cdx, u8 bus_num,
@@ -4339,10 +4283,10 @@ index 000000000..b9942affd
 +#endif /* CDX_MCDI_FUNCTIONS_H */
 diff --git a/include/linux/cdx/cdx_bus.h b/include/linux/cdx/cdx_bus.h
 new file mode 100644
-index 000000000..12ef1862f
+index 000000000..c0864ebf4
 --- /dev/null
 +++ b/include/linux/cdx/cdx_bus.h
-@@ -0,0 +1,259 @@
+@@ -0,0 +1,262 @@
 +/* SPDX-License-Identifier: GPL-2.0
 + *
 + * CDX bus public interface
@@ -4359,7 +4303,6 @@ index 000000000..12ef1862f
 +#include <linux/mod_devicetable.h>
 +
 +#define MAX_CDX_DEV_RESOURCES	4
-+#define CDX_ANY_ID (0xFFFF)
 +#define CDX_CONTROLLER_ID_SHIFT 4
 +#define CDX_BUS_NUM_MASK 0xF
 +
@@ -4426,6 +4369,7 @@ index 000000000..12ef1862f
 + * struct cdx_controller: CDX controller object
 + * @dev: Linux device associated with the CDX controller.
 + * @priv: private data
++ * @msi_domain: MSI domain
 + * @id: Controller ID
 + * @enabled: state enabled/disabled
 + * @ops: CDX controller ops
@@ -4433,6 +4377,7 @@ index 000000000..12ef1862f
 +struct cdx_controller {
 +	struct device *dev;
 +	void *priv;
++	struct irq_domain *msi_domain;
 +	u32 id;
 +	bool enabled;
 +	struct cdx_ops *ops;
@@ -4480,6 +4425,8 @@ index 000000000..12ef1862f
 +	u32 req_id;
 +	u32 num_msi;
 +	const char *driver_override;
++	struct mutex irqchip_lock;
++	bool msi_write_pending;
 +};
 +
 +#define to_cdx_device(_dev) \
