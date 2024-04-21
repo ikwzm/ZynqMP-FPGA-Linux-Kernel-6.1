@@ -1,5 +1,5 @@
 diff --git a/arch/arm64/boot/dts/xilinx/Makefile b/arch/arm64/boot/dts/xilinx/Makefile
-index 4e159540d..80a24e8aa 100644
+index 4e159540d..eab4b7b6d 100644
 --- a/arch/arm64/boot/dts/xilinx/Makefile
 +++ b/arch/arm64/boot/dts/xilinx/Makefile
 @@ -2,7 +2,6 @@
@@ -10,10 +10,13 @@ index 4e159540d..80a24e8aa 100644
  dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zc1751-xm015-dc1.dtb
  dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zc1751-xm016-dc2.dtb
  dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zc1751-xm017-dc3.dtb
-@@ -17,16 +16,124 @@ dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zcu104-revA.dtb
+@@ -17,16 +16,141 @@ dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zcu104-revA.dtb
  dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zcu104-revC.dtb
  dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zcu106-revA.dtb
  dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zcu111-revA.dtb
++dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zcu1275-revA.dtb
++dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zcu1275-revB.dtb
++dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zcu1285-revA.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-a2197-revA.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-dlc21-revA.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-e-a2197-00-revA.dtb
@@ -49,6 +52,9 @@ index 4e159540d..80a24e8aa 100644
 +
 +dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-vp-x-a2785-00-revA.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-vpk120-revA.dtb
++dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zcu208-revA.dtb
++dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zcu216-revA.dtb
++
 +dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zcu670-revA.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zcu670-revB.dtb
  
@@ -120,11 +126,20 @@ index 4e159540d..80a24e8aa 100644
 +dtb-$(CONFIG_ARCH_ZYNQMP) += versal-vpk120-revB.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += versal-vpk180-revA.dtb
 +
++versal-vck190-revB-x-ebm-01-revA-dtbs := versal-vck190-revA.dtb versal-x-ebm-01-revA.dtbo
++versal-vck190-revB-x-ebm-02-revA-dtbs := versal-vck190-revA.dtb versal-x-ebm-02-revA.dtbo
++versal-vck190-revB-x-ebm-03-revA-dtbs := versal-vck190-revA.dtb versal-x-ebm-03-revA.dtbo
++
++dtb-$(CONFIG_ARCH_ZYNQMP) += versal-vck190-revB-x-ebm-01-revA.dtb
++dtb-$(CONFIG_ARCH_ZYNQMP) += versal-vck190-revB-x-ebm-02-revA.dtb
++dtb-$(CONFIG_ARCH_ZYNQMP) += versal-vck190-revB-x-ebm-03-revA.dtb
++
 +# Versal NET platforms
 +dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-emu-rev1.9.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-ipp-rev1.9-ospi.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-ipp-rev1.9.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-vn-p-b2197-00-revA.dtb
++dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-vn-x-b2197-00-revA.dtb
  
 -sm-k26-revA-sck-kv-g-revA-dtbs := zynqmp-sm-k26-revA.dtb zynqmp-sck-kv-g-revA.dtbo
 -sm-k26-revA-sck-kv-g-revB-dtbs := zynqmp-sm-k26-revA.dtb zynqmp-sck-kv-g-revB.dtbo
@@ -132,6 +147,7 @@ index 4e159540d..80a24e8aa 100644
 -smk-k26-revA-sm-k26-revA-sck-kv-g-revB-dtbs := zynqmp-smk-k26-revA.dtb zynqmp-sck-kv-g-revB.dtbo
 +versal-net-vn-p-b2197-00-revA-x-prc-07-revA-dtbs := versal-net-vn-p-b2197-00-revA.dtb x-prc-07-revA.dtbo
 +versal-net-vn-p-b2197-00-revA-x-prc-07-i3c-revA-dtbs := versal-net-vn-p-b2197-00-revA.dtb x-prc-07-i3c-revA.dtbo
++versal-net-vn-p-b2197-00-revA-x-prc-08-revA-dtbs := versal-net-vn-p-b2197-00-revA.dtb x-prc-08-revA.dtbo
 +versal-net-vn-p-b2197-00-revA-x-prc-09-revA-dtbs := versal-net-vn-p-b2197-00-revA.dtb x-prc-09-revA.dtbo
 +versal-net-vn-p-b2197-00-revA-x-prc-09-i3c-revA-dtbs := versal-net-vn-p-b2197-00-revA.dtb x-prc-09-i3c-revA.dtbo
  
@@ -141,6 +157,7 @@ index 4e159540d..80a24e8aa 100644
 -dtb-$(CONFIG_ARCH_ZYNQMP) += smk-k26-revA-sm-k26-revA-sck-kv-g-revB.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-vn-p-b2197-00-revA-x-prc-07-revA.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-vn-p-b2197-00-revA-x-prc-07-i3c-revA.dtb
++dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-vn-p-b2197-00-revA-x-prc-08-revA.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-vn-p-b2197-00-revA-x-prc-09-revA.dtb
 +dtb-$(CONFIG_ARCH_ZYNQMP) += versal-net-vn-p-b2197-00-revA-x-prc-09-i3c-revA.dtb
 diff --git a/arch/arm64/boot/dts/xilinx/avnet-ultra96-rev1.dts b/arch/arm64/boot/dts/xilinx/avnet-ultra96-rev1.dts
@@ -158,10 +175,10 @@ index 88aa06fa7..ddb8febae 100644
   */
 diff --git a/arch/arm64/boot/dts/xilinx/versal-clk.dtsi b/arch/arm64/boot/dts/xilinx/versal-clk.dtsi
 new file mode 100644
-index 000000000..00752c3e6
+index 000000000..20f528068
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-clk.dtsi
-@@ -0,0 +1,348 @@
+@@ -0,0 +1,322 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal with PM
@@ -225,11 +242,6 @@ index 000000000..00752c3e6
 +
 +			zynqmp_power: zynqmp-power {
 +				compatible = "xlnx,zynqmp-power";
-+				interrupt-parent = <&gic>;
-+				interrupts = <0 30 4>;
-+				mboxes = <&ipi_mailbox_pmu1 0>,
-+					 <&ipi_mailbox_pmu1 1>;
-+				mbox-names = "tx", "rx";
 +			};
 +
 +			versal_reset: reset-controller {
@@ -294,27 +306,6 @@ index 000000000..00752c3e6
 +					reg = <0x1f0 0x20>;
 +				};
 +			};
-+		};
-+	};
-+
-+	zynqmp_ipi {
-+		compatible = "xlnx,zynqmp-ipi-mailbox";
-+		interrupt-parent = <&gic>;
-+		interrupts = <0 30 4>;
-+		xlnx,ipi-id = <2>;
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
-+
-+		ipi_mailbox_pmu1: mailbox@ff3f0440 {
-+			reg = <0 0xff3f0440 0 0x20>,
-+			      <0 0xff3f0460 0 0x20>,
-+			      <0 0xff3f0280 0 0x20>,
-+			      <0 0xff3f02a0 0 0x20>;
-+			reg-names = "local_request_region", "local_response_region",
-+				    "remote_request_region", "remote_response_region";
-+			#mbox-cells = <1>;
-+			xlnx,ipi-id = <1>;
 +		};
 +	};
 +};
@@ -512,10 +503,10 @@ index 000000000..00752c3e6
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-net-clk-ccf.dtsi b/arch/arm64/boot/dts/xilinx/versal-net-clk-ccf.dtsi
 new file mode 100644
-index 000000000..9b1786579
+index 000000000..30bd73881
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-net-clk-ccf.dtsi
-@@ -0,0 +1,409 @@
+@@ -0,0 +1,419 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal with PM
@@ -639,7 +630,7 @@ index 000000000..9b1786579
 +		};
 +	};
 +
-+	zynqmp_ipi {
++	zynqmp-ipi {
 +		compatible = "xlnx,zynqmp-ipi-mailbox";
 +		interrupt-parent = <&gic>;
 +		interrupts = <0 57 4>;
@@ -925,12 +916,22 @@ index 000000000..9b1786579
 +	clocks = <&versal_net_clk FPD_WWDT>;
 +	power-domains = <&versal_net_firmware PM_DEV_FPD_SWDT_3>;
 +};
++
++&lpd_wwdt0 {
++	clocks = <&versal_net_clk LPD_WWDT>;
++	power-domains = <&versal_net_firmware PM_DEV_LPD_SWDT_0>;
++};
++
++&lpd_wwdt1 {
++	clocks = <&versal_net_clk LPD_WWDT>;
++	power-domains = <&versal_net_firmware PM_DEV_LPD_SWDT_1>;
++};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-net-clk.dtsi b/arch/arm64/boot/dts/xilinx/versal-net-clk.dtsi
 new file mode 100644
-index 000000000..9e97a4cc7
+index 000000000..4c4db4974
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-net-clk.dtsi
-@@ -0,0 +1,233 @@
+@@ -0,0 +1,241 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal NET fixed clock
@@ -1164,6 +1165,14 @@ index 000000000..9e97a4cc7
 +&wwdt3 {
 +	clocks = <&clk150>;
 +};
++
++&lpd_wwdt0 {
++	clocks = <&clk150>;
++};
++
++&lpd_wwdt1 {
++	clocks = <&clk150>;
++};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-net-emu-rev1.9.dts b/arch/arm64/boot/dts/xilinx/versal-net-emu-rev1.9.dts
 new file mode 100644
 index 000000000..89613985a
@@ -1368,10 +1377,10 @@ index 000000000..c77cc5003
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-net-ipp-rev1.9.dts b/arch/arm64/boot/dts/xilinx/versal-net-ipp-rev1.9.dts
 new file mode 100644
-index 000000000..77e1cb39b
+index 000000000..b93bb2e06
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-net-ipp-rev1.9.dts
-@@ -0,0 +1,768 @@
+@@ -0,0 +1,772 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal NET
@@ -1490,6 +1499,7 @@ index 000000000..77e1cb39b
 +
 +	aliases {
 +		serial0 = &serial0;
++		serial1 = &serial1;
 +		mmc0 = &sdhci0;
 +		mmc1 = &sdhci1;
 +	};
@@ -1542,7 +1552,7 @@ index 000000000..77e1cb39b
 +		};
 +	};
 +
-+	zynqmp_ipi {
++	zynqmp-ipi {
 +		compatible = "xlnx,zynqmp-ipi-mailbox";
 +		interrupts = <0 57 4>;
 +		xlnx,ipi-id = <2>;
@@ -1850,6 +1860,7 @@ index 000000000..77e1cb39b
 +				spi-rx-bus-width = <8>;
 +				spi-max-frequency = <5000000>;
 +				broken-flash-reset;
++				no-wp;
 +
 +				partitions {
 +					compatible = "fixed-partitions";
@@ -1950,6 +1961,20 @@ index 000000000..77e1cb39b
 +			clock-names = "uartclk", "apb_pclk";
 +			clocks = <&versal_net_clk UART0_REF>, <&versal_net_clk LPD_LSBUS>;
 +			power-domains = <&versal_net_firmware PM_DEV_UART_0>;
++			clock = <1000000>;
++			current-speed = <115200>;
++			skip-init;
++		};
++
++		serial1: serial@f1930000 {
++			u-boot,dm-pre-reloc;
++			compatible = "arm,pl011", "arm,primecell";
++			reg = <0 0xf1930000 0 0x1000>;
++			interrupts = <0 26 4>;
++			reg-io-width = <4>;
++			clock-names = "uartclk", "apb_pclk";
++			clocks = <&versal_net_clk UART1_REF>, <&versal_net_clk LPD_LSBUS>;
++			power-domains = <&versal_net_firmware PM_DEV_UART_1>;
 +			clock = <1000000>;
 +			current-speed = <115200>;
 +			skip-init;
@@ -2092,49 +2117,37 @@ index 000000000..77e1cb39b
 +		};
 +
 +		wwdt0: watchdog@ecc10000 {
-+			compatible = "xlnx,versal-wwdt-1.0";
++			compatible = "xlnx,versal-wwdt";
 +			status = "okay";
 +			reg = <0 0xecc10000 0 0x10000>;
-+			interrupt-names = "wdt", "wwdt_reset_pending";
-+			interrupts = <0 139 1>, <0 140 1>;
 +			timeout-sec = <30>;
-+			pretimeout-sec = <25>;
 +			clocks = <&versal_net_clk FPD_WWDT>;
 +			power-domains = <&versal_net_firmware PM_DEV_FPD_SWDT_0>;
 +		};
 +
 +		wwdt1: watchdog@ecd10000 {
-+			compatible = "xlnx,versal-wwdt-1.0";
++			compatible = "xlnx,versal-wwdt";
 +			status = "okay";
 +			reg = <0 0xecd10000 0 0x10000>;
-+			interrupt-names = "wdt", "wwdt_reset_pending";
-+			interrupts = <0 143 1>, <0 144 1>;
 +			timeout-sec = <30>;
-+			pretimeout-sec = <25>;
 +			clocks = <&versal_net_clk FPD_WWDT>;
 +			power-domains = <&versal_net_firmware PM_DEV_FPD_SWDT_1>;
 +		};
 +
 +		wwdt2: watchdog@ece10000 {
-+			compatible = "xlnx,versal-wwdt-1.0";
++			compatible = "xlnx,versal-wwdt";
 +			status = "okay";
 +			reg = <0 0xece10000 0 0x10000>;
-+			interrupt-names = "wdt", "wwdt_reset_pending";
-+			interrupts = <0 147 1>,  <0 148 1>;
 +			timeout-sec = <30>;
-+			pretimeout-sec = <25>;
 +			clocks = <&versal_net_clk FPD_WWDT>;
 +			power-domains = <&versal_net_firmware PM_DEV_FPD_SWDT_2>;
 +		};
 +
 +		wwdt3: watchdog@ecf10000 {
-+			compatible = "xlnx,versal-wwdt-1.0";
++			compatible = "xlnx,versal-wwdt";
 +			status = "okay";
 +			reg = <0 0xecf10000 0 0x10000>;
-+			interrupt-names = "wdt", "wwdt_reset_pending";
-+			interrupts = <0 164 1>, <0 165 1>;
 +			timeout-sec = <30>;
-+			pretimeout-sec = <25>;
 +			clocks = <&versal_net_clk FPD_WWDT>;
 +			power-domains = <&versal_net_firmware PM_DEV_FPD_SWDT_3>;
 +		};
@@ -2142,10 +2155,10 @@ index 000000000..77e1cb39b
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-net-vn-p-b2197-00-revA-pl.dts b/arch/arm64/boot/dts/xilinx/versal-net-vn-p-b2197-00-revA-pl.dts
 new file mode 100644
-index 000000000..126b3212d
+index 000000000..01884d384
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-net-vn-p-b2197-00-revA-pl.dts
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,61 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx ZynqMP VN-P-B2197 (Tenzing2)
@@ -2201,16 +2214,15 @@ index 000000000..126b3212d
 +			/* J47 connector */
 +		};
 +	};
-+/*	
++/*
 +	GPIO_DIP_SW0-1
 +	GPIO_LED0-1
 +	GPIO_PB0-1
 +	GPIO_SMA
-+	
 +*/
 diff --git a/arch/arm64/boot/dts/xilinx/versal-net-vn-p-b2197-00-revA.dts b/arch/arm64/boot/dts/xilinx/versal-net-vn-p-b2197-00-revA.dts
 new file mode 100644
-index 000000000..8eedf248c
+index 000000000..73da76fbd
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-net-vn-p-b2197-00-revA.dts
 @@ -0,0 +1,99 @@
@@ -2231,13 +2243,13 @@ index 000000000..8eedf248c
 +		     "xlnx,versal-net-vn-p-b2197-00", "xlnx,versal-net";
 +
 +	memory: memory@0 {
-+                reg = <0 0 0 0x80000000>;
-+                device_type = "memory";
-+        };
++		reg = <0 0 0 0x80000000>;
++		device_type = "memory";
++	};
 +
 +	chosen {
-+                bootargs = "earlycon=pl011,mmio32,0xf1920000 console=ttyAMA0,115200n8 clk_ignore_unused root=/dev/ram0 rw";
-+                stdout-path = "serial0:115200n8";
++		bootargs = "earlycon=pl011,mmio32,0xf1920000 console=ttyAMA0,115200n8 clk_ignore_unused root=/dev/ram0 rw";
++		stdout-path = "serial0:115200n8";
 +	};
 +
 +/*	aliases {
@@ -2300,25 +2312,227 @@ index 000000000..8eedf248c
 +
 +&rtc {
 +	status = "okay";
-+}; 
++};
 +
 +&wwdt0 {
 +	status = "okay";
-+}; 
++};
 +
 +&wwdt1 {
 +	status = "okay";
-+}; 
++};
 +
 +&wwdt2 {
 +	status = "okay";
-+}; 
++};
+diff --git a/arch/arm64/boot/dts/xilinx/versal-net-vn-x-b2197-00-revA.dts b/arch/arm64/boot/dts/xilinx/versal-net-vn-x-b2197-00-revA.dts
+new file mode 100644
+index 000000000..4e07a384c
+--- /dev/null
++++ b/arch/arm64/boot/dts/xilinx/versal-net-vn-x-b2197-00-revA.dts
+@@ -0,0 +1,196 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * dts file for Xilinx Versal Net VNX board
++ *
++ * (C) Copyright 2022, Xilinx, Inc.
++ * (C) Copyright 2022 - 2023, Advanced Micro Devices, Inc.
++ *
++ * Michal Simek <michal.simek@amd.com>
++ */
++
++/dts-v1/;
++
++#include "versal-net.dtsi"
++#include "versal-net-clk-ccf.dtsi"
++#include <dt-bindings/gpio/gpio.h>
++
++/ {
++	compatible = "xlnx,versal-net-vn-x-b2197-00-revA",
++		     "xlnx,versal-net-vn-x-b2197-00", "xlnx,versal-net";
++	model = "Xilinx Versal Net VNX";
++
++	memory: memory@0 {
++		reg = <0 0 0 0x80000000>;
++		device_type = "memory";
++	};
++
++	memory_hi: memory@800000000 {
++		reg = <8 0 3 0x80000000>;
++		device_type = "memory";
++	};
++
++	memory_hi2: memory@50000000000 {
++		reg = <0x500 0 4 0>;
++		device_type = "memory";
++	};
++
++	chosen {
++		bootargs = "console=ttyAMA1,115200 clk_ignore_unused";
++		stdout-path = "serial1:115200";
++	};
++
++	aliases {
++		nvmem0 = &eeprom0;
++	};
++};
++
++&adma0 {
++	status = "okay";
++};
++
++&adma1 {
++	status = "okay";
++};
++
++&adma2 {
++	status = "okay";
++};
++
++&adma3 {
++	status = "okay";
++};
++
++&adma4 {
++	status = "okay";
++};
++
++&adma5 {
++	status = "okay";
++};
++
++&adma6 {
++	status = "okay";
++};
++
++&adma7 {
++	status = "okay";
++};
++
++&lpd_wwdt0 {
++	status = "okay";
++};
++
++&gem1 {
++	status = "okay";
++	#address-cells = <1>;
++	#size-cells = <0>;
++	phy-handle = <&phy>;
++	phy-mode = "rmii";
++	mdio {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		phy: ethernet-phy {
++			reg = <4>;
++		};
++	};
++};
++
++&gpio0 {
++	status = "okay";
++};
++
++&gpio1 {
++	status = "okay";
++};
++
++&i2c0 {
++	status = "okay";
++	eeprom0: eeprom@51 {
++		compatible = "st,24c128", "atmel,24c128";
++		reg = <0x51>;
++		u-boot,dm-pre-reloc;
++	};
++};
++
++&i2c1 {
++	status = "okay";
++	eeprom1: eeprom@55 {
++		compatible = "st,24c128", "atmel,24c128";
++		reg = <0x55>;
++		u-boot,dm-pre-reloc;
++	};
++};
++
++&ospi {
++	status = "okay";
++	is-dual = <0>;
++	is-stacked = <1>;
++	reset-gpios = <&gpio1 12 GPIO_ACTIVE_HIGH>;
++	reset-names = "qspi";
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	mt35xu02g: flash@0 {
++		compatible = "micron,m25p80", "jedec,spi-nor";
++		reg = <0>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++		cdns,read-delay = <0>;
++		cdns,tshsl-ns = <0>;
++		cdns,tsd2d-ns = <0>;
++		cdns,tchsh-ns = <1>;
++		cdns,tslch-ns = <1>;
++		spi-tx-bus-width = <8>;
++		spi-rx-bus-width = <8>;
++		spi-max-frequency = <5000000>;
++		broken-flash-reset;
++
++		partitions {
++			compatible = "fixed-partitions";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			partition@0 {
++				label = "ospi-flash0";
++				reg = <0 0x8000000>;
++			};
++		};
++	};
++};
++
++&sdhci1 {
++	status = "okay";
++	non-removable;
++	disable-wp;
++	bus-width = <8>;
++	no-1-8-v;
++};
++
++&serial0 {
++	status = "okay";
++};
++
++&serial1 {
++	status = "okay";
++};
++
++&spi1 {
++	status = "okay";
++	#address-cells = <1>;
++	#size-cells = <0>;
++	num-cs = <3>;
++};
++
++&usb1 {
++	status = "okay";
++};
++
++&dwc3_1 {
++	status = "okay";
++	snps,refclk_fladj;
++	snps,mask_phy_reset;
++	phy-names = "usb3-phy";
++};
++
++&wwdt0 {
++	status = "okay";
++};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-net.dtsi b/arch/arm64/boot/dts/xilinx/versal-net.dtsi
 new file mode 100644
-index 000000000..69579ac67
+index 000000000..2291696a8
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-net.dtsi
-@@ -0,0 +1,708 @@
+@@ -0,0 +1,758 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal NET
@@ -2417,6 +2631,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu100: cpu@100 {
 +			compatible = "arm,cortex-a78";
@@ -2424,6 +2639,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x100>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu200: cpu@200 {
 +			compatible = "arm,cortex-a78";
@@ -2431,6 +2647,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x200>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu300: cpu@300 {
 +			compatible = "arm,cortex-a78";
@@ -2438,6 +2655,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x300>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu10000: cpu@10000 {
 +			compatible = "arm,cortex-a78";
@@ -2445,6 +2663,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x10000>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu10100: cpu@10100 {
 +			compatible = "arm,cortex-a78";
@@ -2452,6 +2671,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x10100>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu10200: cpu@10200 {
 +			compatible = "arm,cortex-a78";
@@ -2459,6 +2679,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x10200>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu10300: cpu@10300 {
 +			compatible = "arm,cortex-a78";
@@ -2466,6 +2687,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x10300>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu20000: cpu@20000 {
 +			compatible = "arm,cortex-a78";
@@ -2473,6 +2695,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x20000>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu20100: cpu@20100 {
 +			compatible = "arm,cortex-a78";
@@ -2480,6 +2703,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x20100>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu20200: cpu@20200 {
 +			compatible = "arm,cortex-a78";
@@ -2487,6 +2711,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x20200>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu20300: cpu@20300 {
 +			compatible = "arm,cortex-a78";
@@ -2494,6 +2719,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x20300>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu30000: cpu@30000 {
 +			compatible = "arm,cortex-a78";
@@ -2501,6 +2727,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x30000>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu30100: cpu@30100 {
 +			compatible = "arm,cortex-a78";
@@ -2508,6 +2735,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x30100>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu30200: cpu@30200 {
 +			compatible = "arm,cortex-a78";
@@ -2515,6 +2743,7 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x30200>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
 +		};
 +		cpu30300: cpu@30300 {
 +			compatible = "arm,cortex-a78";
@@ -2522,6 +2751,19 @@ index 000000000..69579ac67
 +			enable-method = "psci";
 +			reg = <0x30300>;
 +			operating-points-v2 = <&cpu_opp_table>;
++			cpu-idle-states = <&CPU_SLEEP_0>;
++		};
++		idle-states {
++			entry-method = "psci";
++
++			CPU_SLEEP_0: cpu-sleep-0 {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x40000000>;
++				local-timer-stop;
++				entry-latency-us = <300>;
++				exit-latency-us = <600>;
++				min-residency-us = <10000>;
++			};
 +		};
 +	};
 +
@@ -2597,9 +2839,20 @@ index 000000000..69579ac67
 +		};
 +	};
 +
++	fpga: fpga {
++		compatible = "fpga-region";
++		fpga-mgr = <&versal_fpga>;
++		#address-cells = <2>;
++		#size-cells = <2>;
++	};
++
 +	timer: timer {
 +		compatible = "arm,armv8-timer";
 +		interrupts = <1 13 4>, <1 14 4>, <1 11 4>, <1 10 4>; /* FIXME 3rd cell */
++	};
++
++	versal_fpga: versal-fpga {
++		compatible = "xlnx,versal-fpga";
 +	};
 +
 +	amba: axi {
@@ -2737,7 +2990,7 @@ index 000000000..69579ac67
 +			#address-cells = <2>;
 +			#size-cells = <2>;
 +			ranges;
-+			its: gic-its@e2040000 {
++			its: msi-controller@e2040000 {
 +				compatible = "arm,gic-v3-its";
 +				msi-controller;
 +				#msi-cells = <1>;
@@ -2846,8 +3099,7 @@ index 000000000..69579ac67
 +		};
 +
 +		sdhci1: mmc@f1050000 {
-+			compatible = "xlnx,versal-net-5.1-emmc",
-+				     "arasan,sdhci-8.9a";
++			compatible = "xlnx,versal-net-emmc";
 +			status = "disabled";
 +			reg = <0 0xf1050000 0 0x10000>;
 +			interrupts = <0 186 4>;
@@ -2904,6 +3156,14 @@ index 000000000..69579ac67
 +			clock-names = "ref_clk", "pclk";
 +		};
 +
++		sysmon0: sysmon@f1270000 {
++			compatible = "xlnx,versal-sysmon";
++			status = "disabled";
++			reg = <0x0 0xf1270000 0x0 0x4000>;
++			interrupts = <0 202 4>;
++			xlnx,numchannels = /bits/8 <0>;
++		};
++
 +		ttc0: timer@f1dc0000 {
 +			compatible = "cdns,ttc";
 +			status = "disabled";
@@ -2957,7 +3217,8 @@ index 000000000..69579ac67
 +				dr_mode = "peripheral";
 +				maximum-speed = "high-speed";
 +				snps,usb3_lpm_capable;
-+				/*phy-names = "usb3-phy";- checking with Pyiush */
++				clock-names = "ref";
++				/* phy-names = "usb3-phy";- checking with Pyiush */
 +			};
 +		};
 +
@@ -2974,65 +3235,68 @@ index 000000000..69579ac67
 +				compatible = "snps,dwc3";
 +				status = "disabled";
 +				reg = <0x0 0xf1c00000 0x0 0x10000>;
-+				interrupt-names = "dwc_usb3","otg","usb-wakeup";
-+				interrupts = <0 34 4>, <0 38 4>, <0 99 4>;
++				interrupt-names = "host", "peripheral", "otg", "wakeup";
++				interrupts = <0 34 4>, <0 34 4>, <0 38 4>, <0 99 4>;
 +				snps,dis_u2_susphy_quirk;
 +				snps,dis_u3_susphy_quirk;
 +				snps,quirk-frame-length-adjustment = <0x20>;
 +				dr_mode = "host";
 +				maximum-speed = "high-speed";
 +				snps,usb3_lpm_capable;
++				clock-names = "ref";
 +				/* phy-names = "usb3-phy"; - checking with Pyiush */
 +			};
 +		};
 +
 +		wwdt0: watchdog@ecc10000 {
-+			compatible = "xlnx,versal-wwdt-1.0";
++			compatible = "xlnx,versal-wwdt";
 +			status = "disabled";
 +			reg = <0 0xecc10000 0 0x10000>;
-+			interrupt-names = "wdt", "wwdt_reset_pending";
-+			interrupts = <0 139 1>, <0 140 1>;
 +			timeout-sec = <30>;
-+			pretimeout-sec = <25>;
 +		};
 +
 +		wwdt1: watchdog@ecd10000 {
-+			compatible = "xlnx,versal-wwdt-1.0";
++			compatible = "xlnx,versal-wwdt";
 +			status = "disabled";
 +			reg = <0 0xecd10000 0 0x10000>;
-+			interrupt-names = "wdt", "wwdt_reset_pending";
-+			interrupts = <0 143 1>, <0 144 1>;
 +			timeout-sec = <30>;
-+			pretimeout-sec = <25>;
 +		};
 +
 +		wwdt2: watchdog@ece10000 {
-+			compatible = "xlnx,versal-wwdt-1.0";
++			compatible = "xlnx,versal-wwdt";
 +			status = "disabled";
 +			reg = <0 0xece10000 0 0x10000>;
-+			interrupt-names = "wdt", "wwdt_reset_pending";
-+			interrupts = <0 147 1>,  <0 148 1>;
 +			timeout-sec = <30>;
-+			pretimeout-sec = <25>;
 +		};
 +
 +		wwdt3: watchdog@ecf10000 {
-+			compatible = "xlnx,versal-wwdt-1.0";
++			compatible = "xlnx,versal-wwdt";
 +			status = "disabled";
 +			reg = <0 0xecf10000 0 0x10000>;
-+			interrupt-names = "wdt", "wwdt_reset_pending";
-+			interrupts = <0 164 1>, <0 165 1>;
 +			timeout-sec = <30>;
-+			pretimeout-sec = <25>;
++		};
++
++		lpd_wwdt0: watchdog@ea420000 {
++			compatible = "xlnx,versal-wwdt";
++			status = "disabled";
++			reg = <0 0xea420000 0 0x10000>;
++			timeout-sec = <30>;
++		};
++
++		lpd_wwdt1: watchdog@ea430000 {
++			compatible = "xlnx,versal-wwdt";
++			status = "disabled";
++			reg = <0 0xea430000 0 0x10000>;
++			timeout-sec = <30>;
 +		};
 +	};
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-v350-revA.dts b/arch/arm64/boot/dts/xilinx/versal-v350-revA.dts
 new file mode 100644
-index 000000000..e6c56aeed
+index 000000000..22dfa9100
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-v350-revA.dts
-@@ -0,0 +1,82 @@
+@@ -0,0 +1,84 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal v350 revA
@@ -3058,6 +3322,7 @@ index 000000000..e6c56aeed
 +	aliases {
 +		serial0 = &serial0;
 +		serial1 = &serial1;
++		serial2 = &dcc;
 +		spi0 = &ospi;
 +	};
 +
@@ -3089,6 +3354,7 @@ index 000000000..e6c56aeed
 +		spi-tx-bus-width = <8>;
 +		spi-rx-bus-width = <8>;
 +		spi-max-frequency = <20000000>;
++		no-wp;
 +		partition@0 {
 +			label = "spi0-flash0";
 +			reg = <0x0 0x8000000>;
@@ -3117,10 +3383,10 @@ index 000000000..e6c56aeed
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-vc-p-a2197-00-revA-x-prc-01-revA-ospi.dts b/arch/arm64/boot/dts/xilinx/versal-vc-p-a2197-00-revA-x-prc-01-revA-ospi.dts
 new file mode 100644
-index 000000000..0675cb883
+index 000000000..ca05cf3d8
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-vc-p-a2197-00-revA-x-prc-01-revA-ospi.dts
-@@ -0,0 +1,90 @@
+@@ -0,0 +1,91 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal X-PRC-01 revA (SE1)
@@ -3169,6 +3435,7 @@ index 000000000..0675cb883
 +		spi-tx-bus-width = <8>;
 +		spi-rx-bus-width = <8>;
 +		spi-max-frequency = <20000000>;
++		no-wp;
 +		partition@0 {
 +			label = "spi0-flash0";
 +			reg = <0x0 0x8000000>;
@@ -3940,10 +4207,10 @@ index 000000000..067887d91
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-vc-p-a2197-00-revA.dts b/arch/arm64/boot/dts/xilinx/versal-vc-p-a2197-00-revA.dts
 new file mode 100644
-index 000000000..5e9511ffb
+index 000000000..5fe69f82e
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-vc-p-a2197-00-revA.dts
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,55 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal
@@ -3961,6 +4228,10 @@ index 000000000..5e9511ffb
 +		     "xlnx,versal-vc-p-a2197-00",
 +		     "xlnx,versal-vc-p-a2197", "xlnx,versal";
 +	model = "Xilinx Versal A2197 Processor board revA";
++
++	aliases {
++		serial2 = &dcc;
++	};
 +
 +	memory: memory@0 {
 +		device_type = "memory";
@@ -4171,10 +4442,10 @@ index 000000000..04c4642c9
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-vck5000-revA.dts b/arch/arm64/boot/dts/xilinx/versal-vck5000-revA.dts
 new file mode 100644
-index 000000000..edff586a0
+index 000000000..ede75f9ce
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-vck5000-revA.dts
-@@ -0,0 +1,81 @@
+@@ -0,0 +1,83 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal vck5000 revA
@@ -4200,6 +4471,7 @@ index 000000000..edff586a0
 +	aliases {
 +		serial0 = &serial0;
 +		serial1 = &serial1;
++		serial2 = &dcc;
 +		spi0 = &ospi;
 +	};
 +
@@ -4230,6 +4502,7 @@ index 000000000..edff586a0
 +		spi-tx-bus-width = <8>;
 +		spi-rx-bus-width = <8>;
 +		spi-max-frequency = <20000000>;
++		no-wp;
 +		partition@0 {
 +			label = "spi0-flash0";
 +			reg = <0x0 0x10000000>;
@@ -4258,10 +4531,10 @@ index 000000000..edff586a0
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-vek280-revA.dts b/arch/arm64/boot/dts/xilinx/versal-vek280-revA.dts
 new file mode 100644
-index 000000000..b40d08f62
+index 000000000..2a85f8336
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-vek280-revA.dts
-@@ -0,0 +1,186 @@
+@@ -0,0 +1,188 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal VEK280 revA
@@ -4293,6 +4566,7 @@ index 000000000..b40d08f62
 +
 +	aliases {
 +		serial0 = &serial0;
++		serial2 = &dcc;
 +		i2c0 = &i2c0;
 +		i2c1 = &i2c1;
 +		mmc0 = &sdhci1;
@@ -4337,6 +4611,7 @@ index 000000000..b40d08f62
 +		spi-tx-bus-width = <8>;
 +		spi-rx-bus-width = <8>;
 +		spi-max-frequency = <20000000>;
++		no-wp;
 +		partition@0 {
 +			label = "spi0-flash0";
 +			reg = <0 0x8000000>;
@@ -4450,10 +4725,10 @@ index 000000000..b40d08f62
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-vek280-revB.dts b/arch/arm64/boot/dts/xilinx/versal-vek280-revB.dts
 new file mode 100644
-index 000000000..c417c4b4d
+index 000000000..95c671d06
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-vek280-revB.dts
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,191 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal VEK280 revB
@@ -4485,6 +4760,7 @@ index 000000000..c417c4b4d
 +
 +	aliases {
 +		serial0 = &serial0;
++		serial2 = &dcc;
 +		i2c0 = &i2c0;
 +		i2c1 = &i2c1;
 +		mmc0 = &sdhci1;
@@ -4533,6 +4809,7 @@ index 000000000..c417c4b4d
 +		spi-tx-bus-width = <8>;
 +		spi-rx-bus-width = <8>;
 +		spi-max-frequency = <20000000>;
++		no-wp;
 +		partition@0 {
 +			label = "spi0-flash0";
 +			reg = <0 0x8000000>;
@@ -4602,7 +4879,7 @@ index 000000000..c417c4b4d
 +			#phy-cells = <1>;
 +			compatible = "ethernet-phy-id0283.bc30";
 +			reg = <1>;
-+		        adi,rx-internal-delay-ps = <2000>;
++			adi,rx-internal-delay-ps = <2000>;
 +			adi,tx-internal-delay-ps = <2000>;
 +			adi,fifo-depth-bits = <8>;
 +			reset-gpios = <&gpio1 48 GPIO_ACTIVE_LOW>;
@@ -4645,10 +4922,10 @@ index 000000000..c417c4b4d
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-vhk158-revA.dts b/arch/arm64/boot/dts/xilinx/versal-vhk158-revA.dts
 new file mode 100644
-index 000000000..a6d83472e
+index 000000000..94ed45c72
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-vhk158-revA.dts
-@@ -0,0 +1,187 @@
+@@ -0,0 +1,189 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal VHK158 revA
@@ -4680,6 +4957,7 @@ index 000000000..a6d83472e
 +
 +	aliases {
 +		serial0 = &serial0;
++		serial2 = &dcc;
 +		i2c0 = &i2c0;
 +		i2c1 = &i2c1;
 +		mmc0 = &sdhci1;
@@ -4725,6 +5003,7 @@ index 000000000..a6d83472e
 +		spi-tx-bus-width = <8>;
 +		spi-rx-bus-width = <8>;
 +		spi-max-frequency = <20000000>;
++		no-wp;
 +		partition@0 {
 +			label = "spi0-flash0";
 +			reg = <0 0x8000000>;
@@ -5025,10 +5304,10 @@ index 000000000..676226dc7
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-vmk180-revA.dts b/arch/arm64/boot/dts/xilinx/versal-vmk180-revA.dts
 new file mode 100644
-index 000000000..10c67c933
+index 000000000..10365c2e4
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-vmk180-revA.dts
-@@ -0,0 +1,170 @@
+@@ -0,0 +1,171 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal vmk180 revA
@@ -5058,6 +5337,7 @@ index 000000000..10c67c933
 +
 +	aliases {
 +		serial0 = &serial0;
++		serial2 = &dcc;
 +		ethernet0 = &gem0;
 +		ethernet1 = &gem1;
 +		i2c0 = &i2c0;
@@ -5201,10 +5481,10 @@ index 000000000..10c67c933
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-vp-x-a2785-00-revA.dts b/arch/arm64/boot/dts/xilinx/versal-vp-x-a2785-00-revA.dts
 new file mode 100644
-index 000000000..e025a775f
+index 000000000..2802f0600
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-vp-x-a2785-00-revA.dts
-@@ -0,0 +1,138 @@
+@@ -0,0 +1,139 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal vp-x-a2785-00 revA
@@ -5234,6 +5514,7 @@ index 000000000..e025a775f
 +
 +	aliases {
 +		serial0 = &serial0;
++		serial2 = &dcc;
 +		ethernet0 = &gem0;
 +		i2c0 = &i2c0;
 +		i2c1 = &i2c1;
@@ -5521,10 +5802,10 @@ index 000000000..7b43caa5d
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-vpk120-revB.dts b/arch/arm64/boot/dts/xilinx/versal-vpk120-revB.dts
 new file mode 100644
-index 000000000..33d97ba90
+index 000000000..3bd96ea04
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-vpk120-revB.dts
-@@ -0,0 +1,180 @@
+@@ -0,0 +1,181 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal vpk120 revB
@@ -5554,6 +5835,7 @@ index 000000000..33d97ba90
 +
 +	aliases {
 +		serial0 = &serial0;
++		serial2 = &dcc;
 +		ethernet0 = &gem0;
 +		i2c0 = &i2c0;
 +		i2c1 = &i2c1;
@@ -5707,10 +5989,10 @@ index 000000000..33d97ba90
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-vpk180-revA.dts b/arch/arm64/boot/dts/xilinx/versal-vpk180-revA.dts
 new file mode 100644
-index 000000000..305b77e42
+index 000000000..d6f55dab5
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-vpk180-revA.dts
-@@ -0,0 +1,170 @@
+@@ -0,0 +1,171 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal vpk180 revA
@@ -5740,6 +6022,7 @@ index 000000000..305b77e42
 +
 +	aliases {
 +		serial0 = &serial0;
++		serial2 = &dcc;
 +		ethernet0 = &gem0;
 +		i2c0 = &i2c0;
 +		i2c1 = &i2c1;
@@ -6027,10 +6310,10 @@ index 000000000..30e56cc19
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal-x-ebm-03-revA.dtsi b/arch/arm64/boot/dts/xilinx/versal-x-ebm-03-revA.dtsi
 new file mode 100644
-index 000000000..4cfa40ff3
+index 000000000..3e90af114
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal-x-ebm-03-revA.dtsi
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,40 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx X-EBM-03 revA for vck190/vmk180
@@ -6065,6 +6348,7 @@ index 000000000..4cfa40ff3
 +	spi-tx-bus-width = <8>;
 +	spi-rx-bus-width = <8>;
 +	spi-max-frequency = <20000000>;
++	no-wp;
 +	partition@0 {
 +		label = "spi0-flash0";
 +		reg = <0x0 0x8000000>;
@@ -6072,10 +6356,10 @@ index 000000000..4cfa40ff3
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/versal.dtsi b/arch/arm64/boot/dts/xilinx/versal.dtsi
 new file mode 100644
-index 000000000..abbd0f387
+index 000000000..ad7590543
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/versal.dtsi
-@@ -0,0 +1,651 @@
+@@ -0,0 +1,681 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx Versal
@@ -6129,7 +6413,7 @@ index 000000000..abbd0f387
 +		};
 +	};
 +
-+	cpu_opp_table: cpu_opp_table {
++	cpu_opp_table: cpu-opp-table {
 +		compatible = "operating-points-v2";
 +		opp-shared;
 +		opp00 {
@@ -6187,7 +6471,7 @@ index 000000000..abbd0f387
 +			     <1 10 4>;
 +	};
 +
-+	versal_fpga: versal_fpga {
++	versal_fpga: versal-fpga {
 +		compatible = "xlnx,versal-fpga";
 +	};
 +
@@ -6685,6 +6969,7 @@ index 000000000..abbd0f387
 +		};
 +
 +		cpm_pciea: pci@fca10000 {
++			device_type = "pci";
 +			#address-cells = <3>;
 +			#interrupt-cells = <1>;
 +			#size-cells = <2>;
@@ -6697,27 +6982,56 @@ index 000000000..abbd0f387
 +			interrupt-map-mask = <0 0 0 7>;
 +			interrupt-names = "misc";
 +			interrupts = <0 72 4>;
++			interrupt-parent = <&gic>;
++			bus-range = <0x00 0xff>;
 +			ranges = <0x02000000 0x00000000 0xe0000000 0x0 0xe0000000 0x00000000 0x10000000>,
 +				 <0x43000000 0x00000080 0x00000000 0x00000080 0x00000000 0x00000000 0x80000000>;
 +			msi-map = <0x0 &gic_its 0x0 0x10000>;
 +			reg = <0x0 0xfca10000 0x0 0x1000>,
 +			      <0x6 0x00000000 0x0 0x1000000>;
 +			reg-names = "cpm_slcr", "cfg";
-+			pcie_intc_0: pci-interrupt-controller {
++			pcie_intc_0: interrupt-controller {
 +				#address-cells = <0>;
 +				#interrupt-cells = <1>;
 +				interrupt-controller ;
 +			};
 +		};
 +
++		cpm5_pcie: pcie@fcdd0000 {
++			device_type = "pci";
++			#address-cells = <3>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			compatible = "xlnx,versal-cpm5-host";
++			status = "disabled";
++			interrupt-map = <0 0 0 1 &pcie_intc_1 0>,
++					<0 0 0 2 &pcie_intc_1 1>,
++					<0 0 0 3 &pcie_intc_1 2>,
++					<0 0 0 4 &pcie_intc_1 3>;
++			interrupt-map-mask = <0 0 0 7>;
++			interrupt-names = "misc";
++			interrupts = <0 72 4>;
++			interrupt-parent = <&gic>;
++			bus-range = <0x00 0xff>;
++			ranges = <0x02000000 0x0 0xe0000000 0x0 0xe0000000 0x0 0x10000000>,
++				 <0x43000000 0x80 0x00000000 0x80 0x00000000 0x0 0x80000000>;
++			msi-map = <0x0 &gic_its 0x0 0x10000>;
++			reg = <0x00 0xfcdd0000 0x00 0x1000>,
++			      <0x06 0x00000000 0x00 0x1000000>,
++			      <0x00 0xfce20000 0x00 0x1000000>;
++			reg-names = "cpm_slcr", "cfg", "cpm_csr";
++			pcie_intc_1: interrupt-controller {
++				#address-cells = <0>;
++				#interrupt-cells = <1>;
++				interrupt-controller;
++			};
++		};
++
 +		watchdog: watchdog@fd4d0000 {
-+			compatible = "xlnx,versal-wwdt-1.0";
++			compatible = "xlnx,versal-wwdt";
 +			status = "disabled";
 +			reg = <0 0xfd4d0000 0 0x10000>;
-+			interrupt-names = "wdt", "wwdt_reset_pending";
-+			interrupts = <0 0x64 1>, <0 0x6D 1>;
 +			timeout-sec = <30>;
-+			pretimeout-sec = <25>;
 +		};
 +
 +		xilsem_edac: edac@f2014050 {
@@ -6769,10 +7083,10 @@ index 000000000..271894f01
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/x-prc-07-revA.dts b/arch/arm64/boot/dts/xilinx/x-prc-07-revA.dts
 new file mode 100644
-index 000000000..01912b713
+index 000000000..479f0090e
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/x-prc-07-revA.dts
-@@ -0,0 +1,169 @@
+@@ -0,0 +1,170 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx ZynqMP VN-P-B2197 (Tenzing2) X-PRC-07 RevA
@@ -6799,7 +7113,7 @@ index 000000000..01912b713
 +&gem1 {
 +	status = "okay";
 +	phy-handle = <&phy0>;
-+	phy-mode = "rmii-id";
++	phy-mode = "rmii";
 +	mdio1: mdio {
 +		#address-cells = <1>;
 +		#size-cells = <0>;
@@ -6849,6 +7163,7 @@ index 000000000..01912b713
 +		spi-rx-bus-width = <8>;
 +		spi-max-frequency = <5000000>;
 +		broken-flash-reset;
++		no-wp;
 +
 +		partitions {
 +			compatible = "fixed-partitions";
@@ -6867,16 +7182,16 @@ index 000000000..01912b713
 +	};
 +};
 +
-+&spi0 {
++&spi1 {
 +	status = "okay";
-+	num-cs = <1>;
++	num-cs = <3>;
 +	#address-cells = <1>;
 +	#size-cells = <0>;
 +
-+	flash@0 { /* u397 MX25U3232 - FIXME not supported in U-Boot/Linux */
-+		compatible = "m25p80";
++	flash@2 { /* u397 MX25U3232 - FIXME not supported in U-Boot/Linux */
++		compatible = "m25p80", "jedec,spi-nor";
 +		spi-max-frequency = <5000000>;
-+		reg = <0>;
++		reg = <2>;
 +
 +		partitions {
 +			compatible = "fixed-partitions";
@@ -6942,6 +7257,138 @@ index 000000000..01912b713
 +	status = "okay";
 +	snps,ulpi-ext-vbus-drv;
 +};
+diff --git a/arch/arm64/boot/dts/xilinx/x-prc-08-revA.dts b/arch/arm64/boot/dts/xilinx/x-prc-08-revA.dts
+new file mode 100644
+index 000000000..9907ea363
+--- /dev/null
++++ b/arch/arm64/boot/dts/xilinx/x-prc-08-revA.dts
+@@ -0,0 +1,126 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * dts file for Xilinx ZynqMP VN-P-B2197 (Tenzing2) X-PRC-08 RevA
++ *
++ * (C) Copyright 2022-2023, Advanced Micro Devices, Inc.
++ *
++ * Michal Simek <michal.simek@amd.com>
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++
++&{/} {
++	model = "X-PRC-08 revA";
++};
++
++/* LPD_MIO0-12, mdio LPD_MIO24-25 */
++&gem0 {
++	status = "okay";
++	phy-handle = <&phy0>;
++	phy-mode = "rmii";
++	mdio1: mdio {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		phy0: ethernet-phy@1 { /* u37 VSC8540 */
++			#phy-cells = <1>;
++			compatible = "ethernet-phy-id0007.0760";
++			reg = <1>;
++			reset-gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
++		};
++	};
++};
++
++/* u1, u2, u3, u4 - 4x MT25QU01GBBBB, PMC_MIO0-5,7-12 */
++&qspi {
++	status = "okay";
++	reset-gpios = <&gpio1 39 GPIO_ACTIVE_HIGH>;
++	reset-names = "qspi";
++	#address-cells = <1>;
++	#size-cells = <0>;
++	num-cs = <2>;
++
++	mt25xu01g: flash@0 {
++		compatible = "micron,m25p80", "jedec,spi-nor";
++		reg = <0>, <1>;
++		parallel-memories = /bits/ 64 <0x8000000 0x8000000>; /* (128+128)MB */
++		spi-tx-bus-width = <4>;
++		spi-rx-bus-width = <4>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++		spi-max-frequency = <150000000>;
++
++		partitions {
++			compatible = "fixed-partitions";
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			partition@0 {
++				label = "qspi-flash0";
++				reg = <0 0x8000000>;
++			};
++			partition@1 {
++				label = "qspi-flash1";
++				reg = <0x8000000 0x8000000>;
++			};
++		};
++	};
++};
++
++/* LPD_MIO18-23 */
++&spi1 {
++	status = "okay";
++	num-cs = <1>; /* Via J16 - 3 chip selects to the same memory */
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	flash@0 { /* u35 MX25U3232 */
++		compatible = "m25p80";
++		spi-max-frequency = <5000000>;
++		reg = <0>;
++
++		partitions {
++			compatible = "fixed-partitions";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			partition@0 {
++				label = "spi0-flash0";
++				reg = <0 0x80000>;
++			};
++		};
++	};
++};
++
++/* LPD_MIO16-17 */
++&serial0 {
++	status = "okay";
++};
++
++/* PMC_MIO26-36 */
++&sdhci0 {
++	status = "okay";
++	xlnx,mio-bank = <1>;
++	bus-width = <4>;
++};
++
++
++/* u36a PMC_MIO40-51 MTFC16GAPALBH */
++&sdhci1 {
++	status = "okay";
++	xlnx,mio-bank = <1>;
++	non-removable;
++	disable-wp;
++	bus-width = <8>;
++};
++
++/* u34 - usb3315c - PMC_MIO13-25 */
++&usb1 {
++	status = "okay";
++};
++
++&dwc3_1 {
++	status = "okay";
++};
 diff --git a/arch/arm64/boot/dts/xilinx/x-prc-09-i3c-revA.dts b/arch/arm64/boot/dts/xilinx/x-prc-09-i3c-revA.dts
 new file mode 100644
 index 000000000..952768088
@@ -6997,10 +7444,10 @@ index 000000000..952768088
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/x-prc-09-revA.dts b/arch/arm64/boot/dts/xilinx/x-prc-09-revA.dts
 new file mode 100644
-index 000000000..1b17fff1a
+index 000000000..c014a6867
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/x-prc-09-revA.dts
-@@ -0,0 +1,140 @@
+@@ -0,0 +1,142 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx ZynqMP VN-P-B2197 (Tenzing2) X-PRC-09 RevA
@@ -7017,7 +7464,7 @@ index 000000000..1b17fff1a
 +
 +&{/} {
 +	model = "X-PRC-09 revA";
-+		     
++
 +	aliases {
 +		nvmem2 = &eeprom0;
 +		nvmem3 = &eeprom1;
@@ -7051,6 +7498,7 @@ index 000000000..1b17fff1a
 +			ti,tx-internal-delay = <0xa>;
 +			ti,fifo-depth = <0x1>;
 +			ti,dp83867-rxctrl-strap-quirk;
++			ti,min-output-impedance;
 +			reset-assert-us = <0x96>;
 +			reset-deassert-us = <0x118>;
 +			reset-gpios = <&gpio1 48 GPIO_ACTIVE_LOW>;
@@ -7103,7 +7551,7 @@ index 000000000..1b17fff1a
 +
 +&qspi {
 +	status = "okay"; /* u93 and u92 */
-+	num-cs = <1>;
++	num-cs = <2>;
 +	is-dual = <1>;
 +	spi-rx-bus-width = <4>;
 +	spi-tx-bus-width = <4>;
@@ -7112,10 +7560,11 @@ index 000000000..1b17fff1a
 +
 +	flash@0 {
 +		compatible = "micron,m25p80", "jedec,spi-nor";
-+		reg = <0>;
-+		spi-tx-bus-width = <1>;
++		reg = <0>, <1>;
++		parallel-memories = /bits/ 64 <0x8000000 0x8000000>; /* 128MB */
++		spi-tx-bus-width = <4>;
 +		spi-rx-bus-width = <4>;
-+		spi-max-frequency = <10000000>;
++		spi-max-frequency = <150000000>;
 +
 +		partitions {
 +			compatible = "fixed-partitions";
@@ -7237,10 +7686,10 @@ index 000000000..89c3a281d
 +	};
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-clk-ccf.dtsi b/arch/arm64/boot/dts/xilinx/zynqmp-clk-ccf.dtsi
-index e172fa05c..ac8ed4a43 100644
+index e172fa05c..653e0681c 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-clk-ccf.dtsi
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-clk-ccf.dtsi
-@@ -9,39 +9,76 @@
+@@ -9,31 +9,60 @@
  
  #include <dt-bindings/clock/xlnx-zynqmp-clk.h>
  / {
@@ -7301,15 +7750,7 @@ index e172fa05c..ac8ed4a43 100644
  		compatible = "fixed-clock";
  		#clock-cells = <0>;
  		clock-frequency = <27000000>;
- 	};
-+
-+	dp_aclk: dp_aclk {
-+		compatible = "fixed-clock";
-+		#clock-cells = <0>;
-+		clock-frequency = <100000000>;
-+		clock-accuracy = <100>;
-+	};
- };
+@@ -42,6 +71,7 @@ aux_ref_clk: aux_ref_clk {
  
  &zynqmp_firmware {
  	zynqmp_clk: clock-controller {
@@ -7317,7 +7758,7 @@ index e172fa05c..ac8ed4a43 100644
  		#clock-cells = <1>;
  		compatible = "xlnx,zynqmp-clk";
  		clocks = <&pss_ref_clk>, <&video_clk>, <&pss_alt_ref_clk>,
-@@ -95,6 +132,10 @@ &fpd_dma_chan8 {
+@@ -95,6 +125,10 @@ &fpd_dma_chan8 {
  	clocks = <&zynqmp_clk GDMA_REF>, <&zynqmp_clk LPD_LSBUS>;
  };
  
@@ -7328,11 +7769,12 @@ index e172fa05c..ac8ed4a43 100644
  &lpd_dma_chan1 {
  	clocks = <&zynqmp_clk ADMA_REF>, <&zynqmp_clk LPD_LSBUS>;
  };
-@@ -135,28 +176,24 @@ &gem0 {
+@@ -135,28 +169,28 @@ &gem0 {
  	clocks = <&zynqmp_clk LPD_LSBUS>, <&zynqmp_clk GEM0_REF>,
  		 <&zynqmp_clk GEM0_TX>, <&zynqmp_clk GEM0_RX>,
  		 <&zynqmp_clk GEM_TSU>;
 -	clock-names = "pclk", "hclk", "tx_clk", "rx_clk", "tsu_clk";
++	assigned-clocks = <&zynqmp_clk GEM_TSU>;
  };
  
  &gem1 {
@@ -7340,6 +7782,7 @@ index e172fa05c..ac8ed4a43 100644
  		 <&zynqmp_clk GEM1_TX>, <&zynqmp_clk GEM1_RX>,
  		 <&zynqmp_clk GEM_TSU>;
 -	clock-names = "pclk", "hclk", "tx_clk", "rx_clk", "tsu_clk";
++	assigned-clocks = <&zynqmp_clk GEM_TSU>;
  };
  
  &gem2 {
@@ -7347,6 +7790,7 @@ index e172fa05c..ac8ed4a43 100644
  		 <&zynqmp_clk GEM2_TX>, <&zynqmp_clk GEM2_RX>,
  		 <&zynqmp_clk GEM_TSU>;
 -	clock-names = "pclk", "hclk", "tx_clk", "rx_clk", "tsu_clk";
++	assigned-clocks = <&zynqmp_clk GEM_TSU>;
  };
  
  &gem3 {
@@ -7354,10 +7798,11 @@ index e172fa05c..ac8ed4a43 100644
  		 <&zynqmp_clk GEM3_TX>, <&zynqmp_clk GEM3_RX>,
  		 <&zynqmp_clk GEM_TSU>;
 -	clock-names = "pclk", "hclk", "tx_clk", "rx_clk", "tsu_clk";
++	assigned-clocks = <&zynqmp_clk GEM_TSU>;
  };
  
  &gpio {
-@@ -171,6 +208,22 @@ &i2c1 {
+@@ -171,6 +205,22 @@ &i2c1 {
  	clocks = <&zynqmp_clk I2C1_REF>;
  };
  
@@ -7380,7 +7825,7 @@ index e172fa05c..ac8ed4a43 100644
  &pcie {
  	clocks = <&zynqmp_clk PCIE_REF>;
  };
-@@ -185,10 +238,12 @@ &sata {
+@@ -185,10 +235,12 @@ &sata {
  
  &sdhci0 {
  	clocks = <&zynqmp_clk SDIO0_REF>, <&zynqmp_clk LPD_LSBUS>;
@@ -7393,7 +7838,7 @@ index e172fa05c..ac8ed4a43 100644
  };
  
  &spi0 {
-@@ -223,12 +278,22 @@ &uart1 {
+@@ -223,12 +275,22 @@ &uart1 {
  	clocks = <&zynqmp_clk UART1_REF>, <&zynqmp_clk LPD_LSBUS>;
  };
  
@@ -7418,24 +7863,19 @@ index e172fa05c..ac8ed4a43 100644
  };
  
  &watchdog0 {
-@@ -243,12 +308,24 @@ &xilinx_ams {
- 	clocks = <&zynqmp_clk AMS_REF>;
- };
+@@ -245,10 +307,18 @@ &xilinx_ams {
  
-+&zynqmp_pcap {
-+	clocks = <&zynqmp_clk PCAP>;
-+};
-+
  &zynqmp_dpdma {
  	clocks = <&zynqmp_clk DPDMA_REF>;
 +	assigned-clocks = <&zynqmp_clk DPDMA_REF>; /* apll */
  };
  
  &zynqmp_dpsub {
--	clocks = <&zynqmp_clk TOPSW_LSBUS>,
-+	clocks = <&dp_aclk>,
- 		 <&zynqmp_clk DP_AUDIO_REF>,
- 		 <&zynqmp_clk DP_VIDEO_REF>;
+ 	clocks = <&zynqmp_clk TOPSW_LSBUS>,
+-		 <&zynqmp_clk DP_AUDIO_REF>,
+-		 <&zynqmp_clk DP_VIDEO_REF>;
++		<&zynqmp_clk DP_AUDIO_REF>,
++		<&zynqmp_clk DP_VIDEO_REF>;
 +	assigned-clocks = <&zynqmp_clk DP_STC_REF>,
 +			  <&zynqmp_clk DP_AUDIO_REF>,
 +			  <&zynqmp_clk DP_VIDEO_REF>;  /* rpll, rpll, vpll */
@@ -7708,7 +8148,7 @@ index 000000000..2d4bfef98
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-dlc21-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-dlc21-revA.dts
 new file mode 100644
-index 000000000..bf0d89a5f
+index 000000000..ad752beac
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-dlc21-revA.dts
 @@ -0,0 +1,216 @@
@@ -7775,14 +8215,14 @@ index 000000000..bf0d89a5f
 +	non-removable;
 +	disable-wp;
 +	bus-width = <8>;
-+	xlnx,mio_bank = <0>;
++	xlnx,mio-bank = <0>;
 +};
 +
 +&sdhci1 { /* sd1 MIO45-51 cd in place */
 +	status = "okay";
 +	no-1-8-v;
 +	disable-wp;
-+	xlnx,mio_bank = <1>;
++	xlnx,mio-bank = <1>;
 +};
 +
 +&psgtr {
@@ -7845,7 +8285,7 @@ index 000000000..bf0d89a5f
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&i2c0 { /* MIO34/35 */
@@ -7930,7 +8370,7 @@ index 000000000..bf0d89a5f
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-e-a2197-00-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-e-a2197-00-revA.dts
 new file mode 100644
-index 000000000..a9e56bae9
+index 000000000..7539c9f6d
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-e-a2197-00-revA.dts
 @@ -0,0 +1,685 @@
@@ -8180,7 +8620,7 @@ index 000000000..a9e56bae9
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&i2c0 { /* MIO 34-35 - can't stay here */
@@ -8660,7 +9100,7 @@ index 000000000..cb17ec921
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-g-a2197-00-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-g-a2197-00-revA.dts
 new file mode 100644
-index 000000000..02d242780
+index 000000000..1528822ae
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-g-a2197-00-revA.dts
 @@ -0,0 +1,312 @@
@@ -8791,14 +9231,14 @@ index 000000000..02d242780
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&i2c0 { /* MIO 34-35 - can't stay here */
 +	status = "okay";
 +	clock-frequency = <400000>;
-+	scl-gpios = <&gpio 34 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 35 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 34 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 35 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +	i2c-mux@74 { /* u94 */
 +		compatible = "nxp,pca9548";
 +		#address-cells = <1>;
@@ -8978,7 +9418,7 @@ index 000000000..02d242780
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-m-a2197-01-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-m-a2197-01-revA.dts
 new file mode 100644
-index 000000000..2d7fe592c
+index 000000000..63b4a3651
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-m-a2197-01-revA.dts
 @@ -0,0 +1,484 @@
@@ -9138,7 +9578,7 @@ index 000000000..2d7fe592c
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&i2c0 { /* MIO 34-35 - can't stay here */
@@ -9344,25 +9784,25 @@ index 000000000..2d7fe592c
 +				#gpio-cells = <2>;
 +				gpio-line-names = "sw4_1", "sw4_2", "sw4_3", "sw4_4",
 +						  "", "", "", "";
-+				gtr_sel0 {
++				gtr-sel0 {
 +					gpio-hog;
 +					gpios = <0 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_1";
 +				};
-+				gtr_sel1 {
++				gtr-sel1 {
 +					gpio-hog;
 +					gpios = <1 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_2";
 +				};
-+				gtr_sel2 {
++				gtr-sel2 {
 +					gpio-hog;
 +					gpios = <2 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_3";
 +				};
-+				gtr_sel3 {
++				gtr-sel3 {
 +					gpio-hog;
 +					gpios = <3 0>;
 +					input; /* FIXME add meaning */
@@ -9468,7 +9908,7 @@ index 000000000..2d7fe592c
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-m-a2197-02-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-m-a2197-02-revA.dts
 new file mode 100644
-index 000000000..e46748d32
+index 000000000..41d420d28
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-m-a2197-02-revA.dts
 @@ -0,0 +1,486 @@
@@ -9623,7 +10063,7 @@ index 000000000..e46748d32
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&i2c0 { /* MIO 34-35 - can't stay here */
@@ -9836,25 +10276,25 @@ index 000000000..e46748d32
 +				#gpio-cells = <2>;
 +				gpio-line-names = "sw4_1", "sw4_2", "sw4_3", "sw4_4",
 +						  "", "", "", "";
-+				gtr_sel0 {
++				gtr-sel0 {
 +					gpio-hog;
 +					gpios = <0 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_1";
 +				};
-+				gtr_sel1 {
++				gtr-sel1 {
 +					gpio-hog;
 +					gpios = <1 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_2";
 +				};
-+				gtr_sel2 {
++				gtr-sel2 {
 +					gpio-hog;
 +					gpios = <2 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_3";
 +				};
-+				gtr_sel3 {
++				gtr-sel3 {
 +					gpio-hog;
 +					gpios = <3 0>;
 +					input; /* FIXME add meaning */
@@ -9960,7 +10400,7 @@ index 000000000..e46748d32
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-m-a2197-03-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-m-a2197-03-revA.dts
 new file mode 100644
-index 000000000..f564817e2
+index 000000000..cbf549763
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-m-a2197-03-revA.dts
 @@ -0,0 +1,480 @@
@@ -10115,7 +10555,7 @@ index 000000000..f564817e2
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&i2c0 { /* MIO 34-35 - can't stay here */
@@ -10322,25 +10762,25 @@ index 000000000..f564817e2
 +				#gpio-cells = <2>;
 +				gpio-line-names = "sw4_1", "sw4_2", "sw4_3", "sw4_4",
 +						  "", "", "", "";
-+				gtr_sel0 {
++				gtr-sel0 {
 +					gpio-hog;
 +					gpios = <0 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_1";
 +				};
-+				gtr_sel1 {
++				gtr-sel1 {
 +					gpio-hog;
 +					gpios = <1 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_2";
 +				};
-+				gtr_sel2 {
++				gtr-sel2 {
 +					gpio-hog;
 +					gpios = <2 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_3";
 +				};
-+				gtr_sel3 {
++				gtr-sel3 {
 +					gpio-hog;
 +					gpios = <3 0>;
 +					input; /* FIXME add meaning */
@@ -10446,7 +10886,7 @@ index 000000000..f564817e2
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-01-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-01-revA.dts
 new file mode 100644
-index 000000000..c82f7e242
+index 000000000..bdd409182
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-01-revA.dts
 @@ -0,0 +1,75 @@
@@ -10484,25 +10924,25 @@ index 000000000..c82f7e242
 +				#gpio-cells = <2>;
 +				gpio-line-names = "sw4_1", "sw4_2", "sw4_3", "sw4_4",
 +						  "", "", "", "";
-+				gtr_sel0 {
++				gtr-sel0 {
 +					gpio-hog;
 +					gpios = <0 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_1";
 +				};
-+				gtr_sel1 {
++				gtr-sel1 {
 +					gpio-hog;
 +					gpios = <1 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_2";
 +				};
-+				gtr_sel2 {
++				gtr-sel2 {
 +					gpio-hog;
 +					gpios = <2 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_3";
 +				};
-+				gtr_sel3 {
++				gtr-sel3 {
 +					gpio-hog;
 +					gpios = <3 0>;
 +					input; /* FIXME add meaning */
@@ -10527,7 +10967,7 @@ index 000000000..c82f7e242
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-02-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-02-revA.dts
 new file mode 100644
-index 000000000..f797fbc15
+index 000000000..55bf4ed1d
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-02-revA.dts
 @@ -0,0 +1,75 @@
@@ -10565,25 +11005,25 @@ index 000000000..f797fbc15
 +				#gpio-cells = <2>;
 +				gpio-line-names = "sw4_1", "sw4_2", "sw4_3", "sw4_4",
 +						  "", "", "", "";
-+				gtr_sel0 {
++				gtr-sel0 {
 +					gpio-hog;
 +					gpios = <0 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_1";
 +				};
-+				gtr_sel1 {
++				gtr-sel1 {
 +					gpio-hog;
 +					gpios = <1 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_2";
 +				};
-+				gtr_sel2 {
++				gtr-sel2 {
 +					gpio-hog;
 +					gpios = <2 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_3";
 +				};
-+				gtr_sel3 {
++				gtr-sel3 {
 +					gpio-hog;
 +					gpios = <3 0>;
 +					input; /* FIXME add meaning */
@@ -10608,7 +11048,7 @@ index 000000000..f797fbc15
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-03-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-03-revA.dts
 new file mode 100644
-index 000000000..9ed5b4353
+index 000000000..d5956794b
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-03-revA.dts
 @@ -0,0 +1,79 @@
@@ -10646,25 +11086,25 @@ index 000000000..9ed5b4353
 +				#gpio-cells = <2>;
 +				gpio-line-names = "sw4_1", "sw4_2", "sw4_3", "sw4_4",
 +						  "", "", "", "";
-+				gtr_sel0 {
++				gtr-sel0 {
 +					gpio-hog;
 +					gpios = <0 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_1";
 +				};
-+				gtr_sel1 {
++				gtr-sel1 {
 +					gpio-hog;
 +					gpios = <1 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_2";
 +				};
-+				gtr_sel2 {
++				gtr-sel2 {
 +					gpio-hog;
 +					gpios = <2 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_3";
 +				};
-+				gtr_sel3 {
++				gtr-sel3 {
 +					gpio-hog;
 +					gpios = <3 0>;
 +					input; /* FIXME add meaning */
@@ -10693,7 +11133,7 @@ index 000000000..9ed5b4353
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-04-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-04-revA.dts
 new file mode 100644
-index 000000000..47b218dca
+index 000000000..f97e4daa6
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-04-revA.dts
 @@ -0,0 +1,85 @@
@@ -10731,25 +11171,25 @@ index 000000000..47b218dca
 +				#gpio-cells = <2>;
 +				gpio-line-names = "sw4_1", "sw4_2", "sw4_3", "sw4_4",
 +						  "", "", "", "";
-+				gtr_sel0 {
++				gtr-sel0 {
 +					gpio-hog;
 +					gpios = <0 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_1";
 +				};
-+				gtr_sel1 {
++				gtr-sel1 {
 +					gpio-hog;
 +					gpios = <1 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_2";
 +				};
-+				gtr_sel2 {
++				gtr-sel2 {
 +					gpio-hog;
 +					gpios = <2 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_3";
 +				};
-+				gtr_sel3 {
++				gtr-sel3 {
 +					gpio-hog;
 +					gpios = <3 0>;
 +					input; /* FIXME add meaning */
@@ -10784,7 +11224,7 @@ index 000000000..47b218dca
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-05-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-05-revA.dts
 new file mode 100644
-index 000000000..c79ea1970
+index 000000000..b2d26d864
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA-x-prc-05-revA.dts
 @@ -0,0 +1,85 @@
@@ -10822,25 +11262,25 @@ index 000000000..c79ea1970
 +				#gpio-cells = <2>;
 +				gpio-line-names = "sw4_1", "sw4_2", "sw4_3", "sw4_4",
 +						  "", "", "", "";
-+				gtr_sel0 {
++				gtr-sel0 {
 +					gpio-hog;
 +					gpios = <0 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_1";
 +				};
-+				gtr_sel1 {
++				gtr-sel1 {
 +					gpio-hog;
 +					gpios = <1 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_2";
 +				};
-+				gtr_sel2 {
++				gtr-sel2 {
 +					gpio-hog;
 +					gpios = <2 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_3";
 +				};
-+				gtr_sel3 {
++				gtr-sel3 {
 +					gpio-hog;
 +					gpios = <3 0>;
 +					input; /* FIXME add meaning */
@@ -10875,7 +11315,7 @@ index 000000000..c79ea1970
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA.dts
 new file mode 100644
-index 000000000..7c30eaa61
+index 000000000..adbc51d58
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-p-a2197-00-revA.dts
 @@ -0,0 +1,612 @@
@@ -11045,7 +11485,7 @@ index 000000000..7c30eaa61
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&i2c0 { /* MIO 34-35 - can't stay here */
@@ -11334,25 +11774,25 @@ index 000000000..7c30eaa61
 +				#gpio-cells = <2>;
 +				gpio-line-names = "sw4_1", "sw4_2", "sw4_3", "sw4_4",
 +						  "", "", "", "";
-+				gtr_sel0 {
++				gtr-sel0 {
 +					gpio-hog;
 +					gpios = <0 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_1";
 +				};
-+				gtr_sel1 {
++				gtr-sel1 {
 +					gpio-hog;
 +					gpios = <1 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_2";
 +				};
-+				gtr_sel2 {
++				gtr-sel2 {
 +					gpio-hog;
 +					gpios = <2 0>;
 +					input; /* FIXME add meaning */
 +					line-name = "sw4_3";
 +				};
-+				gtr_sel3 {
++				gtr-sel3 {
 +					gpio-hog;
 +					gpios = <3 0>;
 +					input; /* FIXME add meaning */
@@ -11493,10 +11933,10 @@ index 000000000..7c30eaa61
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-sc-revB.dts b/arch/arm64/boot/dts/xilinx/zynqmp-sc-revB.dts
 new file mode 100644
-index 000000000..b9ea53e2b
+index 000000000..ac6d44842
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-sc-revB.dts
-@@ -0,0 +1,469 @@
+@@ -0,0 +1,429 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx ZynqMP Generic System Controller
@@ -11532,8 +11972,6 @@ index 000000000..b9ea53e2b
 +		spi0 = &qspi;
 +		spi1 = &spi0;
 +		spi2 = &spi1;
-+		usb0 = &usb0;
-+		usb1 = &usb1;
 +	};
 +
 +	chosen {
@@ -11621,7 +12059,7 @@ index 000000000..b9ea53e2b
 +		"", "", "", "", "", /* 155 - 159 */
 +		"", "", "", "", "", /* 160 - 164 */
 +		"", "", "", "", "", /* 165 - 169 */
-+		"", "", "", ""; /* 170 - 174 */
++		"", "", "", ""; /* 170 - 173 */
 +};
 +
 +&gem1 { /* gem1 MIO38-49, MDIO MIO50/51 */
@@ -11658,8 +12096,8 @@ index 000000000..b9ea53e2b
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c0_default>;
 +	pinctrl-1 = <&pinctrl_i2c0_gpio>;
-+	scl-gpios = <&gpio 34 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 35 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 34 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 35 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +};
 +
 +&i2c1 { /* i2c1 MIO 24-25 */
@@ -11669,8 +12107,8 @@ index 000000000..b9ea53e2b
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c1_default>;
 +	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 24 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 25 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	/* Use for storing information about SC board */
 +	eeprom: eeprom@54 { /* u34 - m24128 16kB */
@@ -11769,13 +12207,17 @@ index 000000000..b9ea53e2b
 +		};
 +		partition@2240000 {
 +			label = "SHA256";
-+			reg = <0x2240000 0x10000>; /* 256B but 64KB sector */
++			reg = <0x2240000 0x40000>; /* 256B but 256KB sector */
 +			read-only;
 +			lock;
 +		};
-+		partition@2250000 {
++		partition@2280000 {
++			label = "Secure OS Storage";
++			reg = <0x2280000 0x20000>; /* 128KB */
++		};
++		partition@22A0000 {
 +			label = "User";
-+			reg = <0x2250000 0x1db0000>; /* 29.5 MB */
++			reg = <0x22A0000 0x1d60000>; /* 29.375 MB */
 +		};
 +	};
 +};
@@ -11797,21 +12239,6 @@ index 000000000..b9ea53e2b
 +	status = "okay";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&pinctrl_uart1_default>;
-+};
-+
-+&usb0 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_usb0_default>;
-+	phy-names = "usb3-phy";
-+	phys = <&psgtr 2 PHY_TYPE_USB3 0 2>;
-+};
-+
-+&dwc3_0 {
-+	status = "okay";
-+	dr_mode = "peripheral";
-+	snps,usb3_lpm_capable;
-+	maximum-speed = "super-speed";
 +};
 +
 +&pinctrl0 { /* required by spec */
@@ -11938,37 +12365,10 @@ index 000000000..b9ea53e2b
 +			groups = "ethernet1_0_grp";
 +		};
 +	};
-+
-+	pinctrl_usb0_default: usb0-default {
-+		conf {
-+			groups = "usb0_0_grp";
-+			power-source = <IO_STANDARD_LVCMOS18>;
-+		};
-+
-+		conf-rx {
-+			pins = "MIO52", "MIO53", "MIO55";
-+			bias-high-impedance;
-+			drive-strength = <12>;
-+			slew-rate = <SLEW_RATE_FAST>;
-+		};
-+
-+		conf-tx {
-+			pins = "MIO54", "MIO56", "MIO57", "MIO58", "MIO59",
-+			"MIO60", "MIO61", "MIO62", "MIO63";
-+			bias-disable;
-+			drive-strength = <4>;
-+			slew-rate = <SLEW_RATE_SLOW>;
-+		};
-+
-+		mux {
-+			groups = "usb0_0_grp";
-+			function = "usb0";
-+		};
-+	};
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-sc-revC.dts b/arch/arm64/boot/dts/xilinx/zynqmp-sc-revC.dts
 new file mode 100644
-index 000000000..c200d97e6
+index 000000000..ef7a57259
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-sc-revC.dts
 @@ -0,0 +1,37 @@
@@ -11991,7 +12391,7 @@ index 000000000..c200d97e6
 +
 +&gem1 { /* gem1 MIO38-49, MDIO MIO50/51 */
 +	/delete-node/ mdio;
-+	
++
 +	mdio: mdio {
 +		#address-cells = <1>;
 +		#size-cells = <0>;
@@ -12726,7 +13126,7 @@ index 000000000..ce3967996
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-sc-vn-p-b2197-00-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-sc-vn-p-b2197-00-revA.dts
 new file mode 100644
-index 000000000..719f6ed47
+index 000000000..d692e2664
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-sc-vn-p-b2197-00-revA.dts
 @@ -0,0 +1,496 @@
@@ -12883,25 +13283,25 @@ index 000000000..719f6ed47
 +		#gpio-cells = <2>;
 +		gpio-line-names = "xprc_sw_1", "xprc_sw_2", "xprc_sw_3", "xprc_sw_4",
 +					"", "", "", "";
-+		gtr_sel0 {
++		gtr-sel0 {
 +			gpio-hog;
 +			gpios = <0 0>;
 +			input; /* FIXME add meaning */
 +			line-name = "xprc_sw_1";
 +		};
-+		gtr_sel1 {
++		gtr-sel1 {
 +			gpio-hog;
 +			gpios = <1 0>;
 +			input; /* FIXME add meaning */
 +			line-name = "xprc_sw_1";
 +		};
-+		gtr_sel2 {
++		gtr-sel2 {
 +			gpio-hog;
 +			gpios = <2 0>;
 +			input; /* FIXME add meaning */
 +			line-name = "xprc_sw_1";
 +		};
-+		gtr_sel3 {
++		gtr-sel3 {
 +			gpio-hog;
 +			gpios = <3 0>;
 +			input; /* FIXME add meaning */
@@ -14532,10 +14932,10 @@ index 000000000..c432d2ec4
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-sck-kd-g-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-sck-kd-g-revA.dts
 new file mode 100644
-index 000000000..ce4875fac
+index 000000000..56f312852
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-sck-kd-g-revA.dts
-@@ -0,0 +1,283 @@
+@@ -0,0 +1,316 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for KD240 revA Carrier Card
@@ -14554,9 +14954,11 @@ index 000000000..ce4875fac
 +/plugin/;
 +
 +&{/} {
-+	compatible = "xlnx,zynqmp-sk-kd240-revA",
++	compatible = "xlnx,zynqmp-sk-kd240-rev1",
++		     "xlnx,zynqmp-sk-kd240-revB",
++		     "xlnx,zynqmp-sk-kd240-revA",
 +		     "xlnx,zynqmp-sk-kd240", "xlnx,zynqmp";
-+	model = "ZynqMP KD240 revA";
++	model = "ZynqMP KD240 revA/B/1";
 +
 +	ina260-u3 {
 +		compatible = "iio-hwmon";
@@ -14570,14 +14972,20 @@ index 000000000..ce4875fac
 +	};
 +};
 +
++&can0 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_can0_default>;
++};
++
 +&i2c1 { /* I2C_SCK C26/C27 - MIO from SOM */
 +	#address-cells = <1>;
 +	#size-cells = <0>;
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c1_default>;
 +	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 24 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 25 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	u3: ina260@40 { /* u3 */
 +		compatible = "ti,ina260";
@@ -14639,8 +15047,9 @@ index 000000000..ce4875fac
 +
 +&gem1 { /* mdio mio50/51 */
 +	status = "okay";
-+        pinctrl-names = "default";
++	pinctrl-names = "default";
 +	pinctrl-0 = <&pinctrl_gem1_default>;
++	assigned-clock-rates = <250000000>;
 +
 +	phy-handle = <&phy0>;
 +	phy-mode = "rgmii-id";
@@ -14663,6 +15072,30 @@ index 000000000..ce4875fac
 +
 +&pinctrl0 { /* required by spec */
 +	status = "okay";
++
++	pinctrl_can0_default: can0-default {
++		mux {
++			function = "can0";
++			groups = "can0_16_grp";
++		};
++
++		conf {
++			groups = "can0_16_grp";
++			slew-rate = <SLEW_RATE_SLOW>;
++			power-source = <IO_STANDARD_LVCMOS18>;
++		};
++
++		conf-rx {
++			pins = "MIO66";
++			bias-pull-up;
++		};
++
++		conf-tx {
++			pins = "MIO67";
++			bias-pull-up;
++			drive-strength = <4>;
++		};
++	};
 +
 +	pinctrl_uart1_default: uart1-default {
 +		conf {
@@ -14723,13 +15156,13 @@ index 000000000..ce4875fac
 +		};
 +
 +		conf-rx {
-+			pins = "MIO44", "MIO46", "MIO48";
-+			bias-high-impedance;
++			pins = "MIO45", "MIO46", "MIO47", "MIO48";
++			bias-disable;
 +			low-power-disable;
 +		};
 +
 +		conf-bootstrap {
-+			pins = "MIO45", "MIO47", "MIO49";
++			pins = "MIO44", "MIO49";
 +			bias-disable;
 +			low-power-disable;
 +		};
@@ -14821,10 +15254,10 @@ index 000000000..ce4875fac
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-sck-kr-g-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-sck-kr-g-revA.dts
 new file mode 100644
-index 000000000..18f06c30d
+index 000000000..dde5b154b
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-sck-kr-g-revA.dts
-@@ -0,0 +1,389 @@
+@@ -0,0 +1,397 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for KR260 revA Carrier Card
@@ -14895,8 +15328,8 @@ index 000000000..18f06c30d
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c1_default>;
 +	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 24 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 25 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	u14: ina260@40 { /* u14 */
 +		compatible = "ti,ina260";
@@ -15015,6 +15448,7 @@ index 000000000..18f06c30d
 +	phy-handle = <&phy0>;
 +	phy-mode = "sgmii";
 +	is-internal-pcspma;
++	assigned-clock-rates = <250000000>;
 +};
 +
 +&gem1 { /* mdio mio50/51, gem mio38 - mio49 */
@@ -15023,6 +15457,7 @@ index 000000000..18f06c30d
 +	pinctrl-0 = <&pinctrl_gem1_default>;
 +	phy-handle = <&phy1>;
 +	phy-mode = "rgmii-id";
++	assigned-clock-rates = <250000000>;
 +
 +	mdio: mdio {
 +		#address-cells = <1>;
@@ -15075,6 +15510,7 @@ index 000000000..18f06c30d
 +		conf-tx {
 +			pins = "MIO36";
 +			bias-disable;
++			output-enable;
 +		};
 +
 +		mux {
@@ -15126,6 +15562,7 @@ index 000000000..18f06c30d
 +		conf-bootstrap {
 +			pins = "MIO45", "MIO47", "MIO49";
 +			bias-disable;
++			output-enable;
 +			low-power-disable;
 +		};
 +
@@ -15133,6 +15570,7 @@ index 000000000..18f06c30d
 +			pins = "MIO38", "MIO39", "MIO40",
 +				"MIO41", "MIO42", "MIO43";
 +			bias-disable;
++			output-enable;
 +			low-power-enable;
 +		};
 +
@@ -15141,6 +15579,7 @@ index 000000000..18f06c30d
 +			slew-rate = <SLEW_RATE_SLOW>;
 +			power-source = <IO_STANDARD_LVCMOS18>;
 +			bias-disable;
++			output-enable;
 +		};
 +
 +		mux-mdio {
@@ -15171,6 +15610,7 @@ index 000000000..18f06c30d
 +			pins = "MIO54", "MIO56", "MIO57", "MIO58", "MIO59",
 +			"MIO60", "MIO61", "MIO62", "MIO63";
 +			bias-disable;
++			output-enable;
 +			drive-strength = <4>;
 +			slew-rate = <SLEW_RATE_SLOW>;
 +		};
@@ -15198,6 +15638,7 @@ index 000000000..18f06c30d
 +			pins = "MIO66", "MIO68", "MIO69", "MIO70", "MIO71",
 +			"MIO72", "MIO73", "MIO74", "MIO75";
 +			bias-disable;
++			output-enable;
 +			drive-strength = <4>;
 +			slew-rate = <SLEW_RATE_SLOW>;
 +		};
@@ -15216,10 +15657,10 @@ index 000000000..18f06c30d
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-sck-kr-g-revB.dts b/arch/arm64/boot/dts/xilinx/zynqmp-sck-kr-g-revB.dts
 new file mode 100644
-index 000000000..1ebbe683f
+index 000000000..986477e63
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-sck-kr-g-revB.dts
-@@ -0,0 +1,389 @@
+@@ -0,0 +1,397 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for KR260 revB Carrier Card (A03 revision)
@@ -15290,8 +15731,8 @@ index 000000000..1ebbe683f
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c1_default>;
 +	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 24 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 25 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	u14: ina260@40 { /* u14 */
 +		compatible = "ti,ina260";
@@ -15410,6 +15851,7 @@ index 000000000..1ebbe683f
 +	phy-handle = <&phy0>;
 +	phy-mode = "sgmii";
 +	is-internal-pcspma;
++	assigned-clock-rates = <250000000>;
 +};
 +
 +&gem1 { /* mdio mio50/51, gem mio38 - mio49 */
@@ -15418,6 +15860,7 @@ index 000000000..1ebbe683f
 +	pinctrl-0 = <&pinctrl_gem1_default>;
 +	phy-handle = <&phy1>;
 +	phy-mode = "rgmii-id";
++	assigned-clock-rates = <250000000>;
 +
 +	mdio: mdio {
 +		#address-cells = <1>;
@@ -15470,6 +15913,7 @@ index 000000000..1ebbe683f
 +		conf-tx {
 +			pins = "MIO36";
 +			bias-disable;
++			output-enable;
 +		};
 +
 +		mux {
@@ -15521,6 +15965,7 @@ index 000000000..1ebbe683f
 +		conf-bootstrap {
 +			pins = "MIO45", "MIO47", "MIO49";
 +			bias-disable;
++			output-enable;
 +			low-power-disable;
 +		};
 +
@@ -15528,6 +15973,7 @@ index 000000000..1ebbe683f
 +			pins = "MIO38", "MIO39", "MIO40",
 +				"MIO41", "MIO42", "MIO43";
 +			bias-disable;
++			output-enable;
 +			low-power-enable;
 +		};
 +
@@ -15536,6 +15982,7 @@ index 000000000..1ebbe683f
 +			slew-rate = <SLEW_RATE_SLOW>;
 +			power-source = <IO_STANDARD_LVCMOS18>;
 +			bias-disable;
++			output-enable;
 +		};
 +
 +		mux-mdio {
@@ -15566,6 +16013,7 @@ index 000000000..1ebbe683f
 +			pins = "MIO54", "MIO56", "MIO57", "MIO58", "MIO59",
 +			"MIO60", "MIO61", "MIO62", "MIO63";
 +			bias-disable;
++			output-enable;
 +			drive-strength = <4>;
 +			slew-rate = <SLEW_RATE_SLOW>;
 +		};
@@ -15593,6 +16041,7 @@ index 000000000..1ebbe683f
 +			pins = "MIO66", "MIO68", "MIO69", "MIO70", "MIO71",
 +			"MIO72", "MIO73", "MIO74", "MIO75";
 +			bias-disable;
++			output-enable;
 +			drive-strength = <4>;
 +			slew-rate = <SLEW_RATE_SLOW>;
 +		};
@@ -15610,10 +16059,10 @@ index 000000000..1ebbe683f
 +	pinctrl-0 = <&pinctrl_uart1_default>;
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-sck-kv-g-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-sck-kv-g-revA.dts
-index b610e65e0..0be5b29c0 100644
+index b610e65e0..2b8d21622 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-sck-kv-g-revA.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-sck-kv-g-revA.dts
-@@ -20,6 +20,14 @@
+@@ -20,20 +20,38 @@
  /dts-v1/;
  /plugin/;
  
@@ -15628,11 +16077,16 @@ index b610e65e0..0be5b29c0 100644
  &i2c1 { /* I2C_SCK C23/C24 - MIO from SOM */
  	#address-cells = <1>;
  	#size-cells = <0>;
-@@ -29,11 +37,21 @@ &i2c1 { /* I2C_SCK C23/C24 - MIO from SOM */
- 	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
- 	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
- 
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c1_default>;
+ 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+-	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
+-
 -	/* u14 - 0x40 - ina260 */
++	scl-gpios = <&gpio 24 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 25 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++
 +	u14: ina260@40 { /* u14 */
 +		compatible = "ti,ina260";
 +		#io-channel-cells = <1>;
@@ -15689,7 +16143,12 @@ index b610e65e0..0be5b29c0 100644
  };
  
  &gem3 { /* required by spec */
-@@ -144,16 +169,18 @@ &gem3 { /* required by spec */
+@@ -140,20 +165,23 @@ &gem3 { /* required by spec */
+ 	pinctrl-0 = <&pinctrl_gem3_default>;
+ 	phy-handle = <&phy0>;
+ 	phy-mode = "rgmii-id";
++	assigned-clock-rates = <250000000>;
+ 
  	mdio: mdio {
  		#address-cells = <1>;
  		#size-cells = <0>;
@@ -15710,7 +16169,39 @@ index b610e65e0..0be5b29c0 100644
  		};
  	};
  };
-@@ -259,19 +286,22 @@ mux {
+@@ -177,6 +205,7 @@ conf-rx {
+ 		conf-tx {
+ 			pins = "MIO36";
+ 			bias-disable;
++			output-enable;
+ 		};
+ 
+ 		mux {
+@@ -228,6 +257,7 @@ conf-rx {
+ 		conf-bootstrap {
+ 			pins = "MIO71", "MIO73", "MIO75";
+ 			bias-disable;
++			output-enable;
+ 			low-power-disable;
+ 		};
+ 
+@@ -235,6 +265,7 @@ conf-tx {
+ 			pins = "MIO64", "MIO65", "MIO66",
+ 				"MIO67", "MIO68", "MIO69";
+ 			bias-disable;
++			output-enable;
+ 			low-power-enable;
+ 		};
+ 
+@@ -243,6 +274,7 @@ conf-mdio {
+ 			slew-rate = <SLEW_RATE_SLOW>;
+ 			power-source = <IO_STANDARD_LVCMOS18>;
+ 			bias-disable;
++			output-enable;
+ 		};
+ 
+ 		mux-mdio {
+@@ -259,19 +291,23 @@ mux {
  	pinctrl_usb0_default: usb0-default {
  		conf {
  			groups = "usb0_0_grp";
@@ -15729,16 +16220,17 @@ index b610e65e0..0be5b29c0 100644
  			pins = "MIO54", "MIO56", "MIO57", "MIO58", "MIO59",
  			"MIO60", "MIO61", "MIO62", "MIO63";
  			bias-disable;
++			output-enable;
 +			drive-strength = <4>;
 +			slew-rate = <SLEW_RATE_SLOW>;
  		};
  
  		mux {
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-sck-kv-g-revB.dts b/arch/arm64/boot/dts/xilinx/zynqmp-sck-kv-g-revB.dts
-index a52dafbfd..3d2e42af6 100644
+index a52dafbfd..d914fe959 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-sck-kv-g-revB.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-sck-kv-g-revB.dts
-@@ -15,6 +15,14 @@
+@@ -15,21 +15,39 @@
  /dts-v1/;
  /plugin/;
  
@@ -15753,12 +16245,17 @@ index a52dafbfd..3d2e42af6 100644
  &i2c1 { /* I2C_SCK C23/C24 - MIO from SOM */
  	#address-cells = <1>;
  	#size-cells = <0>;
-@@ -24,12 +32,22 @@ &i2c1 { /* I2C_SCK C23/C24 - MIO from SOM */
- 	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
- 	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
- 
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c1_default>;
+ 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+-	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
+-
 -	/* u14 - 0x40 - ina260 */
 -	/* u43 - 0x2d - usb5744 */
++	scl-gpios = <&gpio 24 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 25 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++
 +	u14: ina260@40 { /* u14 */
 +		compatible = "ti,ina260";
 +		#io-channel-cells = <1>;
@@ -15819,7 +16316,12 @@ index a52dafbfd..3d2e42af6 100644
  };
  
  &gem3 { /* required by spec */
-@@ -127,16 +157,18 @@ &gem3 { /* required by spec */
+@@ -123,20 +153,23 @@ &gem3 { /* required by spec */
+ 	pinctrl-0 = <&pinctrl_gem3_default>;
+ 	phy-handle = <&phy0>;
+ 	phy-mode = "rgmii-id";
++	assigned-clock-rates = <250000000>;
+ 
  	mdio: mdio {
  		#address-cells = <1>;
  		#size-cells = <0>;
@@ -15840,7 +16342,39 @@ index a52dafbfd..3d2e42af6 100644
  		};
  	};
  };
-@@ -242,19 +274,22 @@ mux {
+@@ -160,6 +193,7 @@ conf-rx {
+ 		conf-tx {
+ 			pins = "MIO36";
+ 			bias-disable;
++			output-enable;
+ 		};
+ 
+ 		mux {
+@@ -211,6 +245,7 @@ conf-rx {
+ 		conf-bootstrap {
+ 			pins = "MIO71", "MIO73", "MIO75";
+ 			bias-disable;
++			output-enable;
+ 			low-power-disable;
+ 		};
+ 
+@@ -218,6 +253,7 @@ conf-tx {
+ 			pins = "MIO64", "MIO65", "MIO66",
+ 				"MIO67", "MIO68", "MIO69";
+ 			bias-disable;
++			output-enable;
+ 			low-power-enable;
+ 		};
+ 
+@@ -226,6 +262,7 @@ conf-mdio {
+ 			slew-rate = <SLEW_RATE_SLOW>;
+ 			power-source = <IO_STANDARD_LVCMOS18>;
+ 			bias-disable;
++			output-enable;
+ 		};
+ 
+ 		mux-mdio {
+@@ -242,19 +279,23 @@ mux {
  	pinctrl_usb0_default: usb0-default {
  		conf {
  			groups = "usb0_0_grp";
@@ -15859,6 +16393,7 @@ index a52dafbfd..3d2e42af6 100644
  			pins = "MIO54", "MIO56", "MIO57", "MIO58", "MIO59",
  			"MIO60", "MIO61", "MIO62", "MIO63";
  			bias-disable;
++			output-enable;
 +			drive-strength = <4>;
 +			slew-rate = <SLEW_RATE_SLOW>;
  		};
@@ -15866,10 +16401,10 @@ index a52dafbfd..3d2e42af6 100644
  		mux {
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-sm-k24-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-sm-k24-revA.dts
 new file mode 100644
-index 000000000..24514409c
+index 000000000..653bd9362
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-sm-k24-revA.dts
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,23 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx ZynqMP SM-K24 RevA
@@ -15883,8 +16418,9 @@ index 000000000..24514409c
 +#include "zynqmp-sm-k26-revA.dts"
 +
 +/ {
-+	model = "ZynqMP SM-K24 RevA";
-+	compatible = "xlnx,zynqmp-sm-k24-revA", "xlnx,zynqmp-sm-k24",
++	model = "ZynqMP SM-K24 RevA/B/1";
++	compatible = "xlnx,zynqmp-sm-k24-rev1", "xlnx,zynqmp-sm-k24-revB",
++		     "xlnx,zynqmp-sm-k24-revA", "xlnx,zynqmp-sm-k24",
 +		     "xlnx,zynqmp";
 +
 +	memory@0 {
@@ -15893,7 +16429,7 @@ index 000000000..24514409c
 +	};
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-sm-k26-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-sm-k26-revA.dts
-index 20e83ca47..aafaaec3f 100644
+index 20e83ca47..2ed561dd1 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-sm-k26-revA.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-sm-k26-revA.dts
 @@ -14,6 +14,7 @@
@@ -15904,7 +16440,24 @@ index 20e83ca47..aafaaec3f 100644
  
  / {
  	model = "ZynqMP SM-K26 Rev1/B/A";
-@@ -55,6 +56,9 @@ gpio-keys {
+@@ -49,12 +50,26 @@ memory@0 {
+ 		reg = <0x0 0x0 0x0 0x80000000>, <0x8 0x00000000 0x0 0x80000000>;
+ 	};
+ 
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		pmu_region: pmu@7ff00000 {
++			reg = <0x0 0x7ff00000 0x0 0x100000>;
++			no-map;
++		};
++	};
++
+ 	gpio-keys {
+ 		compatible = "gpio-keys";
+ 		autorepeat;
  		key-fwuen {
  			label = "fwuen";
  			gpios = <&gpio 12 GPIO_ACTIVE_LOW>;
@@ -15914,7 +16467,7 @@ index 20e83ca47..aafaaec3f 100644
  		};
  	};
  
-@@ -72,109 +76,169 @@ ds36-led {
+@@ -72,109 +87,169 @@ ds36-led {
  			default-state = "on";
  		};
  	};
@@ -16145,7 +16698,7 @@ index 20e83ca47..aafaaec3f 100644
 +			};
 +			partition@22A0000 {
 +				label = "User";
-+				reg = <0x22A0000 0x1db0000>; /* 29.5 MB */
++				reg = <0x22A0000 0x1d60000>; /* 29.375 MB */
 +			};
  		};
  	};
@@ -16163,14 +16716,16 @@ index 20e83ca47..aafaaec3f 100644
  };
  
  &spi1 { /* MIO6, 9-11 */
-@@ -190,17 +254,20 @@ tpm@0 { /* slm9670 - U144 */
+@@ -190,17 +265,20 @@ tpm@0 { /* slm9670 - U144 */
  
  &i2c1 {
  	status = "okay";
 +	u-boot,dm-pre-reloc;
  	clock-frequency = <400000>;
- 	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
- 	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
+-	scl-gpios = <&gpio 24 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 24 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 25 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
  
  	eeprom: eeprom@50 { /* u46 - also at address 0x58 */
 +		u-boot,dm-pre-reloc;
@@ -16184,13 +16739,10 @@ index 20e83ca47..aafaaec3f 100644
  		compatible = "st,24c64", "atmel,24c64"; /* st m24c64 */
  		reg = <0x51>;
  	};
-@@ -285,5 +352,116 @@ &gpio {
- 			  "", "", "", "", "", /* 155 - 159 */
- 			  "", "", "", "", "", /* 160 - 164 */
+@@ -287,3 +365,114 @@ &gpio {
  			  "", "", "", "", "", /* 165 - 169 */
--			  "", "", "", ""; /* 170 - 173 */
-+			  "", "", "", ""; /* 170 - 174 */
-+};
+ 			  "", "", "", ""; /* 170 - 173 */
+ };
 +
 +&xilinx_ams {
 +	status = "okay";
@@ -16301,7 +16853,7 @@ index 20e83ca47..aafaaec3f 100644
 +	opp03 {
 +		opp-hz = /bits/ 64 <333333333>;
 +	};
- };
++};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-smk-k24-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-smk-k24-revA.dts
 new file mode 100644
 index 000000000..7308983b1
@@ -16331,7 +16883,7 @@ index 000000000..7308983b1
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-vp-x-a2785-00-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-vp-x-a2785-00-revA.dts
 new file mode 100644
-index 000000000..d42797f3b
+index 000000000..8a7c473fc
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-vp-x-a2785-00-revA.dts
 @@ -0,0 +1,437 @@
@@ -16498,7 +17050,7 @@ index 000000000..d42797f3b
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&i2c0 { /* MIO 34-35 - can't stay here */
@@ -16507,8 +17059,8 @@ index 000000000..d42797f3b
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c0_default>;
 +	pinctrl-1 = <&pinctrl_i2c0_gpio>;
-+	scl-gpios = <&gpio 34 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 35 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 34 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 35 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	tca6416_u233: gpio@20 { /* u233 */ /* FIXME - address maybe wrong */
 +		compatible = "ti,tca6416";
@@ -16607,8 +17159,8 @@ index 000000000..d42797f3b
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c1_default>;
 +	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio 36 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 37 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 36 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 37 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	i2c-mux@74 { /* u35 */
 +		compatible = "nxp,pca9548";
@@ -16774,7 +17326,7 @@ index 000000000..d42797f3b
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-vpk120-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-vpk120-revA.dts
 new file mode 100644
-index 000000000..4b7ce2530
+index 000000000..3e0e1bf34
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-vpk120-revA.dts
 @@ -0,0 +1,603 @@
@@ -16972,7 +17524,7 @@ index 000000000..4b7ce2530
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&i2c0 { /* MIO 34-35 - can't stay here */
@@ -16981,8 +17533,8 @@ index 000000000..4b7ce2530
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c0_default>;
 +	pinctrl-1 = <&pinctrl_i2c0_gpio>;
-+	scl-gpios = <&gpio 34 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 35 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 34 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 35 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	tca6416_u233: gpio@20 { /* u233 */ /* FIXME - address maybe wrong */
 +		compatible = "ti,tca6416";
@@ -17190,8 +17742,8 @@ index 000000000..4b7ce2530
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c1_default>;
 +	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio 36 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 37 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 36 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 37 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	i2c-mux@74 { /* u35 */
 +		compatible = "nxp,pca9548";
@@ -17522,7 +18074,7 @@ index e971ba8c1..000000000
 -	status = "okay";
 -};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm015-dc1.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm015-dc1.dts
-index b05be2552..7ea2a1c96 100644
+index b05be2552..ff5c60637 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm015-dc1.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm015-dc1.dts
 @@ -108,6 +108,9 @@ &gpio {
@@ -17535,6 +18087,17 @@ index b05be2552..7ea2a1c96 100644
  
  &i2c1 {
  	status = "okay";
+@@ -115,8 +118,8 @@ &i2c1 {
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c1_default>;
+ 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+-	scl-gpios = <&gpio 36 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 37 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 36 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 37 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ 
+ 	eeprom: eeprom@55 {
+ 		compatible = "atmel,24c64"; /* 24AA64 */
 @@ -184,19 +187,22 @@ mux {
  
  		conf {
@@ -17559,11 +18122,19 @@ index b05be2552..7ea2a1c96 100644
  		};
  	};
  
-@@ -348,9 +354,25 @@ flash@0 {
+@@ -343,14 +349,32 @@ &psgtr {
+ 
+ &qspi {
+ 	status = "okay";
++	num-cs = <2>;
+ 	flash@0 {
+ 		compatible = "m25p80", "jedec,spi-nor"; /* Micron MT25QU512ABB8ESF */
  		#address-cells = <1>;
  		#size-cells = <1>;
- 		reg = <0x0>;
+-		reg = <0x0>;
 -		spi-tx-bus-width = <1>;
++		reg = <0>, <1>;
++		parallel-memories = /bits/ 64 <0x4000000 0x4000000>; /* 64MB */
 +		spi-tx-bus-width = <4>;
  		spi-rx-bus-width = <4>;
  		spi-max-frequency = <108000000>; /* Based on DC1 spec */
@@ -17587,11 +18158,27 @@ index b05be2552..7ea2a1c96 100644
  };
  
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm016-dc2.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm016-dc2.dts
-index 938b76bd0..b6bc2f5be 100644
+index 938b76bd0..62701267f 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm016-dc2.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm016-dc2.dts
-@@ -140,6 +140,34 @@ nand@0 {
- 		nand-ecc-algo = "bch";
+@@ -109,8 +109,8 @@ &i2c0 {
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c0_default>;
+ 	pinctrl-1 = <&pinctrl_i2c0_gpio>;
+-	scl-gpios = <&gpio 6 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 7 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 6 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 7 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ 
+ 	tca6416_u26: gpio@20 {
+ 		compatible = "ti,tca6416";
+@@ -136,19 +136,73 @@ nand@0 {
+ 		reg = <0x0>;
+ 		#address-cells = <0x2>;
+ 		#size-cells = <0x1>;
+-		nand-ecc-mode = "soft";
+-		nand-ecc-algo = "bch";
++		nand-ecc-mode = "hw";
  		nand-rb = <0>;
  		label = "main-storage-0";
 +		nand-ecc-step-size = <1024>;
@@ -17625,8 +18212,11 @@ index 938b76bd0..b6bc2f5be 100644
  	};
  	nand@1 {
  		reg = <0x1>;
-@@ -149,6 +177,34 @@ nand@1 {
- 		nand-ecc-algo = "bch";
+ 		#address-cells = <0x2>;
+ 		#size-cells = <0x1>;
+-		nand-ecc-mode = "soft";
+-		nand-ecc-algo = "bch";
++		nand-ecc-mode = "hw";
  		nand-rb = <0>;
  		label = "main-storage-1";
 +		nand-ecc-step-size = <1024>;
@@ -17660,7 +18250,7 @@ index 938b76bd0..b6bc2f5be 100644
  	};
  };
  
-@@ -281,19 +337,22 @@ mux {
+@@ -281,19 +335,22 @@ mux {
  
  		conf {
  			groups = "usb1_0_grp";
@@ -17684,7 +18274,7 @@ index 938b76bd0..b6bc2f5be 100644
  		};
  	};
  
-@@ -485,8 +544,6 @@ &usb1 {
+@@ -485,8 +542,6 @@ &usb1 {
  &dwc3_1 {
  	status = "okay";
  	dr_mode = "host";
@@ -17821,8 +18411,34 @@ index 05a2b7973..e153a64f4 100644
  	};
  };
  
+diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm019-dc5.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm019-dc5.dts
+index ae2d03d98..8377a2db9 100644
+--- a/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm019-dc5.dts
++++ b/arch/arm64/boot/dts/xilinx/zynqmp-zc1751-xm019-dc5.dts
+@@ -91,8 +91,8 @@ &i2c0 {
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c0_default>;
+ 	pinctrl-1 = <&pinctrl_i2c0_gpio>;
+-	scl-gpios = <&gpio 74 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 75 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 74 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 75 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ };
+ 
+ &i2c1 {
+@@ -100,8 +100,8 @@ &i2c1 {
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c1_default>;
+ 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+-	scl-gpios = <&gpio 76 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 77 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 76 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 77 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ 
+ };
+ 
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu100-revC.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu100-revC.dts
-index d61a297a2..c0559af44 100644
+index d61a297a2..ef6113a6b 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu100-revC.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu100-revC.dts
 @@ -58,6 +58,15 @@ switch-4 {
@@ -17841,7 +18457,7 @@ index d61a297a2..c0559af44 100644
  	leds {
  		compatible = "gpio-leds";
  		led-ds2 {
-@@ -86,13 +95,22 @@ led-ds5 {
+@@ -86,7 +95,7 @@ led-ds5 {
  			linux,default-trigger = "bluetooth-power";
  		};
  
@@ -17850,22 +18466,7 @@ index d61a297a2..c0559af44 100644
  			label = "vbus_det";
  			gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
  			default-state = "on";
- 		};
- 	};
- 
-+	ltc2954: ltc2954 { /* U7 */
-+		compatible = "lltc,ltc2954", "lltc,ltc2952";
-+		status = "disabled";
-+		trigger-gpios = <&gpio 26 GPIO_ACTIVE_LOW>; /* INT line - input */
-+		/* If there is HW watchdog on mezzanine this signal should be connected there */
-+		watchdog-gpios = <&gpio 35 GPIO_ACTIVE_HIGH>; /* MIO on PAD */
-+		kill-gpios = <&gpio 34 GPIO_ACTIVE_LOW>; /* KILL signal - output */
-+	};
-+
- 	wmmcsdio_fixed: fixedregulator-mmcsdio {
- 		compatible = "regulator-fixed";
- 		regulator-name = "wmmcsdio_fixed";
-@@ -161,6 +179,10 @@ &gpio {
+@@ -161,13 +170,17 @@ &gpio {
  			  "", "", "", "";
  };
  
@@ -17876,7 +18477,16 @@ index d61a297a2..c0559af44 100644
  &i2c1 {
  	status = "okay";
  	pinctrl-names = "default", "gpio";
-@@ -419,19 +441,22 @@ mux {
+ 	pinctrl-0 = <&pinctrl_i2c1_default>;
+ 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+-	scl-gpios = <&gpio 4 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 5 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 4 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 5 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ 	clock-frequency = <100000>;
+ 	i2c-mux@75 { /* u11 */
+ 		compatible = "nxp,pca9548";
+@@ -419,19 +432,22 @@ mux {
  
  		conf {
  			groups = "usb0_0_grp";
@@ -17900,7 +18510,7 @@ index d61a297a2..c0559af44 100644
  		};
  	};
  
-@@ -443,19 +468,22 @@ mux {
+@@ -443,19 +459,22 @@ mux {
  
  		conf {
  			groups = "usb1_0_grp";
@@ -17924,7 +18534,7 @@ index d61a297a2..c0559af44 100644
  		};
  	};
  };
-@@ -541,6 +569,7 @@ &usb0 {
+@@ -541,6 +560,7 @@ &usb0 {
  	pinctrl-0 = <&pinctrl_usb0_default>;
  	phy-names = "usb3-phy";
  	phys = <&psgtr 2 PHY_TYPE_USB3 0 0>;
@@ -17932,7 +18542,7 @@ index d61a297a2..c0559af44 100644
  };
  
  &dwc3_0 {
-@@ -556,6 +585,7 @@ &usb1 {
+@@ -556,6 +576,7 @@ &usb1 {
  	pinctrl-0 = <&pinctrl_usb1_default>;
  	phy-names = "usb3-phy";
  	phys = <&psgtr 3 PHY_TYPE_USB3 1 0>;
@@ -17940,7 +18550,7 @@ index d61a297a2..c0559af44 100644
  };
  
  &dwc3_1 {
-@@ -568,6 +598,14 @@ &watchdog0 {
+@@ -568,6 +589,14 @@ &watchdog0 {
  	status = "okay";
  };
  
@@ -17969,7 +18579,7 @@ index 6647e97ed..d508f3359 100644
   * Michal Simek <michal.simek@xilinx.com>
   */
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts
-index 5fd6b70a1..85a20c6b2 100644
+index 5fd6b70a1..d3bd0aac3 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu102-revA.dts
 @@ -200,13 +200,19 @@ &gem3 {
@@ -17999,7 +18609,7 @@ index 5fd6b70a1..85a20c6b2 100644
  	};
  };
  
-@@ -216,6 +222,10 @@ &gpio {
+@@ -216,14 +222,18 @@ &gpio {
  	pinctrl-0 = <&pinctrl_gpio_default>;
  };
  
@@ -18010,6 +18620,27 @@ index 5fd6b70a1..85a20c6b2 100644
  &i2c0 {
  	status = "okay";
  	clock-frequency = <400000>;
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c0_default>;
+ 	pinctrl-1 = <&pinctrl_i2c0_gpio>;
+-	scl-gpios = <&gpio 14 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 15 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ 
+ 	tca6416_u97: gpio@20 {
+ 		compatible = "ti,tca6416";
+@@ -486,8 +496,8 @@ &i2c1 {
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c1_default>;
+ 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+-	scl-gpios = <&gpio 16 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 17 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 17 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ 
+ 	/* PL i2c via PCA9306 - u45 */
+ 	i2c-mux@74 { /* u34 */
 @@ -600,7 +610,26 @@ i2c@4 {
  			#address-cells = <1>;
  			#size-cells = <0>;
@@ -18162,7 +18793,7 @@ index f7d718ff1..de3b5ab9d 100644
  
  /* Fix collision with u61 */
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revA.dts
-index bd8f20f32..b9d82afc5 100644
+index bd8f20f32..50a140569 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revA.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revA.dts
 @@ -109,12 +109,19 @@ &gem3 {
@@ -18191,7 +18822,7 @@ index bd8f20f32..b9d82afc5 100644
  	};
  };
  
-@@ -122,6 +129,10 @@ &gpio {
+@@ -122,14 +129,18 @@ &gpio {
  	status = "okay";
  };
  
@@ -18202,6 +18833,16 @@ index bd8f20f32..b9d82afc5 100644
  &i2c1 {
  	status = "okay";
  	clock-frequency = <400000>;
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c1_default>;
+ 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+-	scl-gpios = <&gpio 16 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 17 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 17 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ 
+ 	/* Another connection to this bus via PL i2c via PCA9306 - u45 */
+ 	i2c-mux@74 { /* u34 */
 @@ -398,20 +409,22 @@ mux {
  
  		conf {
@@ -18274,7 +18915,7 @@ index bd8f20f32..b9d82afc5 100644
  	status = "okay";
  };
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revC.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revC.dts
-index 96feaad30..6f24e335a 100644
+index 96feaad30..e1acae6ff 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revC.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu104-revC.dts
 @@ -1,4 +1,4 @@
@@ -18309,7 +18950,7 @@ index 96feaad30..6f24e335a 100644
  	};
  };
  
-@@ -127,6 +134,10 @@ &gpio {
+@@ -127,14 +134,18 @@ &gpio {
  	status = "okay";
  };
  
@@ -18320,6 +18961,16 @@ index 96feaad30..6f24e335a 100644
  &i2c1 {
  	status = "okay";
  	clock-frequency = <400000>;
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c1_default>;
+ 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+-	scl-gpios = <&gpio 16 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 17 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 17 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ 
+ 	tca6416_u97: gpio@20 {
+ 		compatible = "ti,tca6416";
 @@ -410,20 +421,22 @@ mux {
  
  		conf {
@@ -18392,7 +19043,7 @@ index 96feaad30..6f24e335a 100644
  	status = "okay";
  };
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu106-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu106-revA.dts
-index e2dd72fe3..9c1524557 100644
+index e2dd72fe3..7ad5f60be 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu106-revA.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu106-revA.dts
 @@ -200,12 +200,19 @@ &gem3 {
@@ -18421,7 +19072,7 @@ index e2dd72fe3..9c1524557 100644
  	};
  };
  
-@@ -215,6 +222,10 @@ &gpio {
+@@ -215,14 +222,18 @@ &gpio {
  	pinctrl-0 = <&pinctrl_gpio_default>;
  };
  
@@ -18432,6 +19083,27 @@ index e2dd72fe3..9c1524557 100644
  &i2c0 {
  	status = "okay";
  	clock-frequency = <400000>;
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c0_default>;
+ 	pinctrl-1 = <&pinctrl_i2c0_gpio>;
+-	scl-gpios = <&gpio 14 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 15 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ 
+ 	tca6416_u97: gpio@20 {
+ 		compatible = "ti,tca6416";
+@@ -484,8 +495,8 @@ &i2c1 {
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c1_default>;
+ 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+-	scl-gpios = <&gpio 16 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 17 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 17 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ 
+ 	/* PL i2c via PCA9306 - u45 */
+ 	i2c-mux@74 { /* u34 */
 @@ -589,7 +600,26 @@ i2c@4 {
  			#address-cells = <1>;
  			#size-cells = <0>;
@@ -18522,7 +19194,7 @@ index e2dd72fe3..9c1524557 100644
  };
  
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu111-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu111-revA.dts
-index d685d8fbc..a460da923 100644
+index d685d8fbc..361096d3b 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp-zcu111-revA.dts
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu111-revA.dts
 @@ -172,12 +172,19 @@ &gem3 {
@@ -18551,7 +19223,7 @@ index d685d8fbc..a460da923 100644
  	};
  };
  
-@@ -187,6 +194,10 @@ &gpio {
+@@ -187,14 +194,18 @@ &gpio {
  	pinctrl-0 = <&pinctrl_gpio_default>;
  };
  
@@ -18562,6 +19234,27 @@ index d685d8fbc..a460da923 100644
  &i2c0 {
  	status = "okay";
  	clock-frequency = <400000>;
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c0_default>;
+ 	pinctrl-1 = <&pinctrl_i2c0_gpio>;
+-	scl-gpios = <&gpio 14 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 15 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ 
+ 	tca6416_u22: gpio@20 {
+ 		compatible = "ti,tca6416";
+@@ -373,8 +384,8 @@ &i2c1 {
+ 	pinctrl-names = "default", "gpio";
+ 	pinctrl-0 = <&pinctrl_i2c1_default>;
+ 	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+-	scl-gpios = <&gpio 16 GPIO_ACTIVE_HIGH>;
+-	sda-gpios = <&gpio 17 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 17 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+ 
+ 	i2c-mux@74 { /* u26 */
+ 		compatible = "nxp,pca9548";
 @@ -648,19 +659,22 @@ mux {
  
  		conf {
@@ -18826,10 +19519,10 @@ index 000000000..97ae1b2d2
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu1285-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu1285-revA.dts
 new file mode 100644
-index 000000000..eaf99a9fa
+index 000000000..87e4cb0a7
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu1285-revA.dts
-@@ -0,0 +1,276 @@
+@@ -0,0 +1,102 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * dts file for Xilinx ZynqMP ZCU1285 RevA
@@ -18869,26 +19562,6 @@ index 000000000..eaf99a9fa
 +		reg = <0x0 0x0 0x0 0x80000000>;
 +	};
 +
-+	ina226-u60 {
-+		compatible = "iio-hwmon";
-+		io-channels = <&u60 0>, <&u60 1>, <&u60 2>, <&u60 3>;
-+	};
-+	ina226-u61 {
-+		compatible = "iio-hwmon";
-+		io-channels = <&u61 0>, <&u61 1>, <&u61 2>, <&u61 3>;
-+	};
-+	ina226-u63 {
-+		compatible = "iio-hwmon";
-+		io-channels = <&u63 0>, <&u63 1>, <&u63 2>, <&u63 3>;
-+	};
-+	ina226-u65 {
-+		compatible = "iio-hwmon";
-+		io-channels = <&u65 0>, <&u65 1>, <&u65 2>, <&u65 3>;
-+	};
-+	ina226-u64 {
-+		compatible = "iio-hwmon";
-+		io-channels = <&u64 0>, <&u64 1>, <&u64 2>, <&u64 3>;
-+	};
 +};
 +
 +&dcc {
@@ -18899,160 +19572,6 @@ index 000000000..eaf99a9fa
 +	status = "okay";
 +	clock-frequency = <400000>;
 +
-+	i2c-mux@75 {
-+		compatible = "nxp,pca9548"; /* u22 */
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		reg = <0x75>;
-+
-+		i2c@0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+			/* PMBUS */
-+			max20751@74 { /* u23 */
-+				compatible = "maxim,max20751";
-+				reg = <0x74>;
-+			};
-+			max20751@70 { /* u89 */
-+				compatible = "maxim,max20751";
-+				reg = <0x70>;
-+			};
-+			max15301@a { /* u28 */
-+				compatible = "maxim,max15301";
-+				reg = <0xa>;
-+			};
-+			max15303@b { /* u48 */
-+				compatible = "maxim,max15303";
-+				reg = <0xb>;
-+			};
-+			max15303@d { /* u27 */
-+				compatible = "maxim,max15303";
-+				reg = <0xd>;
-+			};
-+			max15303@e { /* u11 */
-+				compatible = "maxim,max15303";
-+				reg = <0xe>;
-+			};
-+			max15303@f { /* u96 */
-+				compatible = "maxim,max15303";
-+				reg = <0xf>;
-+			};
-+			max15303@11 { /* u47 */
-+				compatible = "maxim,max15303";
-+				reg = <0x11>;
-+			};
-+			max15303@12 { /* u24 */
-+				compatible = "maxim,max15303";
-+				reg = <0x12>;
-+			};
-+			max15301@13 { /* u29 */
-+				compatible = "maxim,max15301";
-+				reg = <0x13>;
-+			};
-+			max15303@14 { /* u51 */
-+				compatible = "maxim,max15303";
-+				reg = <0x14>;
-+			};
-+			max15303@15 { /* u30 */
-+				compatible = "maxim,max15303";
-+				reg = <0x15>;
-+			};
-+			max15303@16 { /* u102 */
-+				compatible = "maxim,max15303";
-+				reg = <0x16>;
-+			};
-+			max15301@17 { /* u50 */
-+				compatible = "maxim,max15301";
-+				reg = <0x17>;
-+			};
-+			max15301@18 { /* u31 */
-+				compatible = "maxim,max15301";
-+				reg = <0x18>;
-+			};
-+		};
-+		i2c@1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+			/* CM_I2C */
-+		};
-+		i2c@2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+			/* SYS_EEPROM */
-+			eeprom: eeprom@54 { /* u101 */
-+				compatible = "atmel,24c32"; /* 24LC32A */
-+				reg = <0x54>;
-+			};
-+		};
-+		i2c@3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+			/* FMC1 */
-+		};
-+		i2c@4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+			/* FMC2 */
-+		};
-+		i2c@5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+			/* ANALOG_PMBUS */
-+			u60: ina226@40 { /* u60 */
-+				compatible = "ti,ina226";
-+				#io-channel-cells = <1>;
-+				label = "ina226-u60";
-+				reg = <0x40>;
-+				shunt-resistor = <1000>;
-+			};
-+			u61: ina226@41 { /* u61 */
-+				compatible = "ti,ina226";
-+				#io-channel-cells = <1>;
-+				label = "ina226-u61";
-+				reg = <0x41>;
-+				shunt-resistor = <1000>;
-+			};
-+			u63: ina226@42 { /* u63 */
-+				compatible = "ti,ina226";
-+				#io-channel-cells = <1>;
-+				label = "ina226-u63";
-+				reg = <0x42>;
-+				shunt-resistor = <1000>;
-+			};
-+			u65: ina226@43 { /* u65 */
-+				compatible = "ti,ina226";
-+				#io-channel-cells = <1>;
-+				label = "ina226-u65";
-+				reg = <0x43>;
-+				shunt-resistor = <1000>;
-+			};
-+			u64: ina226@44 { /* u64 */
-+				compatible = "ti,ina226";
-+				#io-channel-cells = <1>;
-+				label = "ina226-u64";
-+				reg = <0x44>;
-+				shunt-resistor = <1000>;
-+			};
-+		};
-+		i2c@6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+			/* ANALOG_CM_I2C */
-+		};
-+		i2c@7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+			/* FMC3 */
-+		};
-+	};
 +};
 +
 +&gem1 {
@@ -19108,7 +19627,7 @@ index 000000000..eaf99a9fa
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu208-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu208-revA.dts
 new file mode 100644
-index 000000000..8d9e4eaf5
+index 000000000..e4e03b331
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu208-revA.dts
 @@ -0,0 +1,713 @@
@@ -19171,7 +19690,7 @@ index 000000000..8d9e4eaf5
 +
 +	leds {
 +		compatible = "gpio-leds";
-+		heartbeat_led {
++		heartbeat-led {
 +			label = "heartbeat";
 +			gpios = <&gpio 23 GPIO_ACTIVE_HIGH>;
 +			linux,default-trigger = "heartbeat";
@@ -19336,7 +19855,7 @@ index 000000000..8d9e4eaf5
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&i2c0 {
@@ -19345,8 +19864,8 @@ index 000000000..8d9e4eaf5
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c0_default>;
 +	pinctrl-1 = <&pinctrl_i2c0_gpio>;
-+	scl-gpios = <&gpio 14 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 15 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	tca6416_u15: gpio@20 { /* u15 */
 +		compatible = "ti,tca6416";
@@ -19511,8 +20030,8 @@ index 000000000..8d9e4eaf5
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c1_default>;
 +	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio 16 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 17 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 17 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	i2c-mux@74 {
 +		compatible = "nxp,pca9548"; /* u20 */
@@ -19827,7 +20346,7 @@ index 000000000..8d9e4eaf5
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu216-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu216-revA.dts
 new file mode 100644
-index 000000000..fe0891f60
+index 000000000..7cf623c2e
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu216-revA.dts
 @@ -0,0 +1,716 @@
@@ -19890,7 +20409,7 @@ index 000000000..fe0891f60
 +
 +	leds {
 +		compatible = "gpio-leds";
-+		heartbeat_led {
++		heartbeat-led {
 +			label = "heartbeat";
 +			gpios = <&gpio 23 GPIO_ACTIVE_HIGH>;
 +			linux,default-trigger = "heartbeat";
@@ -20061,7 +20580,7 @@ index 000000000..fe0891f60
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&gpu {
@@ -20074,8 +20593,8 @@ index 000000000..fe0891f60
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c0_default>;
 +	pinctrl-1 = <&pinctrl_i2c0_gpio>;
-+	scl-gpios = <&gpio 14 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 15 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	tca6416_u15: gpio@20 { /* u15 */
 +		compatible = "ti,tca6416";
@@ -20240,8 +20759,8 @@ index 000000000..fe0891f60
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c1_default>;
 +	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio 16 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 17 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 17 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	i2c-mux@74 {
 +		compatible = "nxp,pca9548"; /* u20 */
@@ -20549,7 +21068,7 @@ index 000000000..fe0891f60
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu670-revA.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu670-revA.dts
 new file mode 100644
-index 000000000..ee71dd33a
+index 000000000..dd8bed8bc
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu670-revA.dts
 @@ -0,0 +1,669 @@
@@ -20614,7 +21133,7 @@ index 000000000..ee71dd33a
 +
 +	leds {
 +		compatible = "gpio-leds";
-+		heartbeat_led {
++		heartbeat-led {
 +			label = "heartbeat"; /* DS1 */
 +			gpios = <&gpio 23 GPIO_ACTIVE_HIGH>;
 +			linux,default-trigger = "heartbeat";
@@ -20785,7 +21304,7 @@ index 000000000..ee71dd33a
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&i2c0 {
@@ -20794,8 +21313,8 @@ index 000000000..ee71dd33a
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c0_default>;
 +	pinctrl-1 = <&pinctrl_i2c0_gpio>;
-+	scl-gpios = <&gpio 14 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 15 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	tca6416_u15: gpio@20 { /* u15 */
 +		compatible = "ti,tca6416";
@@ -20960,8 +21479,8 @@ index 000000000..ee71dd33a
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c1_default>;
 +	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio 16 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 17 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 17 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	i2c-mux@74 {
 +		compatible = "nxp,pca9548"; /* u20 */
@@ -21224,7 +21743,7 @@ index 000000000..ee71dd33a
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp-zcu670-revB.dts b/arch/arm64/boot/dts/xilinx/zynqmp-zcu670-revB.dts
 new file mode 100644
-index 000000000..1efc4b5ec
+index 000000000..60e948210
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp-zcu670-revB.dts
 @@ -0,0 +1,672 @@
@@ -21289,7 +21808,7 @@ index 000000000..1efc4b5ec
 +
 +	leds {
 +		compatible = "gpio-leds";
-+		heartbeat_led {
++		heartbeat-led {
 +			label = "heartbeat"; /* DS1 */
 +			gpios = <&gpio 23 GPIO_ACTIVE_HIGH>;
 +			linux,default-trigger = "heartbeat";
@@ -21460,7 +21979,7 @@ index 000000000..1efc4b5ec
 +		  "", "", "", "", "", /* 155 - 159 */
 +		  "", "", "", "", "", /* 160 - 164 */
 +		  "", "", "", "", "", /* 165 - 169 */
-+		  "", "", "", ""; /* 170 - 174 */
++		  "", "", "", ""; /* 170 - 173 */
 +};
 +
 +&i2c0 {
@@ -21469,8 +21988,8 @@ index 000000000..1efc4b5ec
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c0_default>;
 +	pinctrl-1 = <&pinctrl_i2c0_gpio>;
-+	scl-gpios = <&gpio 14 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 15 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	tca6416_u15: gpio@20 { /* u15 */
 +		compatible = "ti,tca6416";
@@ -21635,8 +22154,8 @@ index 000000000..1efc4b5ec
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c1_default>;
 +	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio 16 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 17 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 17 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +
 +	i2c-mux@74 {
 +		compatible = "nxp,pca9548"; /* u20 */
@@ -21901,7 +22420,7 @@ index 000000000..1efc4b5ec
 +	snps,usb3_lpm_capable;
 +};
 diff --git a/arch/arm64/boot/dts/xilinx/zynqmp.dtsi b/arch/arm64/boot/dts/xilinx/zynqmp.dtsi
-index 7c1af75f3..6a210cb9b 100644
+index 7c1af75f3..badbd260f 100644
 --- a/arch/arm64/boot/dts/xilinx/zynqmp.dtsi
 +++ b/arch/arm64/boot/dts/xilinx/zynqmp.dtsi
 @@ -13,6 +13,7 @@
@@ -21958,10 +22477,12 @@ index 7c1af75f3..6a210cb9b 100644
  		compatible = "operating-points-v2";
  		opp-shared;
  		opp00 {
-@@ -101,6 +111,7 @@ opp03 {
+@@ -100,7 +110,8 @@ opp03 {
+ 		};
  	};
  
- 	zynqmp_ipi: zynqmp_ipi {
+-	zynqmp_ipi: zynqmp_ipi {
++	zynqmp_ipi: zynqmp-ipi {
 +		u-boot,dm-pre-reloc;
  		compatible = "xlnx,zynqmp-ipi-mailbox";
  		interrupt-parent = <&gic>;
@@ -22006,72 +22527,83 @@ index 7c1af75f3..6a210cb9b 100644
  				compatible = "xlnx,zynqmp-power";
  				interrupt-parent = <&gic>;
  				interrupts = <0 35 4>;
-@@ -164,14 +183,60 @@ nvmem_firmware {
- 				soc_revision: soc_revision@0 {
+@@ -156,24 +175,69 @@ zynqmp_power: zynqmp-power {
+ 				mbox-names = "tx", "rx";
+ 			};
+ 
+-			nvmem_firmware {
++			nvmem-firmware {
+ 				compatible = "xlnx,zynqmp-nvmem-fw";
+ 				#address-cells = <1>;
+ 				#size-cells = <1>;
+ 
+-				soc_revision: soc_revision@0 {
++				soc_revision: soc-revision@0 {
  					reg = <0x0 0x4>;
  				};
 +				/* efuse access */
-+				efuse_dna: efuse_dna@c {
++				efuse_dna: efuse-dna@c {
 +					reg = <0xc 0xc>;
 +				};
-+				efuse_usr0: efuse_usr0@20 {
++				efuse_usr0: efuse-usr0@20 {
 +					reg = <0x20 0x4>;
 +				};
-+				efuse_usr1: efuse_usr1@24 {
++				efuse_usr1: efuse-usr1@24 {
 +					reg = <0x24 0x4>;
 +				};
-+				efuse_usr2: efuse_usr2@28 {
++				efuse_usr2: efuse-usr2@28 {
 +					reg = <0x28 0x4>;
 +				};
-+				efuse_usr3: efuse_usr3@2c {
++				efuse_usr3: efuse-usr3@2c {
 +					reg = <0x2c 0x4>;
 +				};
-+				efuse_usr4: efuse_usr4@30 {
++				efuse_usr4: efuse-usr4@30 {
 +					reg = <0x30 0x4>;
 +				};
-+				efuse_usr5: efuse_usr5@34 {
++				efuse_usr5: efuse-usr5@34 {
 +					reg = <0x34 0x4>;
 +				};
-+				efuse_usr6: efuse_usr6@38 {
++				efuse_usr6: efuse-usr6@38 {
 +					reg = <0x38 0x4>;
 +				};
-+				efuse_usr7: efuse_usr7@3c {
++				efuse_usr7: efuse-usr7@3c {
 +					reg = <0x3c 0x4>;
 +				};
-+				efuse_miscusr: efuse_miscusr@40 {
++				efuse_miscusr: efuse-miscusr@40 {
 +					reg = <0x40 0x4>;
 +				};
-+				efuse_chash: efuse_chash@50 {
++				efuse_chash: efuse-chash@50 {
 +					reg = <0x50 0x4>;
 +				};
-+				efuse_pufmisc: efuse_pufmisc@54 {
++				efuse_pufmisc: efuse-pufmisc@54 {
 +					reg = <0x54 0x4>;
 +				};
-+				efuse_sec: efuse_sec@58 {
++				efuse_sec: efuse-sec@58 {
 +					reg = <0x58 0x4>;
 +				};
-+				efuse_spkid: efuse_spkid@5c {
++				efuse_spkid: efuse-spkid@5c {
 +					reg = <0x5c 0x4>;
 +				};
-+				efuse_ppk0hash: efuse_ppk0hash@a0 {
++				efuse_ppk0hash: efuse-ppk0hash@a0 {
 +					reg = <0xa0 0x30>;
 +				};
-+				efuse_ppk1hash: efuse_ppk1hash@d0 {
++				efuse_ppk1hash: efuse-ppk1hash@d0 {
 +					reg = <0xd0 0x30>;
 +				};
  			};
  
  			zynqmp_pcap: pcap {
  				compatible = "xlnx,zynqmp-pcap-fpga";
--			};
--
--			xlnx_aes: zynqmp-aes {
--				compatible = "xlnx,zynqmp-aes";
-+				clock-names = "ref_clk";
  			};
  
+-			xlnx_aes: zynqmp-aes {
+-				compatible = "xlnx,zynqmp-aes";
+-			};
+-
  			zynqmp_reset: reset-controller {
-@@ -183,6 +248,12 @@ pinctrl0: pinctrl {
+ 				compatible = "xlnx,zynqmp-reset";
+ 				#reset-cells = <1>;
+@@ -183,6 +247,12 @@ pinctrl0: pinctrl {
  				compatible = "xlnx,zynqmp-pinctrl";
  				status = "disabled";
  			};
@@ -22084,7 +22616,7 @@ index 7c1af75f3..6a210cb9b 100644
  		};
  	};
  
-@@ -195,6 +266,10 @@ timer {
+@@ -195,6 +265,10 @@ timer {
  			     <1 10 0xf08>;
  	};
  
@@ -22095,7 +22627,7 @@ index 7c1af75f3..6a210cb9b 100644
  	fpga_full: fpga-full {
  		compatible = "fpga-region";
  		fpga-mgr = <&zynqmp_pcap>;
-@@ -205,6 +280,7 @@ fpga_full: fpga-full {
+@@ -205,6 +279,7 @@ fpga_full: fpga-full {
  
  	amba: axi {
  		compatible = "simple-bus";
@@ -22103,7 +22635,23 @@ index 7c1af75f3..6a210cb9b 100644
  		#address-cells = <2>;
  		#size-cells = <2>;
  		ranges;
-@@ -360,7 +436,6 @@ fpd_dma_chan8: dma-controller@fd570000 {
+@@ -218,6 +293,7 @@ can0: can@ff060000 {
+ 			interrupt-parent = <&gic>;
+ 			tx-fifo-depth = <0x40>;
+ 			rx-fifo-depth = <0x40>;
++			resets = <&zynqmp_reset ZYNQMP_RESET_CAN0>;
+ 			power-domains = <&zynqmp_firmware PD_CAN_0>;
+ 		};
+ 
+@@ -230,6 +306,7 @@ can1: can@ff070000 {
+ 			interrupt-parent = <&gic>;
+ 			tx-fifo-depth = <0x40>;
+ 			rx-fifo-depth = <0x40>;
++			resets = <&zynqmp_reset ZYNQMP_RESET_CAN1>;
+ 			power-domains = <&zynqmp_firmware PD_CAN_1>;
+ 		};
+ 
+@@ -360,7 +437,6 @@ fpd_dma_chan8: dma-controller@fd570000 {
  
  		gic: interrupt-controller@f9010000 {
  			compatible = "arm,gic-400";
@@ -22111,7 +22659,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#interrupt-cells = <3>;
  			reg = <0x0 0xf9010000 0x0 0x10000>,
  			      <0x0 0xf9020000 0x0 0x20000>,
-@@ -371,6 +446,17 @@ gic: interrupt-controller@f9010000 {
+@@ -371,6 +447,17 @@ gic: interrupt-controller@f9010000 {
  			interrupts = <1 9 0xf04>;
  		};
  
@@ -22129,7 +22677,7 @@ index 7c1af75f3..6a210cb9b 100644
  		/* LPDDMA default allows only secured access. inorder to enable
  		 * These dma channels, Users should ensure that these dma
  		 * Channels are allowed for non secure access.
-@@ -384,7 +470,7 @@ lpd_dma_chan1: dma-controller@ffa80000 {
+@@ -384,7 +471,7 @@ lpd_dma_chan1: dma-controller@ffa80000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22138,7 +22686,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -397,7 +483,7 @@ lpd_dma_chan2: dma-controller@ffa90000 {
+@@ -397,7 +484,7 @@ lpd_dma_chan2: dma-controller@ffa90000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22147,7 +22695,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -410,7 +496,7 @@ lpd_dma_chan3: dma-controller@ffaa0000 {
+@@ -410,7 +497,7 @@ lpd_dma_chan3: dma-controller@ffaa0000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22156,7 +22704,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -423,7 +509,7 @@ lpd_dma_chan4: dma-controller@ffab0000 {
+@@ -423,7 +510,7 @@ lpd_dma_chan4: dma-controller@ffab0000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22165,7 +22713,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -436,7 +522,7 @@ lpd_dma_chan5: dma-controller@ffac0000 {
+@@ -436,7 +523,7 @@ lpd_dma_chan5: dma-controller@ffac0000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22174,7 +22722,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -449,7 +535,7 @@ lpd_dma_chan6: dma-controller@ffad0000 {
+@@ -449,7 +536,7 @@ lpd_dma_chan6: dma-controller@ffad0000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22183,7 +22731,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -462,7 +548,7 @@ lpd_dma_chan7: dma-controller@ffae0000 {
+@@ -462,7 +549,7 @@ lpd_dma_chan7: dma-controller@ffae0000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22192,7 +22740,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -475,7 +561,7 @@ lpd_dma_chan8: dma-controller@ffaf0000 {
+@@ -475,7 +562,7 @@ lpd_dma_chan8: dma-controller@ffaf0000 {
  			clock-names = "clk_main", "clk_apb";
  			#dma-cells = <1>;
  			xlnx,bus-width = <64>;
@@ -22201,7 +22749,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_ADMA>;
  		};
  
-@@ -500,12 +586,12 @@ nand0: nand-controller@ff100000 {
+@@ -500,12 +587,12 @@ nand0: nand-controller@ff100000 {
  		};
  
  		gem0: ethernet@ff0b0000 {
@@ -22216,7 +22764,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#address-cells = <1>;
  			#size-cells = <0>;
  			iommus = <&smmu 0x874>;
-@@ -515,12 +601,12 @@ gem0: ethernet@ff0b0000 {
+@@ -515,12 +602,12 @@ gem0: ethernet@ff0b0000 {
  		};
  
  		gem1: ethernet@ff0c0000 {
@@ -22231,7 +22779,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#address-cells = <1>;
  			#size-cells = <0>;
  			iommus = <&smmu 0x875>;
-@@ -530,12 +616,12 @@ gem1: ethernet@ff0c0000 {
+@@ -530,12 +617,12 @@ gem1: ethernet@ff0c0000 {
  		};
  
  		gem2: ethernet@ff0d0000 {
@@ -22246,7 +22794,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#address-cells = <1>;
  			#size-cells = <0>;
  			iommus = <&smmu 0x876>;
-@@ -545,12 +631,12 @@ gem2: ethernet@ff0d0000 {
+@@ -545,12 +632,12 @@ gem2: ethernet@ff0d0000 {
  		};
  
  		gem3: ethernet@ff0e0000 {
@@ -22261,7 +22809,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#address-cells = <1>;
  			#size-cells = <0>;
  			iommus = <&smmu 0x877>;
-@@ -562,7 +648,6 @@ gem3: ethernet@ff0e0000 {
+@@ -562,7 +649,6 @@ gem3: ethernet@ff0e0000 {
  		gpio: gpio@ff0a0000 {
  			compatible = "xlnx,zynqmp-gpio-1.0";
  			status = "disabled";
@@ -22269,7 +22817,22 @@ index 7c1af75f3..6a210cb9b 100644
  			#gpio-cells = <0x2>;
  			gpio-controller;
  			interrupt-parent = <&gic>;
-@@ -595,6 +680,85 @@ i2c1: i2c@ff030000 {
+@@ -578,6 +664,7 @@ i2c0: i2c@ff020000 {
+ 			status = "disabled";
+ 			interrupt-parent = <&gic>;
+ 			interrupts = <0 17 4>;
++			clock-frequency = <400000>;
+ 			reg = <0x0 0xff020000 0x0 0x1000>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+@@ -589,12 +676,92 @@ i2c1: i2c@ff030000 {
+ 			status = "disabled";
+ 			interrupt-parent = <&gic>;
+ 			interrupts = <0 18 4>;
++			clock-frequency = <400000>;
+ 			reg = <0x0 0xff030000 0x0 0x1000>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
  			power-domains = <&zynqmp_firmware PD_I2C_1>;
  		};
  
@@ -22355,7 +22918,16 @@ index 7c1af75f3..6a210cb9b 100644
  		pcie: pcie@fd0e0000 {
  			compatible = "xlnx,nwl-pcie-2.11";
  			status = "disabled";
-@@ -634,6 +798,7 @@ pcie_intc: legacy-interrupt-controller {
+@@ -614,7 +781,7 @@ pcie: pcie@fd0e0000 {
+ 			msi-parent = <&pcie>;
+ 			reg = <0x0 0xfd0e0000 0x0 0x1000>,
+ 			      <0x0 0xfd480000 0x0 0x1000>,
+-			      <0x80 0x00000000 0x0 0x1000000>;
++			      <0x80 0x00000000 0x0 0x10000000>;
+ 			reg-names = "breg", "pcireg", "cfg";
+ 			ranges = <0x02000000 0x00000000 0xe0000000 0x00000000 0xe0000000 0x00000000 0x10000000>,/* non-prefetchable memory */
+ 				 <0x43000000 0x00000006 0x00000000 0x00000006 0x00000000 0x00000002 0x00000000>;/* prefetchable memory */
+@@ -634,6 +801,7 @@ pcie_intc: legacy-interrupt-controller {
  		};
  
  		qspi: spi@ff0f0000 {
@@ -22363,7 +22935,7 @@ index 7c1af75f3..6a210cb9b 100644
  			compatible = "xlnx,zynqmp-qspi-1.0";
  			status = "disabled";
  			clock-names = "ref_clk", "pclk";
-@@ -675,11 +840,13 @@ sata: ahci@fd0c0000 {
+@@ -675,11 +843,13 @@ sata: ahci@fd0c0000 {
  			interrupts = <0 133 4>;
  			power-domains = <&zynqmp_firmware PD_SATA>;
  			resets = <&zynqmp_reset ZYNQMP_RESET_SATA>;
@@ -22379,7 +22951,7 @@ index 7c1af75f3..6a210cb9b 100644
  			compatible = "xlnx,zynqmp-8.9a", "arasan,sdhci-8.9a";
  			status = "disabled";
  			interrupt-parent = <&gic>;
-@@ -690,9 +857,11 @@ sdhci0: mmc@ff160000 {
+@@ -690,9 +860,11 @@ sdhci0: mmc@ff160000 {
  			#clock-cells = <1>;
  			clock-output-names = "clk_out_sd0", "clk_in_sd0";
  			power-domains = <&zynqmp_firmware PD_SD_0>;
@@ -22391,7 +22963,7 @@ index 7c1af75f3..6a210cb9b 100644
  			compatible = "xlnx,zynqmp-8.9a", "arasan,sdhci-8.9a";
  			status = "disabled";
  			interrupt-parent = <&gic>;
-@@ -703,6 +872,7 @@ sdhci1: mmc@ff170000 {
+@@ -703,6 +875,7 @@ sdhci1: mmc@ff170000 {
  			#clock-cells = <1>;
  			clock-output-names = "clk_out_sd1", "clk_in_sd1";
  			power-domains = <&zynqmp_firmware PD_SD_1>;
@@ -22399,7 +22971,7 @@ index 7c1af75f3..6a210cb9b 100644
  		};
  
  		smmu: iommu@fd800000 {
-@@ -784,6 +954,7 @@ ttc3: timer@ff140000 {
+@@ -784,6 +957,7 @@ ttc3: timer@ff140000 {
  		};
  
  		uart0: serial@ff000000 {
@@ -22407,7 +22979,7 @@ index 7c1af75f3..6a210cb9b 100644
  			compatible = "xlnx,zynqmp-uart", "cdns,uart-r1p12";
  			status = "disabled";
  			interrupt-parent = <&gic>;
-@@ -794,6 +965,7 @@ uart0: serial@ff000000 {
+@@ -794,6 +968,7 @@ uart0: serial@ff000000 {
  		};
  
  		uart1: serial@ff010000 {
@@ -22415,7 +22987,7 @@ index 7c1af75f3..6a210cb9b 100644
  			compatible = "xlnx,zynqmp-uart", "cdns,uart-r1p12";
  			status = "disabled";
  			interrupt-parent = <&gic>;
-@@ -809,22 +981,27 @@ usb0: usb@ff9d0000 {
+@@ -809,22 +984,26 @@ usb0: usb@ff9d0000 {
  			status = "disabled";
  			compatible = "xlnx,zynqmp-dwc3";
  			reg = <0x0 0xff9d0000 0x0 0x100>;
@@ -22441,12 +23013,11 @@ index 7c1af75f3..6a210cb9b 100644
  				iommus = <&smmu 0x860>;
  				snps,quirk-frame-length-adjustment = <0x20>;
 +				clock-names = "ref";
-+				snps,enable_guctl1_resume_quirk;
 +				snps,enable_guctl1_ipd_quirk;
  				snps,resume-hs-terminations;
  				/* dma-coherent; */
  			};
-@@ -836,6 +1013,7 @@ usb1: usb@ff9e0000 {
+@@ -836,6 +1015,7 @@ usb1: usb@ff9e0000 {
  			status = "disabled";
  			compatible = "xlnx,zynqmp-dwc3";
  			reg = <0x0 0xff9e0000 0x0 0x100>;
@@ -22454,7 +23025,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_USB_1>;
  			resets = <&zynqmp_reset ZYNQMP_RESET_USB1_CORERESET>,
  				 <&zynqmp_reset ZYNQMP_RESET_USB1_HIBERRESET>,
-@@ -845,13 +1023,16 @@ usb1: usb@ff9e0000 {
+@@ -845,13 +1025,15 @@ usb1: usb@ff9e0000 {
  
  			dwc3_1: usb@fe300000 {
  				compatible = "snps,dwc3";
@@ -22469,22 +23040,23 @@ index 7c1af75f3..6a210cb9b 100644
  				iommus = <&smmu 0x861>;
  				snps,quirk-frame-length-adjustment = <0x20>;
 +				clock-names = "ref";
-+				snps,enable_guctl1_resume_quirk;
 +				snps,enable_guctl1_ipd_quirk;
  				snps,resume-hs-terminations;
  				/* dma-coherent; */
  			};
-@@ -881,7 +1062,9 @@ xilinx_ams: ams@ffa50000 {
- 			status = "disabled";
- 			interrupt-parent = <&gic>;
- 			interrupts = <0 56 4>;
-+			interrupt-names = "ams-irq";
- 			reg = <0x0 0xffa50000 0x0 0x800>;
-+			reg-names = "ams-base";
- 			#address-cells = <1>;
- 			#size-cells = <1>;
+@@ -887,18 +1069,16 @@ xilinx_ams: ams@ffa50000 {
  			#io-channel-cells = <1>;
-@@ -897,8 +1080,6 @@ ams_pl: ams_pl@400 {
+ 			ranges = <0 0 0xffa50800 0x800>;
+ 
+-			ams_ps: ams_ps@0 {
++			ams_ps: ams-ps@0 {
+ 				compatible = "xlnx,zynqmp-ams-ps";
+ 				status = "disabled";
+ 				reg = <0x0 0x400>;
+ 			};
+ 
+-			ams_pl: ams_pl@400 {
++			ams_pl: ams-pl@400 {
  				compatible = "xlnx,zynqmp-ams-pl";
  				status = "disabled";
  				reg = <0x400 0x400>;
@@ -22493,7 +23065,7 @@ index 7c1af75f3..6a210cb9b 100644
  			};
  		};
  
-@@ -910,21 +1091,32 @@ zynqmp_dpdma: dma-controller@fd4c0000 {
+@@ -910,21 +1090,32 @@ zynqmp_dpdma: dma-controller@fd4c0000 {
  			interrupt-parent = <&gic>;
  			clock-names = "axi_clk";
  			power-domains = <&zynqmp_firmware PD_DP>;
@@ -22502,7 +23074,7 @@ index 7c1af75f3..6a210cb9b 100644
  			#dma-cells = <1>;
  		};
  
-+		zynqmp_dpaud_setting: dp_aud@fd4ac000 {
++		zynqmp_dpaud_setting: dp-aud@fd4ac000 {
 +			compatible = "xlnx,zynqmp-dpaud-setting", "syscon";
 +			reg = <0x0 0xfd4ac000 0x0 0x1000>;
 +		};
@@ -22529,7 +23101,7 @@ index 7c1af75f3..6a210cb9b 100644
  			power-domains = <&zynqmp_firmware PD_DP>;
  			resets = <&zynqmp_reset ZYNQMP_RESET_DP>;
  			dma-names = "vid0", "vid1", "vid2", "gfx0";
-@@ -932,6 +1124,34 @@ zynqmp_dpsub: display@fd4a0000 {
+@@ -932,6 +1123,34 @@ zynqmp_dpsub: display@fd4a0000 {
  			       <&zynqmp_dpdma ZYNQMP_DPDMA_VIDEO1>,
  			       <&zynqmp_dpdma ZYNQMP_DPDMA_VIDEO2>,
  			       <&zynqmp_dpdma ZYNQMP_DPDMA_GRAPHICS>;
@@ -22538,24 +23110,24 @@ index 7c1af75f3..6a210cb9b 100644
 +			i2c-bus {
 +			};
 +
-+			zynqmp_dp_snd_codec0: zynqmp_dp_snd_codec0 {
++			zynqmp_dp_snd_codec0: zynqmp-dp-snd-codec0 {
 +				compatible = "xlnx,dp-snd-codec";
 +				clock-names = "aud_clk";
 +			};
 +
-+			zynqmp_dp_snd_pcm0: zynqmp_dp_snd_pcm0 {
++			zynqmp_dp_snd_pcm0: zynqmp-dp-snd-pcm0 {
 +				compatible = "xlnx,dp-snd-pcm0";
 +				dmas = <&zynqmp_dpdma 4>;
 +				dma-names = "tx";
 +			};
 +
-+			zynqmp_dp_snd_pcm1: zynqmp_dp_snd_pcm1 {
++			zynqmp_dp_snd_pcm1: zynqmp-dp-snd-pcm1 {
 +				compatible = "xlnx,dp-snd-pcm1";
 +				dmas = <&zynqmp_dpdma 5>;
 +				dma-names = "tx";
 +			};
 +
-+			zynqmp_dp_snd_card0: zynqmp_dp_snd_card {
++			zynqmp_dp_snd_card0: zynqmp-dp-snd-card {
 +				compatible = "xlnx,dp-snd-card";
 +				xlnx,dp-snd-pcm = <&zynqmp_dp_snd_pcm0>,
 +						  <&zynqmp_dp_snd_pcm1>;
@@ -22566,10 +23138,10 @@ index 7c1af75f3..6a210cb9b 100644
  };
 diff --git a/include/dt-bindings/clock/xlnx-versal-net-clk.h b/include/dt-bindings/clock/xlnx-versal-net-clk.h
 new file mode 100644
-index 000000000..e0b287679
+index 000000000..e62456638
 --- /dev/null
 +++ b/include/dt-bindings/clock/xlnx-versal-net-clk.h
-@@ -0,0 +1,72 @@
+@@ -0,0 +1,73 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * Copyright (C) 2022, Xilinx Inc.
@@ -22595,6 +23167,7 @@ index 000000000..e0b287679
 +#define I3C0_REF	0x9D
 +#define I3C1_REF	0x9F
 +#define USB1_BUS_REF	0xAE
++#define LPD_WWDT	0xAD
 +
 +/* Remove Versal specific node IDs */
 +#undef APU_PLL
@@ -22644,10 +23217,10 @@ index 000000000..e0b287679
 +#endif
 diff --git a/include/dt-bindings/power/xlnx-versal-net-power.h b/include/dt-bindings/power/xlnx-versal-net-power.h
 new file mode 100644
-index 000000000..9b686660c
+index 000000000..4a9756af8
 --- /dev/null
 +++ b/include/dt-bindings/power/xlnx-versal-net-power.h
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,38 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * Copyright (C) 2022, Xilinx, Inc.
@@ -22668,6 +23241,8 @@ index 000000000..9b686660c
 +#define PM_DEV_TCM_A_0B				(0x183180CCU)
 +#define PM_DEV_TCM_A_0C				(0x183180CDU)
 +#define PM_DEV_RPU_A_0				(0x181100BFU)
++#define PM_DEV_LPD_SWDT_0			(0x182240D9U)
++#define PM_DEV_LPD_SWDT_1			(0x182240DAU)
 +
 +/* Remove Versal specific node IDs */
 +#undef PM_DEV_RPU0_0
