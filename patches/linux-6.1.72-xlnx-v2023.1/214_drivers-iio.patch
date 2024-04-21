@@ -222,7 +222,7 @@ index 000000000..805b88682
 +        };
 +    };
 diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
-index 791612ca6..723789a74 100644
+index 791612ca6..d64bc6e97 100644
 --- a/drivers/iio/adc/Kconfig
 +++ b/drivers/iio/adc/Kconfig
 @@ -509,6 +509,18 @@ config INA2XX_ADC
@@ -244,24 +244,43 @@ index 791612ca6..723789a74 100644
  config INGENIC_ADC
  	tristate "Ingenic JZ47xx SoCs ADC driver"
  	depends on MIPS || COMPILE_TEST
-@@ -1338,4 +1350,15 @@ config XILINX_AMS
+@@ -1338,4 +1350,34 @@ config XILINX_AMS
  	  The driver can also be built as a module. If so, the module will be called
  	  xilinx-ams.
  
++config VERSAL_SYSMON_CORE
++	tristate
++
 +config VERSAL_SYSMON
 +	tristate "Xilinx Sysmon driver for Versal"
 +	depends on HAS_IOMEM
++	select VERSAL_SYSMON_CORE
 +	help
 +	  Say yes here to have support for the Xilinx Sysmon.
 +	  The driver will enable users to monitor temperature and voltage on the
 +	  Xilinx Versal platform.
-+	  The HW also supports I2C access but it is not supported by the driver.
 +
 +	  The driver can also be build as a module. If so, the module will be called
 +	  versal-sysmon.
++
++config VERSAL_SYSMON_I2C
++	tristate "Xilinx I2C Sysmon driver for Versal"
++	depends on I2C
++	select VERSAL_SYSMON_CORE
++	help
++	  Say yes here to have support for the Xilinx Sysmon I2C driver.
++	  The driver will enable users to monitor temperature and voltage on the
++	  Xilinx Versal platform via I2C.
++
++	  This will require the Sysmon to be configured to be an I2C device on the
++	  target device.
++
++	  The driver can also be build as a module. If so, the module will be called
++	  versal-sysmon-i2c.
++
  endmenu
 diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
-index 46caba7a0..4b70b05db 100644
+index 46caba7a0..89077fa9d 100644
 --- a/drivers/iio/adc/Makefile
 +++ b/drivers/iio/adc/Makefile
 @@ -49,6 +49,7 @@ obj-$(CONFIG_HX711) += hx711.o
@@ -272,11 +291,13 @@ index 46caba7a0..4b70b05db 100644
  obj-$(CONFIG_INGENIC_ADC) += ingenic-adc.o
  obj-$(CONFIG_INTEL_MRFLD_ADC) += intel_mrfld_adc.o
  obj-$(CONFIG_LP8788_ADC) += lp8788_adc.o
-@@ -120,3 +121,4 @@ xilinx-xadc-y := xilinx-xadc-core.o xilinx-xadc-events.o
+@@ -120,3 +121,6 @@ xilinx-xadc-y := xilinx-xadc-core.o xilinx-xadc-events.o
  obj-$(CONFIG_XILINX_XADC) += xilinx-xadc.o
  obj-$(CONFIG_XILINX_AMS) += xilinx-ams.o
  obj-$(CONFIG_SD_ADC_MODULATOR) += sd_adc_modulator.o
++obj-$(CONFIG_VERSAL_SYSMON_CORE) += versal-sysmon-core.o
 +obj-$(CONFIG_VERSAL_SYSMON) += versal-sysmon.o
++obj-$(CONFIG_VERSAL_SYSMON_I2C) += versal-sysmon-i2c.o
 diff --git a/drivers/iio/adc/ina260-adc.c b/drivers/iio/adc/ina260-adc.c
 new file mode 100644
 index 000000000..9632f734e
@@ -840,12 +861,12 @@ index 000000000..9632f734e
 +MODULE_AUTHOR("Raviteja Narayanam <raviteja.narayanam@xilinx.com>");
 +MODULE_DESCRIPTION("Texas Instruments INA 260 ADC driver");
 +MODULE_LICENSE("GPL v2");
-diff --git a/drivers/iio/adc/versal-sysmon.c b/drivers/iio/adc/versal-sysmon.c
+diff --git a/drivers/iio/adc/versal-sysmon-core.c b/drivers/iio/adc/versal-sysmon-core.c
 new file mode 100644
-index 000000000..a32ae9cc6
+index 000000000..595a1e96c
 --- /dev/null
-+++ b/drivers/iio/adc/versal-sysmon.c
-@@ -0,0 +1,1293 @@
++++ b/drivers/iio/adc/versal-sysmon-core.c
+@@ -0,0 +1,1043 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Xilinx SYSMON for Versal
@@ -861,8 +882,6 @@ index 000000000..a32ae9cc6
 +
 +#include <linux/bits.h>
 +#include <dt-bindings/power/xlnx-versal-regnode.h>
-+#include <linux/firmware/xlnx-zynqmp.h>
-+#include <linux/moduleparam.h>
 +#include "versal-sysmon.h"
 +
 +#define SYSMON_EVENT_WORK_DELAY_MS	1000
@@ -873,13 +892,6 @@ index 000000000..a32ae9cc6
 +
 +#define SYSMON_HBM_TEMP_SHIFT	16U
 +#define SYSMON_HBM_TEMP_MASK	GENMASK(6, 0)
-+
-+static bool secure_mode;
-+module_param(secure_mode, bool, 0444);
-+MODULE_PARM_DESC(secure_mode,
-+		 "Allow sysmon to access register space using EEMI, when direct register access is restricted (default: Direct Access mode)");
-+
-+static LIST_HEAD(sysmon_list_head);
 +
 +/* This structure describes temperature events */
 +static const struct iio_event_spec sysmon_temp_events[] = {
@@ -939,66 +951,17 @@ index 000000000..a32ae9cc6
 +	SYSMON_CHAN_TEMP(TEMP_HBM, "temp_hbm"),
 +};
 +
-+static inline void sysmon_direct_read_reg(struct sysmon *sysmon, u32 offset, u32 *data)
-+{
-+	*data = readl(sysmon->base + offset);
-+}
-+
-+static inline void sysmon_direct_write_reg(struct sysmon *sysmon, u32 offset, u32 data)
-+{
-+	writel(data, sysmon->base + offset);
-+}
-+
-+static inline void sysmon_direct_update_reg(struct sysmon *sysmon, u32 offset,
-+					    u32 mask, u32 data)
-+{
-+	u32 val;
-+
-+	sysmon_direct_read_reg(sysmon, offset, &val);
-+	sysmon_direct_write_reg(sysmon, offset, (val & ~mask) | (mask & data));
-+}
-+
-+static struct sysmon_ops direct_access = {
-+	.read_reg = sysmon_direct_read_reg,
-+	.write_reg = sysmon_direct_write_reg,
-+	.update_reg = sysmon_direct_update_reg,
-+};
-+
-+static inline void sysmon_secure_read_reg(struct sysmon *sysmon, u32 offset, u32 *data)
-+{
-+	zynqmp_pm_sec_read_reg(sysmon->pm_info, offset, data);
-+}
-+
-+static inline void sysmon_secure_write_reg(struct sysmon *sysmon, u32 offset, u32 data)
-+{
-+	zynqmp_pm_sec_mask_write_reg(sysmon->pm_info, offset, GENMASK(31, 0), data);
-+}
-+
-+static inline void sysmon_secure_update_reg(struct sysmon *sysmon, u32 offset,
-+					    u32 mask, u32 data)
-+{
-+	u32 val;
-+
-+	zynqmp_pm_sec_read_reg(sysmon->pm_info, offset, &val);
-+	zynqmp_pm_sec_mask_write_reg(sysmon->pm_info, offset, GENMASK(31, 0),
-+				     (val & ~mask) | (mask & data));
-+}
-+
-+static struct sysmon_ops secure_access = {
-+	.read_reg = sysmon_secure_read_reg,
-+	.write_reg = sysmon_secure_write_reg,
-+	.update_reg = sysmon_secure_update_reg,
-+};
-+
-+static void sysmon_read_reg(struct sysmon *sysmon, u32 offset, u32 *data)
++void sysmon_read_reg(struct sysmon *sysmon, u32 offset, u32 *data)
 +{
 +	sysmon->ops->read_reg(sysmon, offset, data);
 +}
++EXPORT_SYMBOL(sysmon_read_reg);
 +
-+static void sysmon_write_reg(struct sysmon *sysmon, u32 offset, u32 data)
++void sysmon_write_reg(struct sysmon *sysmon, u32 offset, u32 data)
 +{
 +	sysmon->ops->write_reg(sysmon, offset, data);
 +}
++EXPORT_SYMBOL(sysmon_write_reg);
 +
 +static void sysmon_update_reg(struct sysmon *sysmon, u32 offset, u32 mask, u32 data)
 +{
@@ -1150,54 +1113,6 @@ index 000000000..a32ae9cc6
 +	*raw_data = tmp & 0xffff;
 +}
 +
-+/**
-+ * sysmon_find_extreme_temp() - Finds extreme temperature
-+ * value read from each device.
-+ * @offset: Register offset address of temperature channels
-+ *
-+ * The function takes offset address of temperature channels
-+ * returns extreme value (highest/lowest) of that channel
-+ *
-+ * @return: - The highest/lowest temperature found from
-+ * current or historic min/max temperature of all devices.
-+ */
-+static int sysmon_find_extreme_temp(int offset)
-+{
-+	struct sysmon *sysmon;
-+	u32 regval;
-+	u32 extreme_val = SYSMON_LOWER_SATURATION_SIGNED;
-+	bool is_min_channel = false, skip_hbm = true;
-+
-+	if (offset == SYSMON_TEMP_MIN || offset == SYSMON_TEMP_MIN_MIN) {
-+		is_min_channel = true;
-+		extreme_val = SYSMON_UPPER_SATURATION_SIGNED;
-+	} else if (offset == SYSMON_TEMP_HBM) {
-+		skip_hbm = false;
-+	}
-+
-+	list_for_each_entry(sysmon, &sysmon_list_head, list) {
-+		if (skip_hbm && sysmon->hbm_slr)
-+			continue;
-+		if (!skip_hbm && !sysmon->hbm_slr)
-+			continue;
-+		sysmon_read_reg(sysmon, offset, &regval);
-+		if (sysmon->hbm_slr)
-+			return regval;
-+
-+		if (!is_min_channel) {
-+			/* Find the highest value */
-+			if (compare(regval, extreme_val))
-+				extreme_val = regval;
-+		} else {
-+			/* Find the lowest value */
-+			if (compare(extreme_val, regval))
-+				extreme_val = regval;
-+		}
-+	}
-+
-+	return extreme_val;
-+}
-+
 +static int sysmon_read_raw(struct iio_dev *indio_dev,
 +			   struct iio_chan_spec const *chan, int *val,
 +			   int *val2, long mask)
@@ -1212,7 +1127,7 @@ index 000000000..a32ae9cc6
 +		switch (chan->type) {
 +		case IIO_TEMP:
 +			offset = sysmon_temp_offset(chan->address);
-+			*val = sysmon_find_extreme_temp(offset);
++			*val = sysmon->temp_read(sysmon, offset);
 +			*val2 = 0;
 +			ret = IIO_VAL_INT;
 +			break;
@@ -1235,7 +1150,7 @@ index 000000000..a32ae9cc6
 +		case IIO_TEMP:
 +			/* In Deg C */
 +			offset = sysmon_temp_offset(chan->address);
-+			regval = sysmon_find_extreme_temp(offset);
++			regval = sysmon->temp_read(sysmon, offset);
 +			if (!sysmon->hbm_slr)
 +				sysmon_q8p7_to_celsius(regval, val, val2);
 +			else
@@ -1446,6 +1361,11 @@ index 000000000..a32ae9cc6
 +/* sysmon instance for in kernel exported functions */
 +static struct sysmon *g_sysmon;
 +
++void sysmon_set_iio_dev_info(struct iio_dev *indio_dev)
++{
++	indio_dev->info = &iio_dev_info;
++}
++EXPORT_SYMBOL(sysmon_set_iio_dev_info);
 +/**
 + * sysmon_register_temp_ops - register temperature based event handler for a
 + *			      given region.
@@ -1809,12 +1729,12 @@ index 000000000..a32ae9cc6
 +			      msecs_to_jiffies(SYSMON_EVENT_WORK_DELAY_MS));
 +}
 +
-+static int get_hw_node_properties(struct platform_device *pdev,
++static int get_hw_node_properties(struct device *dev,
 +				  struct list_head *region_list)
 +{
 +	struct region_info *region = NULL;
 +	struct regional_node *nodes;
-+	struct device_node *np = pdev->dev.of_node;
++	struct device_node *np = dev->of_node;
 +	int size;
 +	u32 id, satid, x, y, i, offset, prev = 0;
 +
@@ -1823,7 +1743,7 @@ index 000000000..a32ae9cc6
 +		return 0;
 +
 +	if (size % 16) {
-+		dev_info(&pdev->dev, "HW-Node properties not correct");
++		dev_info(dev, "HW-Node properties not correct");
 +		return -EINVAL;
 +	}
 +
@@ -1835,7 +1755,7 @@ index 000000000..a32ae9cc6
 +		of_property_read_u32_index(np, "hw-node", offset + 3, &y);
 +
 +		if (list_empty(region_list) || prev != id) {
-+			region = devm_kzalloc(&pdev->dev, sizeof(*region),
++			region = devm_kzalloc(dev, sizeof(*region),
 +					      GFP_KERNEL);
 +			if (!region)
 +				return -ENOMEM;
@@ -1846,7 +1766,7 @@ index 000000000..a32ae9cc6
 +		}
 +
 +		prev = id;
-+		nodes = devm_kzalloc(&pdev->dev, sizeof(*nodes), GFP_KERNEL);
++		nodes = devm_kzalloc(dev, sizeof(*nodes), GFP_KERNEL);
 +		if (!nodes)
 +			return -ENOMEM;
 +		nodes->sat_id = satid;
@@ -1858,12 +1778,11 @@ index 000000000..a32ae9cc6
 +	return 0;
 +}
 +
-+static int sysmon_parse_dt(struct iio_dev *indio_dev,
-+			   struct platform_device *pdev)
++int sysmon_parse_dt(struct iio_dev *indio_dev, struct device *dev)
 +{
 +	struct sysmon *sysmon;
 +	struct iio_chan_spec *sysmon_channels;
-+	struct device_node *child_node = NULL, *np = pdev->dev.of_node;
++	struct device_node *child_node = NULL, *np = dev->of_node;
 +	int ret, i = 0;
 +	u8 num_supply_chan = 0;
 +	u32 reg = 0, num_temp_chan = 0;
@@ -1879,7 +1798,7 @@ index 000000000..a32ae9cc6
 +	INIT_LIST_HEAD(&sysmon->region_list);
 +
 +	if (sysmon->irq > 0)
-+		get_hw_node_properties(pdev, &sysmon->region_list);
++		get_hw_node_properties(dev, &sysmon->region_list);
 +
 +	/* Initialize buffer for channel specification */
 +	if (sysmon->master_slr) {
@@ -1893,7 +1812,7 @@ index 000000000..a32ae9cc6
 +		num_temp_chan = 0;
 +	}
 +
-+	sysmon_channels = devm_kzalloc(&pdev->dev,
++	sysmon_channels = devm_kzalloc(dev,
 +				       (chan_size * num_supply_chan) +
 +				       temp_chan_size, GFP_KERNEL);
 +
@@ -1958,20 +1877,345 @@ index 000000000..a32ae9cc6
 +
 +	return 0;
 +}
++EXPORT_SYMBOL(sysmon_parse_dt);
 +
-+static void sysmon_init_interrupt(struct sysmon *sysmon)
++int sysmon_init_interrupt(struct sysmon *sysmon)
 +{
 +	u32 imr;
++	int ret;
 +
-+	/* Read default Interrupt Mask */
++	INIT_DELAYED_WORK(&sysmon->sysmon_unmask_work,
++			  sysmon_unmask_worker);
++
 +	sysmon_read_reg(sysmon, SYSMON_IMR, &imr);
 +	sysmon->temp_mask = imr & SYSMON_TEMP_MASK;
++
++	if (sysmon->irq > 0) {
++		g_sysmon = sysmon;
++		ret = devm_request_irq(sysmon->dev, sysmon->irq, &sysmon_iio_irq,
++				       0, "sysmon-irq", sysmon->indio_dev);
++		if (ret < 0)
++			return ret;
++	} else {
++		INIT_DELAYED_WORK(&sysmon->sysmon_events_work,
++				  sysmon_events_worker);
++		schedule_delayed_work(&sysmon->sysmon_events_work,
++				      msecs_to_jiffies(SYSMON_EVENT_WORK_DELAY_MS));
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL(sysmon_init_interrupt);
++
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("Xilinx Versal SysMon Driver");
++MODULE_AUTHOR("Anand Ashok Dumbre <anand.ashok.dumbre@xilinx.com>");
+diff --git a/drivers/iio/adc/versal-sysmon-i2c.c b/drivers/iio/adc/versal-sysmon-i2c.c
+new file mode 100644
+index 000000000..fd1359b9b
+--- /dev/null
++++ b/drivers/iio/adc/versal-sysmon-i2c.c
+@@ -0,0 +1,160 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Xilinx SYSMON for Versal
++ *
++ * Copyright (C) 2023, Advanced Micro Devices, Inc.
++ *
++ * Description:
++ * This driver is developed for SYSMON on Versal. The driver supports I2C Mode
++ * and supports voltage and temperature monitoring via IIO sysfs interface.
++ */
++
++#include <linux/bits.h>
++#include <linux/bitfield.h>
++#include <linux/device.h>
++#include <linux/i2c.h>
++
++#include "versal-sysmon.h"
++
++#define SYSMON_READ_DATA_SIZE	4U
++#define SYSMON_WRITE_DATA_SIZE	8U
++#define SYSMON_INSTR_READ	BIT(2)
++#define SYSMON_INSTR_WRITE	BIT(3)
++
++#define SYSMON_INTR_ALL_MASK	GENMASK(31, 0)
++
++#define SYSMON_PYLD_DATA0_MASK	GENMASK(7, 0)
++#define SYSMON_PYLD_DATA1_MASK	GENMASK(15, 8)
++#define SYSMON_PYLD_DATA2_MASK	GENMASK(23, 16)
++#define SYSMON_PYLD_DATA3_MASK	GENMASK(31, 24)
++
++#define SYSMON_PYLD_OFS_LOW_MASK	GENMASK(9, 2)
++#define SYSMON_PYLD_OFS_HIGH_MASK	GENMASK(15, 10)
++
++#define SYSMON_PYLD_DATA0_IDX	0
++#define SYSMON_PYLD_DATA1_IDX	1
++#define SYSMON_PYLD_DATA2_IDX	2
++#define SYSMON_PYLD_DATA3_IDX	3
++#define SYSMON_PYLD_OFS_LOW_IDX	4
++#define SYSMON_PYLD_OFS_HIGH_IDX	5
++#define SYSMON_PYLD_INSTR_IDX	6
++
++static inline void sysmon_i2c_write_reg(struct sysmon *sysmon, u32 offset, u32 data)
++{
++	char write_data[SYSMON_WRITE_DATA_SIZE] = { 0 };
++
++	write_data[SYSMON_PYLD_DATA0_IDX] = (u8)(FIELD_GET(SYSMON_PYLD_DATA0_MASK, data));
++	write_data[SYSMON_PYLD_DATA1_IDX] = (u8)(FIELD_GET(SYSMON_PYLD_DATA1_MASK, data));
++	write_data[SYSMON_PYLD_DATA2_IDX] = (u8)(FIELD_GET(SYSMON_PYLD_DATA2_MASK, data));
++	write_data[SYSMON_PYLD_DATA3_IDX] = (u8)(FIELD_GET(SYSMON_PYLD_DATA3_MASK, data));
++	write_data[SYSMON_PYLD_OFS_LOW_IDX] = (u8)(FIELD_GET(SYSMON_PYLD_OFS_LOW_MASK, offset));
++	write_data[SYSMON_PYLD_OFS_HIGH_IDX] = (u8)(FIELD_GET(SYSMON_PYLD_OFS_HIGH_MASK, offset));
++	write_data[SYSMON_PYLD_INSTR_IDX] = (u8)(SYSMON_INSTR_WRITE);
++	(void)i2c_master_send(sysmon->client, write_data, SYSMON_WRITE_DATA_SIZE);
++}
++
++static inline void sysmon_i2c_read_reg(struct sysmon *sysmon, u32 offset, u32 *data)
++{
++	char read_data[SYSMON_READ_DATA_SIZE];
++	char write_data[SYSMON_WRITE_DATA_SIZE] = { 0 };
++
++	write_data[SYSMON_PYLD_OFS_LOW_IDX] = (u8)(FIELD_GET(SYSMON_PYLD_OFS_LOW_MASK, offset));
++	write_data[SYSMON_PYLD_OFS_HIGH_IDX] = (u8)(FIELD_GET(SYSMON_PYLD_OFS_HIGH_MASK, offset));
++	write_data[SYSMON_PYLD_INSTR_IDX] = (u8)(SYSMON_INSTR_READ);
++	(void)i2c_master_send(sysmon->client, write_data, SYSMON_WRITE_DATA_SIZE);
++	(void)i2c_master_recv(sysmon->client, read_data, SYSMON_READ_DATA_SIZE);
++	*data = (FIELD_PREP(SYSMON_PYLD_DATA0_MASK, read_data[0]) |
++		 FIELD_PREP(SYSMON_PYLD_DATA1_MASK, read_data[1]) |
++		 FIELD_PREP(SYSMON_PYLD_DATA2_MASK, read_data[2]) |
++		 FIELD_PREP(SYSMON_PYLD_DATA3_MASK, read_data[3]));
++}
++
++static inline void sysmon_i2c_update_reg(struct sysmon *sysmon, u32 offset, u32 mask, u32 data)
++{
++	u32 val;
++
++	sysmon_i2c_read_reg(sysmon, offset, &val);
++	sysmon_i2c_write_reg(sysmon, offset, (u32)((val & ~mask) | (mask & data)));
++}
++
++static struct sysmon_ops i2c_access = {
++	.read_reg = sysmon_i2c_read_reg,
++	.write_reg = sysmon_i2c_write_reg,
++	.update_reg = sysmon_i2c_update_reg,
++};
++
++static int sysmon_i2c_temp_read(struct sysmon *sysmon, int offset)
++{
++	u32 regval;
++
++	sysmon_read_reg(sysmon, offset, &regval);
++	return regval;
++}
++
++static int sysmon_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
++{
++	struct iio_dev *indio_dev;
++	struct sysmon *sysmon;
++	int ret;
++
++	indio_dev = devm_iio_device_alloc(&client->dev, sizeof(*sysmon));
++	if (!indio_dev)
++		return -ENOMEM;
++
++	sysmon = iio_priv(indio_dev);
++
++	sysmon->dev = &client->dev;
++	sysmon->indio_dev = indio_dev;
++
++	mutex_init(&sysmon->mutex);
++	spin_lock_init(&sysmon->lock);
++
++	indio_dev->dev.parent = &client->dev;
++	indio_dev->dev.of_node = client->dev.of_node;
++	indio_dev->name = "xlnx,versal-sysmon";
++	sysmon_set_iio_dev_info(indio_dev);
++	indio_dev->modes = INDIO_DIRECT_MODE;
++
++	i2c_set_clientdata(client, sysmon);
++	sysmon->client = client;
++	sysmon->ops = &i2c_access;
++	sysmon_write_reg(sysmon, SYSMON_NPI_LOCK, NPI_UNLOCK);
++	sysmon_write_reg(sysmon, SYSMON_IDR, SYSMON_INTR_ALL_MASK);
++	sysmon->master_slr = true;
++
++	ret = sysmon_parse_dt(indio_dev, &client->dev);
++	if (ret)
++		return ret;
++
++	sysmon->temp_read = &sysmon_i2c_temp_read;
++	dev_set_drvdata(&client->dev, indio_dev);
++
++	return iio_device_register(indio_dev);
++}
++
++static void sysmon_i2c_remove(struct i2c_client *client)
++{
++	struct iio_dev *indio_dev = dev_get_drvdata(&client->dev);
++
++	iio_device_unregister(indio_dev);
++}
++
++static const struct of_device_id sysmon_i2c_of_match_table[] = {
++	{ .compatible = "xlnx,versal-sysmon" },
++	{}
++};
++MODULE_DEVICE_TABLE(of, sysmon_i2c_of_match_table);
++
++static struct i2c_driver sysmon_i2c_driver = {
++	.probe = sysmon_i2c_probe,
++	.remove = sysmon_i2c_remove,
++	.driver = {
++		.name = "sysmon_i2c",
++		.of_match_table = sysmon_i2c_of_match_table,
++	},
++};
++module_i2c_driver(sysmon_i2c_driver);
++
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("Xilinx Versal I2C SysMon Driver");
++MODULE_AUTHOR("Conall O Griofa <conall.ogriofa@amd.com>");
+diff --git a/drivers/iio/adc/versal-sysmon.c b/drivers/iio/adc/versal-sysmon.c
+new file mode 100644
+index 000000000..e87c4cee3
+--- /dev/null
++++ b/drivers/iio/adc/versal-sysmon.c
+@@ -0,0 +1,283 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Xilinx SYSMON for Versal
++ *
++ * Copyright (C) 2023, Advanced Micro Devices, Inc.
++ *
++ * Description:
++ * This driver is developed for SYSMON on Versal. The driver supports INDIO Mode
++ * and supports voltage and temperature monitoring via IIO sysfs interface and
++ * in kernel event monitoring for some modules.
++ */
++
++#include <linux/bits.h>
++#include <linux/moduleparam.h>
++#include <linux/firmware/xlnx-zynqmp.h>
++#include "versal-sysmon.h"
++
++#define SYSMON_EVENT_WORK_DELAY_MS	1000
++
++static LIST_HEAD(sysmon_list_head);
++
++static bool secure_mode;
++module_param(secure_mode, bool, 0444);
++MODULE_PARM_DESC(secure_mode,
++		 "Allow sysmon to access register space using EEMI, when direct register access is restricted or Direct Access Mode (default: Direct Access mode)");
++
++static inline void sysmon_direct_read_reg(struct sysmon *sysmon, u32 offset, u32 *data)
++{
++	*data = readl(sysmon->base + offset);
++}
++
++static inline void sysmon_direct_write_reg(struct sysmon *sysmon, u32 offset, u32 data)
++{
++	writel(data, sysmon->base + offset);
++}
++
++static inline void sysmon_direct_update_reg(struct sysmon *sysmon, u32 offset,
++					    u32 mask, u32 data)
++{
++	u32 val;
++
++	sysmon_direct_read_reg(sysmon, offset, &val);
++	sysmon_direct_write_reg(sysmon, offset, (val & ~mask) | (mask & data));
++}
++
++static struct sysmon_ops direct_access = {
++	.read_reg = sysmon_direct_read_reg,
++	.write_reg = sysmon_direct_write_reg,
++	.update_reg = sysmon_direct_update_reg,
++};
++
++static inline void sysmon_secure_read_reg(struct sysmon *sysmon, u32 offset, u32 *data)
++{
++	zynqmp_pm_sec_read_reg(sysmon->pm_info, offset, data);
++}
++
++static inline void sysmon_secure_write_reg(struct sysmon *sysmon, u32 offset, u32 data)
++{
++	zynqmp_pm_sec_mask_write_reg(sysmon->pm_info, offset, GENMASK(31, 0), data);
++}
++
++static inline void sysmon_secure_update_reg(struct sysmon *sysmon, u32 offset,
++					    u32 mask, u32 data)
++{
++	u32 val;
++
++	zynqmp_pm_sec_read_reg(sysmon->pm_info, offset, &val);
++	zynqmp_pm_sec_mask_write_reg(sysmon->pm_info, offset, GENMASK(31, 0),
++				     (val & ~mask) | (mask & data));
++}
++
++static struct sysmon_ops secure_access = {
++	.read_reg = sysmon_secure_read_reg,
++	.write_reg = sysmon_secure_write_reg,
++	.update_reg = sysmon_secure_update_reg,
++};
++
++/**
++ * sysmon_find_extreme_temp() - Finds extreme temperature
++ * value read from each device.
++ * @sysmon: Pointer to the sysmon instance
++ * @offset: Register offset address of temperature channels
++ *
++ * The function takes offset address of temperature channels
++ * returns extreme value (highest/lowest) of that channel
++ *
++ * @return: - The highest/lowest temperature found from
++ * current or historic min/max temperature of all devices.
++ */
++static int sysmon_find_extreme_temp(struct sysmon *sysmon, int offset)
++{
++	u32 extreme_val = SYSMON_LOWER_SATURATION_SIGNED;
++	bool is_min_channel = false, skip_hbm = true;
++	u32 regval;
++
++	if (offset == SYSMON_TEMP_MIN || offset == SYSMON_TEMP_MIN_MIN) {
++		is_min_channel = true;
++		extreme_val = SYSMON_UPPER_SATURATION_SIGNED;
++	} else if (offset == SYSMON_TEMP_HBM) {
++		skip_hbm = false;
++	}
++
++	list_for_each_entry(sysmon, &sysmon_list_head, list) {
++		if (skip_hbm && sysmon->hbm_slr)
++			/* Skip if HBM SLR and need non HBM reading */
++			continue;
++
++		if (!skip_hbm && !sysmon->hbm_slr)
++			/* Skip if not HBM SLR and need a HBM reading */
++			continue;
++
++		sysmon_read_reg(sysmon, offset, &regval);
++
++		if (sysmon->hbm_slr)
++			return regval;
++
++		if (!is_min_channel) {
++			/* Find the highest value */
++			if (compare(regval, extreme_val))
++				extreme_val = regval;
++		} else {
++			/* Find the lowest value */
++			if (compare(extreme_val, regval))
++				extreme_val = regval;
++		}
++	}
++
++	return extreme_val;
 +}
 +
 +static int sysmon_probe(struct platform_device *pdev)
 +{
-+	struct iio_dev *indio_dev;
 +	struct sysmon *sysmon, *temp_sysmon;
++	struct iio_dev *indio_dev;
 +	struct resource *mem;
 +	bool exist = false;
 +	int ret;
@@ -1991,11 +2235,10 @@ index 000000000..a32ae9cc6
 +	indio_dev->dev.parent = &pdev->dev;
 +	indio_dev->dev.of_node = pdev->dev.of_node;
 +	indio_dev->name = "xlnx,versal-sysmon";
-+	indio_dev->info = &iio_dev_info;
++	sysmon_set_iio_dev_info(indio_dev);
 +	indio_dev->modes = INDIO_DIRECT_MODE;
 +
-+	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	sysmon->base = devm_ioremap_resource(&pdev->dev, mem);
++	sysmon->base = devm_platform_get_and_ioremap_resource(pdev, 0, &mem);
 +	if (IS_ERR(sysmon->base))
 +		return PTR_ERR(sysmon->base);
 +
@@ -2025,6 +2268,7 @@ index 000000000..a32ae9cc6
 +	INIT_LIST_HEAD(&sysmon->list);
 +
 +	mutex_lock(&sysmon->mutex);
++
 +	if (list_empty(&sysmon_list_head)) {
 +		sysmon->master_slr = true;
 +	} else {
@@ -2032,48 +2276,30 @@ index 000000000..a32ae9cc6
 +			if (temp_sysmon->master_slr)
 +				exist = true;
 +		}
-+		if (exist)
-+			sysmon->master_slr = false;
-+		else
-+			sysmon->master_slr = true;
++		sysmon->master_slr = !exist;
 +	}
++
 +	mutex_unlock(&sysmon->mutex);
 +
 +	sysmon->hbm_slr = of_property_read_bool(pdev->dev.of_node, "xlnx,hbm");
-+
 +	if (!sysmon->hbm_slr) {
 +		sysmon_write_reg(sysmon, SYSMON_NPI_LOCK, NPI_UNLOCK);
 +		sysmon_write_reg(sysmon, SYSMON_IDR, 0xffffffff);
 +		sysmon_write_reg(sysmon, SYSMON_ISR, 0xffffffff);
-+
 +		sysmon->irq = platform_get_irq_optional(pdev, 0);
 +	}
 +
-+	ret = sysmon_parse_dt(indio_dev, pdev);
++	ret = sysmon_parse_dt(indio_dev, &pdev->dev);
 +	if (ret)
 +		return ret;
 +
-+	INIT_DELAYED_WORK(&sysmon->sysmon_unmask_work,
-+			  sysmon_unmask_worker);
 +	if (!sysmon->hbm_slr) {
-+		sysmon_init_interrupt(sysmon);
-+
-+		if (sysmon->irq == -EPROBE_DEFER)
-+			return -EPROBE_DEFER;
-+
-+		if (sysmon->irq > 0) {
-+			g_sysmon = sysmon;
-+			ret = devm_request_irq(&pdev->dev, sysmon->irq, &sysmon_iio_irq,
-+					       0, "sysmon-irq", indio_dev);
-+			if (ret < 0)
++		ret = sysmon_init_interrupt(sysmon);
++			if (ret)
 +				return ret;
-+		} else {
-+			INIT_DELAYED_WORK(&sysmon->sysmon_events_work,
-+					  sysmon_events_worker);
-+			schedule_delayed_work(&sysmon->sysmon_events_work,
-+					      msecs_to_jiffies(SYSMON_EVENT_WORK_DELAY_MS));
-+		}
 +	}
++
++	sysmon->temp_read = &sysmon_find_extreme_temp;
 +
 +	platform_set_drvdata(pdev, indio_dev);
 +
@@ -2084,8 +2310,6 @@ index 000000000..a32ae9cc6
 +	mutex_lock(&sysmon->mutex);
 +	list_add(&sysmon->list, &sysmon_list_head);
 +	mutex_unlock(&sysmon->mutex);
-+
-+	dev_info(&pdev->dev, "Successfully registered Versal Sysmon");
 +
 +	return 0;
 +}
@@ -2104,8 +2328,10 @@ index 000000000..a32ae9cc6
 +	mutex_lock(&sysmon->mutex);
 +	list_del(&sysmon->list);
 +	mutex_unlock(&sysmon->mutex);
++
 +	/* Unregister the device */
 +	iio_device_unregister(indio_dev);
++
 +	return 0;
 +}
 +
@@ -2138,13 +2364,13 @@ index 000000000..a32ae9cc6
 +
 +MODULE_LICENSE("GPL v2");
 +MODULE_DESCRIPTION("Xilinx Versal SysMon Driver");
-+MODULE_AUTHOR("Anand Ashok Dumbre <anand.ashok.dumbre@xilinx.com>");
++MODULE_AUTHOR("Conall O Griofa <conall.ogriofa@amd.com>");
 diff --git a/drivers/iio/adc/versal-sysmon.h b/drivers/iio/adc/versal-sysmon.h
 new file mode 100644
-index 000000000..6c5669e8c
+index 000000000..e04ace79b
 --- /dev/null
 +++ b/drivers/iio/adc/versal-sysmon.h
-@@ -0,0 +1,194 @@
+@@ -0,0 +1,203 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * Xilinx SYSMON for Versal
@@ -2290,6 +2516,7 @@ index 000000000..6c5669e8c
 + * @base: physical base address of device
 + * @dev: pointer to device struct
 + * @indio_dev: pointer to the iio device
++ * @i2c_client: pointer to the i2c client
 + * @mutex: to handle multiple user interaction
 + * @lock: to help manage interrupt registers correctly
 + * @irq: interrupt number of the sysmon
@@ -2303,6 +2530,7 @@ index 000000000..6c5669e8c
 + * @pm_info: plm address of sysmon
 + * @master_slr: to keep master sysmon info
 + * @hbm_slr: flag if HBM slr is present
++ * @temp_read: function pointer for the special temperature read
 + *
 + * This structure contains necessary state for Sysmon driver to operate
 + */
@@ -2310,6 +2538,7 @@ index 000000000..6c5669e8c
 +	void __iomem *base;
 +	struct device *dev;
 +	struct iio_dev *indio_dev;
++	struct i2c_client *client;
 +	/* kernel doc above */
 +	struct mutex mutex;
 +	/* kernel doc above*/
@@ -2325,6 +2554,7 @@ index 000000000..6c5669e8c
 +	u32 pm_info;
 +	bool master_slr;
 +	bool hbm_slr;
++	int (*temp_read)(struct sysmon *sysmon, int offset);
 +};
 +
 +struct sysmon_ops {
@@ -2339,11 +2569,48 @@ index 000000000..6c5669e8c
 +int sysmon_unregister_temp_ops(enum sysmon_region region_id);
 +struct list_head *sysmon_nodes_by_region(enum sysmon_region region_id);
 +int sysmon_get_node_value(int sat_id);
++int sysmon_parse_dt(struct iio_dev *indio_dev, struct device *dev);
++int sysmon_init_interrupt(struct sysmon *sysmon);
++void sysmon_read_reg(struct sysmon *sysmon, u32 offset, u32 *data);
++void sysmon_write_reg(struct sysmon *sysmon, u32 offset, u32 data);
++void sysmon_set_iio_dev_info(struct iio_dev *indio_dev);
 diff --git a/drivers/iio/adc/xilinx-ams.c b/drivers/iio/adc/xilinx-ams.c
-index a507d2e17..9ce1432f3 100644
+index a507d2e17..f7726c65e 100644
 --- a/drivers/iio/adc/xilinx-ams.c
 +++ b/drivers/iio/adc/xilinx-ams.c
-@@ -161,6 +161,7 @@
+@@ -117,22 +117,30 @@
+ #define AMS_ALARM_TEMP_REMOTE		0x194
+ #define AMS_ALARM_THRESHOLD_OFF_10	0x10
+ #define AMS_ALARM_THRESHOLD_OFF_20	0x20
++#define AMS_ALARM_THRESHOLD_OFF_0C	0x0C
++#define AMS_ALARM_THRESHOLD_OFF_M48	-0x48
+ 
+ #define AMS_ALARM_THR_DIRECT_MASK	BIT(1)
+ #define AMS_ALARM_THR_MIN		0x0000
+ #define AMS_ALARM_THR_MAX		(BIT(16) - 1)
+ 
+ #define AMS_ALARM_MASK			GENMASK_ULL(63, 0)
+-#define AMS_NO_OF_ALARMS		32
++#define AMS_NO_OF_ALARMS		35
+ #define AMS_PL_ALARM_START		16
++#define AMS_PS_OT_ALARM_START		32
++#define AMS_PL_OT_ALARM_START		34
+ #define AMS_PL_ALARM_MASK		GENMASK(31, 16)
+ #define AMS_ISR0_ALARM_MASK		GENMASK(31, 0)
+ #define AMS_ISR1_ALARM_MASK		(GENMASK(31, 29) | GENMASK(4, 0))
++#define AMS_ISR1_ALARM_SHIFT		BIT(5)
+ #define AMS_ISR1_EOC_MASK		BIT(3)
+ #define AMS_ISR1_INTR_MASK		GENMASK_ULL(63, 32)
+ #define AMS_ISR0_ALARM_2_TO_0_MASK	GENMASK(2, 0)
+ #define AMS_ISR0_ALARM_6_TO_3_MASK	GENMASK(6, 3)
+ #define AMS_ISR0_ALARM_12_TO_7_MASK	GENMASK(13, 8)
++#define AMS_ISR1_ALARM_2_MASK		BIT(34)
++#define AMS_ISR1_ALARM_1_TO_0_MASK	GENMASK(33, 32)
++#define AMS_CONF1_ALARM_OT_MASK	BIT(0)
+ #define AMS_CONF1_ALARM_2_TO_0_MASK	GENMASK(3, 1)
+ #define AMS_CONF1_ALARM_6_TO_3_MASK	GENMASK(11, 8)
+ #define AMS_CONF1_ALARM_12_TO_7_MASK	GENMASK(5, 0)
+@@ -161,6 +169,7 @@
  
  #define AMS_TEMP_SCALE			509314
  #define AMS_TEMP_SCALE_DIV_BIT		16
@@ -2351,7 +2618,17 @@ index a507d2e17..9ce1432f3 100644
  #define AMS_TEMP_OFFSET			-((280230LL << 16) / 509314)
  
  enum ams_alarm_bit {
-@@ -227,6 +228,7 @@ enum ams_ps_pl_seq {
+@@ -178,6 +187,9 @@ enum ams_alarm_bit {
+ 	AMS_ALARM_BIT_SUPPLY10 = 11,
+ 	AMS_ALARM_BIT_VCCAMS = 12,
+ 	AMS_ALARM_BIT_TEMP_REMOTE = 13,
++	AMS_ALARM_BIT_TEMP_OT_REMOTE = 32,
++	AMS_ALARM_BIT_PS_TEMP_OT = 33,
++	AMS_ALARM_BIT_PL_TEMP_OT = 34,
+ };
+ 
+ enum ams_seq {
+@@ -227,6 +239,7 @@ enum ams_ps_pl_seq {
  	.indexed = 1, \
  	.address = (_addr), \
  	.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | \
@@ -2359,7 +2636,75 @@ index a507d2e17..9ce1432f3 100644
  		BIT(IIO_CHAN_INFO_SCALE) | \
  		BIT(IIO_CHAN_INFO_OFFSET), \
  	.event_spec = ams_temp_events, \
-@@ -679,9 +681,20 @@ static int ams_read_raw(struct iio_dev *indio_dev,
+@@ -282,8 +295,8 @@ struct ams {
+ 	struct device *dev;
+ 	struct mutex lock;
+ 	spinlock_t intr_lock;
+-	unsigned int alarm_mask;
+-	unsigned int current_masked_alarm;
++	u64 alarm_mask;
++	u64 current_masked_alarm;
+ 	u64 intr_mask;
+ 	struct delayed_work ams_unmask_work;
+ };
+@@ -314,16 +327,20 @@ static void ams_update_intrmask(struct ams *ams, u64 mask, u64 val)
+ 
+ 	ams->intr_mask = (ams->intr_mask & ~mask) | (val & mask);
+ 
+-	regval = ~(ams->intr_mask | ams->current_masked_alarm);
++	regval = ~((ams->intr_mask | ams->current_masked_alarm) & AMS_ISR0_ALARM_MASK);
+ 	writel(regval, ams->base + AMS_IER_0);
+ 
+-	regval = ~(FIELD_GET(AMS_ISR1_INTR_MASK, ams->intr_mask));
++	regval = ~(((ams->intr_mask | ams->current_masked_alarm) >>
++		    AMS_ISR1_ALARM_SHIFT) &
++		   AMS_ISR1_ALARM_MASK);
+ 	writel(regval, ams->base + AMS_IER_1);
+ 
+-	regval = ams->intr_mask | ams->current_masked_alarm;
++	regval = ((ams->intr_mask | ams->current_masked_alarm) & AMS_ISR0_ALARM_MASK);
+ 	writel(regval, ams->base + AMS_IDR_0);
+ 
+-	regval = FIELD_GET(AMS_ISR1_INTR_MASK, ams->intr_mask);
++	regval = (((ams->intr_mask | ams->current_masked_alarm) >>
++		   AMS_ISR1_ALARM_SHIFT) &
++		  AMS_ISR1_ALARM_MASK);
+ 	writel(regval, ams->base + AMS_IDR_1);
+ }
+ 
+@@ -357,6 +374,9 @@ static void ams_update_ps_alarm(struct ams *ams, unsigned long alarm_mask)
+ 	val = FIELD_GET(AMS_ISR0_ALARM_6_TO_3_MASK, alarm_mask);
+ 	cfg &= ~(FIELD_PREP(AMS_CONF1_ALARM_6_TO_3_MASK, val));
+ 
++	val = FIELD_GET(AMS_ISR1_ALARM_1_TO_0_MASK, alarm_mask);
++	cfg &= ~(FIELD_PREP(AMS_CONF1_ALARM_OT_MASK, !!val));
++
+ 	ams_ps_update_reg(ams, AMS_REG_CONFIG1, AMS_REGCFG1_ALARM_MASK, cfg);
+ 
+ 	val = FIELD_GET(AMS_ISR0_ALARM_12_TO_7_MASK, alarm_mask);
+@@ -378,6 +398,9 @@ static void ams_update_pl_alarm(struct ams *ams, unsigned long alarm_mask)
+ 	val = FIELD_GET(AMS_ISR0_ALARM_6_TO_3_MASK, pl_alarm_mask);
+ 	cfg &= ~(FIELD_PREP(AMS_CONF1_ALARM_6_TO_3_MASK, val));
+ 
++	val = FIELD_GET(AMS_ISR1_ALARM_2_MASK, alarm_mask);
++	cfg &= ~(FIELD_PREP(AMS_CONF1_ALARM_OT_MASK, val));
++
+ 	ams_pl_update_reg(ams, AMS_REG_CONFIG1, AMS_REGCFG1_ALARM_MASK, cfg);
+ 
+ 	val = FIELD_GET(AMS_ISR0_ALARM_12_TO_7_MASK, pl_alarm_mask);
+@@ -396,7 +419,10 @@ static void ams_update_alarm(struct ams *ams, unsigned long alarm_mask)
+ 		ams_update_pl_alarm(ams, alarm_mask);
+ 
+ 	spin_lock_irqsave(&ams->intr_lock, flags);
+-	ams_update_intrmask(ams, AMS_ISR0_ALARM_MASK, ~alarm_mask);
++	ams_update_intrmask(ams,
++			    (AMS_ISR0_ALARM_MASK |
++			     (AMS_ISR1_ALARM_MASK << AMS_ISR1_ALARM_SHIFT)),
++			    ~alarm_mask);
+ 	spin_unlock_irqrestore(&ams->intr_lock, flags);
+ }
+ 
+@@ -679,9 +705,20 @@ static int ams_read_raw(struct iio_dev *indio_dev,
  			int *val, int *val2, long mask)
  {
  	struct ams *ams = iio_priv(indio_dev);
@@ -2381,6 +2726,299 @@ index a507d2e17..9ce1432f3 100644
  	case IIO_CHAN_INFO_RAW:
  		mutex_lock(&ams->lock);
  		if (chan->scan_index >= AMS_CTRL_SEQ_BASE) {
+@@ -727,7 +764,8 @@ static int ams_read_raw(struct iio_dev *indio_dev,
+ 	}
+ }
+ 
+-static int ams_get_alarm_offset(int scan_index, enum iio_event_direction dir)
++static int ams_get_alarm_offset(int scan_index, enum iio_event_direction dir,
++				enum iio_event_type type)
+ {
+ 	int offset;
+ 
+@@ -743,6 +781,12 @@ static int ams_get_alarm_offset(int scan_index, enum iio_event_direction dir)
+ 		offset = 0;
+ 	}
+ 
++	if (type == IIO_EV_TYPE_MAG) {
++		offset += (scan_index == AMS_SEQ_TEMP) ?
++				  AMS_ALARM_THRESHOLD_OFF_0C :
++				  AMS_ALARM_THRESHOLD_OFF_M48;
++	}
++
+ 	switch (scan_index) {
+ 	case AMS_SEQ_TEMP:
+ 		return AMS_ALARM_TEMP + offset;
+@@ -780,12 +824,17 @@ static const struct iio_chan_spec *ams_event_to_channel(struct iio_dev *dev,
+ {
+ 	int scan_index = 0, i;
+ 
+-	if (event >= AMS_PL_ALARM_START) {
++	if (event == AMS_PL_OT_ALARM_START) {
++		scan_index = AMS_PS_SEQ_MAX;
++	} else if ((event >= AMS_PL_ALARM_START) &&
++		   (event < AMS_PS_OT_ALARM_START)) {
+ 		event -= AMS_PL_ALARM_START;
+ 		scan_index = AMS_PS_SEQ_MAX;
+ 	}
+ 
+ 	switch (event) {
++	case AMS_ALARM_BIT_PL_TEMP_OT:
++	case AMS_ALARM_BIT_PS_TEMP_OT:
+ 	case AMS_ALARM_BIT_TEMP:
+ 		scan_index += AMS_SEQ_TEMP;
+ 		break;
+@@ -822,6 +871,7 @@ static const struct iio_chan_spec *ams_event_to_channel(struct iio_dev *dev,
+ 	case AMS_ALARM_BIT_VCCAMS:
+ 		scan_index += AMS_SEQ_VCCAMS;
+ 		break;
++	case AMS_ALARM_BIT_TEMP_OT_REMOTE:
+ 	case AMS_ALARM_BIT_TEMP_REMOTE:
+ 		scan_index += AMS_SEQ_TEMP_REMOTE;
+ 		break;
+@@ -836,18 +886,21 @@ static const struct iio_chan_spec *ams_event_to_channel(struct iio_dev *dev,
+ 	return &dev->channels[i];
+ }
+ 
+-static int ams_get_alarm_mask(int scan_index)
++static u64 ams_get_alarm_mask(int scan_index, enum iio_event_type type)
+ {
+-	int bit = 0;
++	int bit = 0, ot_bit = 0;
+ 
+ 	if (scan_index >= AMS_PS_SEQ_MAX) {
+ 		bit = AMS_PL_ALARM_START;
++		ot_bit = 1;
+ 		scan_index -= AMS_PS_SEQ_MAX;
+ 	}
+ 
+ 	switch (scan_index) {
+ 	case AMS_SEQ_TEMP:
+-		return BIT(AMS_ALARM_BIT_TEMP + bit);
++		if (type != IIO_EV_TYPE_MAG)
++			return BIT(AMS_ALARM_BIT_TEMP + bit);
++		return BIT(AMS_ALARM_BIT_PS_TEMP_OT + ot_bit);
+ 	case AMS_SEQ_SUPPLY1:
+ 		return BIT(AMS_ALARM_BIT_SUPPLY1 + bit);
+ 	case AMS_SEQ_SUPPLY2:
+@@ -871,7 +924,9 @@ static int ams_get_alarm_mask(int scan_index)
+ 	case AMS_SEQ_VCCAMS:
+ 		return BIT(AMS_ALARM_BIT_VCCAMS + bit);
+ 	case AMS_SEQ_TEMP_REMOTE:
+-		return BIT(AMS_ALARM_BIT_TEMP_REMOTE + bit);
++		if (type != IIO_EV_TYPE_MAG)
++			return BIT(AMS_ALARM_BIT_TEMP_REMOTE + bit);
++		return BIT(AMS_ALARM_BIT_TEMP_OT_REMOTE);
+ 	default:
+ 		return 0;
+ 	}
+@@ -884,7 +939,7 @@ static int ams_read_event_config(struct iio_dev *indio_dev,
+ {
+ 	struct ams *ams = iio_priv(indio_dev);
+ 
+-	return !!(ams->alarm_mask & ams_get_alarm_mask(chan->scan_index));
++	return !!(ams->alarm_mask & ams_get_alarm_mask(chan->scan_index, type));
+ }
+ 
+ static int ams_write_event_config(struct iio_dev *indio_dev,
+@@ -894,9 +949,9 @@ static int ams_write_event_config(struct iio_dev *indio_dev,
+ 				  int state)
+ {
+ 	struct ams *ams = iio_priv(indio_dev);
+-	unsigned int alarm;
++	u64 alarm;
+ 
+-	alarm = ams_get_alarm_mask(chan->scan_index);
++	alarm = ams_get_alarm_mask(chan->scan_index, type);
+ 
+ 	mutex_lock(&ams->lock);
+ 
+@@ -919,7 +974,7 @@ static int ams_read_event_value(struct iio_dev *indio_dev,
+ 				enum iio_event_info info, int *val, int *val2)
+ {
+ 	struct ams *ams = iio_priv(indio_dev);
+-	unsigned int offset = ams_get_alarm_offset(chan->scan_index, dir);
++	unsigned int offset = ams_get_alarm_offset(chan->scan_index, dir, type);
+ 
+ 	mutex_lock(&ams->lock);
+ 
+@@ -946,7 +1001,7 @@ static int ams_write_event_value(struct iio_dev *indio_dev,
+ 
+ 	/* Set temperature channel threshold to direct threshold */
+ 	if (chan->type == IIO_TEMP) {
+-		offset = ams_get_alarm_offset(chan->scan_index, IIO_EV_DIR_FALLING);
++		offset = ams_get_alarm_offset(chan->scan_index, IIO_EV_DIR_FALLING, type);
+ 
+ 		if (chan->scan_index >= AMS_PS_SEQ_MAX)
+ 			ams_pl_update_reg(ams, offset,
+@@ -958,7 +1013,7 @@ static int ams_write_event_value(struct iio_dev *indio_dev,
+ 					  AMS_ALARM_THR_DIRECT_MASK);
+ 	}
+ 
+-	offset = ams_get_alarm_offset(chan->scan_index, dir);
++	offset = ams_get_alarm_offset(chan->scan_index, dir, type);
+ 	if (chan->scan_index >= AMS_PS_SEQ_MAX)
+ 		writel(val, ams->pl_base + offset);
+ 	else
+@@ -980,11 +1035,21 @@ static void ams_handle_event(struct iio_dev *indio_dev, u32 event)
+ 		 * The temperature channel only supports over-temperature
+ 		 * events.
+ 		 */
+-		iio_push_event(indio_dev,
+-			       IIO_UNMOD_EVENT_CODE(chan->type, chan->channel,
+-						    IIO_EV_TYPE_THRESH,
+-						    IIO_EV_DIR_RISING),
+-			       iio_get_time_ns(indio_dev));
++		if (event < AMS_ALARM_BIT_TEMP_OT_REMOTE) {
++			iio_push_event(indio_dev,
++				       IIO_UNMOD_EVENT_CODE(chan->type,
++							    chan->channel,
++							    IIO_EV_TYPE_THRESH,
++							    IIO_EV_DIR_RISING),
++				       iio_get_time_ns(indio_dev));
++		} else {
++			iio_push_event(indio_dev,
++				       IIO_UNMOD_EVENT_CODE(chan->type,
++							    chan->channel,
++							    IIO_EV_TYPE_MAG,
++							    IIO_EV_DIR_RISING),
++				       iio_get_time_ns(indio_dev));
++		}
+ 	} else {
+ 		/*
+ 		 * For other channels we don't know whether it is a upper or
+@@ -1021,11 +1086,12 @@ static void ams_handle_events(struct iio_dev *indio_dev, unsigned long events)
+ static void ams_unmask_worker(struct work_struct *work)
+ {
+ 	struct ams *ams = container_of(work, struct ams, ams_unmask_work.work);
+-	unsigned int status, unmask;
++	u64 status, unmask;
+ 
+ 	spin_lock_irq(&ams->intr_lock);
+ 
+ 	status = readl(ams->base + AMS_ISR_0);
++	status |= ((u64)readl(ams->base + AMS_ISR_1) << AMS_ISR1_ALARM_SHIFT);
+ 
+ 	/* Clear those bits which are not active anymore */
+ 	unmask = (ams->current_masked_alarm ^ status) & ams->current_masked_alarm;
+@@ -1039,7 +1105,9 @@ static void ams_unmask_worker(struct work_struct *work)
+ 	ams->current_masked_alarm &= ~ams->intr_mask;
+ 
+ 	/* Clear the interrupts before we unmask them */
+-	writel(unmask, ams->base + AMS_ISR_0);
++	writel((unmask & AMS_ISR0_ALARM_MASK), ams->base + AMS_ISR_0);
++	writel(((unmask >> AMS_ISR1_ALARM_SHIFT) & AMS_ISR1_ALARM_MASK),
++	       ams->base + AMS_ISR_1);
+ 
+ 	ams_update_intrmask(ams, ~AMS_ALARM_MASK, ~AMS_ALARM_MASK);
+ 
+@@ -1055,27 +1123,37 @@ static irqreturn_t ams_irq(int irq, void *data)
+ {
+ 	struct iio_dev *indio_dev = data;
+ 	struct ams *ams = iio_priv(indio_dev);
+-	u32 isr0;
++	u64 isr, isr0, isr1;
+ 
+ 	spin_lock(&ams->intr_lock);
+ 
+ 	isr0 = readl(ams->base + AMS_ISR_0);
++	isr1 = readl(ams->base + AMS_ISR_1);
+ 
+ 	/* Only process alarms that are not masked */
+-	isr0 &= ~((ams->intr_mask & AMS_ISR0_ALARM_MASK) | ams->current_masked_alarm);
+-	if (!isr0) {
++	isr0 &= ~((ams->intr_mask & AMS_ISR0_ALARM_MASK) |
++		  ams->current_masked_alarm);
++	isr1 &= ~(((ams->intr_mask &
++		    (AMS_ISR1_ALARM_MASK << AMS_ISR1_ALARM_SHIFT)) |
++		   ams->current_masked_alarm) >>
++		  AMS_ISR1_ALARM_SHIFT);
++	isr = (isr0 | (isr1 << AMS_ISR1_ALARM_SHIFT));
++	if (!isr0 && !isr1) {
+ 		spin_unlock(&ams->intr_lock);
+ 		return IRQ_NONE;
+ 	}
+ 
+ 	/* Clear interrupt */
+ 	writel(isr0, ams->base + AMS_ISR_0);
++	writel(isr1, ams->base + AMS_ISR_1);
+ 
+ 	/* Mask the alarm interrupts until cleared */
+ 	ams->current_masked_alarm |= isr0;
++	ams->current_masked_alarm |= isr1 << AMS_ISR1_ALARM_SHIFT;
++
+ 	ams_update_intrmask(ams, ~AMS_ALARM_MASK, ~AMS_ALARM_MASK);
+ 
+-	ams_handle_events(indio_dev, isr0);
++	ams_handle_events(indio_dev, isr);
+ 
+ 	schedule_delayed_work(&ams->ams_unmask_work,
+ 			      msecs_to_jiffies(AMS_UNMASK_TIMEOUT_MS));
+@@ -1091,6 +1169,11 @@ static const struct iio_event_spec ams_temp_events[] = {
+ 		.dir = IIO_EV_DIR_RISING,
+ 		.mask_separate = BIT(IIO_EV_INFO_ENABLE) | BIT(IIO_EV_INFO_VALUE),
+ 	},
++	{
++		.type = IIO_EV_TYPE_MAG,
++		.dir = IIO_EV_DIR_RISING,
++		.mask_separate = BIT(IIO_EV_INFO_ENABLE) | BIT(IIO_EV_INFO_VALUE),
++	}
+ };
+ 
+ static const struct iio_event_spec ams_voltage_events[] = {
+@@ -1305,10 +1388,11 @@ static int ams_parse_firmware(struct iio_dev *indio_dev)
+ 			/* set threshold to max and min for each channel */
+ 			falling_off =
+ 				ams_get_alarm_offset(ams_channels[i].scan_index,
+-						     IIO_EV_DIR_FALLING);
++						     IIO_EV_DIR_FALLING, IIO_EV_TYPE_THRESH);
+ 			rising_off =
+ 				ams_get_alarm_offset(ams_channels[i].scan_index,
+-						     IIO_EV_DIR_RISING);
++						     IIO_EV_DIR_RISING, IIO_EV_TYPE_THRESH);
++
+ 			if (ams_channels[i].scan_index >= AMS_PS_SEQ_MAX) {
+ 				writel(AMS_ALARM_THR_MIN,
+ 				       ams->pl_base + falling_off);
+@@ -1320,6 +1404,24 @@ static int ams_parse_firmware(struct iio_dev *indio_dev)
+ 				writel(AMS_ALARM_THR_MAX,
+ 				       ams->ps_base + rising_off);
+ 			}
++
++			/* also set OT thresholds for temperature channels*/
++			if (ams_channels[i].type == IIO_TEMP) {
++				falling_off =
++					ams_get_alarm_offset(ams_channels[i].scan_index,
++							     IIO_EV_DIR_FALLING, IIO_EV_TYPE_MAG);
++				rising_off =
++					ams_get_alarm_offset(ams_channels[i].scan_index,
++							     IIO_EV_DIR_RISING, IIO_EV_TYPE_MAG);
++
++				if (ams_channels[i].scan_index >= AMS_PS_SEQ_MAX) {
++					writel(AMS_ALARM_THR_MIN, ams->pl_base + falling_off);
++					writel(AMS_ALARM_THR_MAX, ams->pl_base + rising_off);
++				} else {
++					writel(AMS_ALARM_THR_MIN, ams->ps_base + falling_off);
++					writel(AMS_ALARM_THR_MAX, ams->ps_base + rising_off);
++				}
++			}
+ 		}
+ 	}
+ 
+diff --git a/drivers/iio/adc/xilinx-xadc-core.c b/drivers/iio/adc/xilinx-xadc-core.c
+index abb8891b9..b61502a52 100644
+--- a/drivers/iio/adc/xilinx-xadc-core.c
++++ b/drivers/iio/adc/xilinx-xadc-core.c
+@@ -391,8 +391,7 @@ static int xadc_zynq_setup(struct platform_device *pdev,
+ 	xadc_write_reg(xadc, XADC_ZYNQ_REG_INTSTS, ~0);
+ 	xadc_write_reg(xadc, XADC_ZYNQ_REG_INTMSK, xadc->zynq_intmask);
+ 	xadc_write_reg(xadc, XADC_ZYNQ_REG_CFG, XADC_ZYNQ_CFG_ENABLE |
+-			XADC_ZYNQ_CFG_REDGE | XADC_ZYNQ_CFG_WEDGE |
+-			tck_div | XADC_ZYNQ_CFG_IGAP(igap));
++			XADC_ZYNQ_CFG_REDGE | tck_div | XADC_ZYNQ_CFG_IGAP(igap));
+ 
+ 	if (pcap_rate > XADC_ZYNQ_PCAP_RATE_MAX) {
+ 		ret = clk_set_rate(xadc->clk, pcap_rate);
 diff --git a/drivers/iio/imu/adis16400.c b/drivers/iio/imu/adis16400.c
 index 17bb0c40a..25403de4b 100644
 --- a/drivers/iio/imu/adis16400.c
