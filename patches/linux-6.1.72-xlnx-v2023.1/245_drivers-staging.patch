@@ -1319,10 +1319,10 @@ index 000000000..4dc348a1e
 +obj-$(CONFIG_AXIENET_HAS_TADMA) += xilinx_tsn_tadma.o
 diff --git a/drivers/staging/xilinx-tsn/xilinx_axienet_main_tsn.c b/drivers/staging/xilinx-tsn/xilinx_axienet_main_tsn.c
 new file mode 100644
-index 000000000..7cbe75fcc
+index 000000000..843915a52
 --- /dev/null
 +++ b/drivers/staging/xilinx-tsn/xilinx_axienet_main_tsn.c
-@@ -0,0 +1,2032 @@
+@@ -0,0 +1,2039 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Xilinx Axi Ethernet device driver
@@ -1369,7 +1369,6 @@ index 000000000..7cbe75fcc
 +#include <linux/random.h>
 +#include <net/sock.h>
 +#include <linux/xilinx_phy.h>
-+#include <linux/clk.h>
 +
 +#include "xilinx_axienet_tsn.h"
 +
@@ -2928,6 +2927,11 @@ index 000000000..7cbe75fcc
 +#endif
 +	.get_link_ksettings = phy_ethtool_get_link_ksettings,
 +	.set_link_ksettings = phy_ethtool_set_link_ksettings,
++#if defined(CONFIG_XILINX_TSN_QBR)
++	.get_mm		= axienet_preemption_sts_ethtool,
++	.set_mm		= axienet_preemption_ctrl_ethtool,
++	.get_mm_stats	= axienet_preemption_cnt_ethtool,
++#endif
 +};
 +
 +static int axienet_clk_init(struct platform_device *pdev,
@@ -3227,6 +3231,9 @@ index 000000000..7cbe75fcc
 +		lp->eth_irq = platform_get_irq(pdev, 0);
 +
 +	ret = axienet_tsn_probe(pdev, lp, ndev);
++
++	if (ret)
++		goto cleanup_clk;
 +
 +	ret = axienet_clk_init(pdev, &lp->aclk, &lp->eth_sclk,
 +			       &lp->eth_refclk, &lp->eth_dclk);
@@ -4783,10 +4790,10 @@ index 000000000..3eff4449b
 +}
 diff --git a/drivers/staging/xilinx-tsn/xilinx_axienet_tsn.h b/drivers/staging/xilinx-tsn/xilinx_axienet_tsn.h
 new file mode 100644
-index 000000000..32c3fc498
+index 000000000..9399e7c28
 --- /dev/null
 +++ b/drivers/staging/xilinx-tsn/xilinx_axienet_tsn.h
-@@ -0,0 +1,1333 @@
+@@ -0,0 +1,1354 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * Definitions for Xilinx Axi Ethernet device driver.
@@ -4806,6 +4813,7 @@ index 000000000..32c3fc498
 +#include <linux/phy.h>
 +#include <linux/of_platform.h>
 +#include <linux/clk.h>
++#include <linux/io-64-nonatomic-lo-hi.h>
 +
 +/* Packet size info */
 +#define XAE_HDR_SIZE			14 /* Size of Ethernet header */
@@ -5881,6 +5889,22 @@ index 000000000..32c3fc498
 +	return ioread32(lp->regs + offset);
 +}
 +
++/**
++ * axienet_ior64 - Memory mapped Axi Ethernet register read from two consecutive registers
++ * @lp:         Pointer to axienet local structure
++ * @offset:     Address offset from the base address of Axi Ethernet core
++ *
++ * Return: 64 bit value, where the LSB 32 bits correspond to the contents of the register
++ * at baseaddress+offset and MSB 32 bits correspond to the contents of the register at
++ * baseaddress+offset+4
++ *
++ * This function returns the 64 bit value corresponding to two consecutive registers.
++ */
++static inline u64 axienet_ior64(struct axienet_local *lp, off_t offset)
++{
++	return ioread64_lo_hi(lp->regs + offset);
++}
++
 +static inline u32 axinet_ior_read_mcr(struct axienet_local *lp)
 +{
 +	return axienet_ior(lp, XAE_MDIO_MCR_OFFSET);
@@ -6046,6 +6070,10 @@ index 000000000..32c3fc498
 +int axienet_preemption_sts(struct net_device *ndev, void __user *useraddr);
 +int axienet_preemption_receive(struct net_device *ndev);
 +int axienet_preemption_cnt(struct net_device *ndev, void __user *useraddr);
++int axienet_preemption_sts_ethtool(struct net_device *ndev, struct ethtool_mm_state *state);
++void axienet_preemption_cnt_ethtool(struct net_device *ndev, struct ethtool_mm_stats *stats);
++int axienet_preemption_ctrl_ethtool(struct net_device *ndev, struct ethtool_mm_cfg *config_data,
++				    struct netlink_ext_ack *extack);
 +#ifdef CONFIG_XILINX_TSN_QBV
 +int axienet_qbu_user_override(struct net_device *ndev, void __user *useraddr);
 +int axienet_qbu_sts(struct net_device *ndev, void __user *useraddr);
@@ -6327,10 +6355,10 @@ index 000000000..97764fed6
 +}
 diff --git a/drivers/staging/xilinx-tsn/xilinx_tsn_ep.c b/drivers/staging/xilinx-tsn/xilinx_tsn_ep.c
 new file mode 100644
-index 000000000..52c00675a
+index 000000000..fdee9a897
 --- /dev/null
 +++ b/drivers/staging/xilinx-tsn/xilinx_tsn_ep.c
-@@ -0,0 +1,638 @@
+@@ -0,0 +1,655 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Xilinx FPGA Xilinx TSN End point driver.
@@ -6379,6 +6407,9 @@ index 000000000..52c00675a
 +{
 +	int ret, i = 0;
 +	struct axienet_local *lp = netdev_priv(ndev);
++	struct net_device *emac0_ndev;
++	struct net_device *emac1_ndev;
++	u8 hw_addr_mask[ETH_ALEN];
 +	struct axienet_dma_q *q;
 +
 +	static char irq_name[XAE_MAX_QUEUES + XAE_TSN_MIN_QUEUES][24];
@@ -6426,6 +6457,22 @@ index 000000000..52c00675a
 +	if (ret)
 +		goto err_tadma;
 +#endif
++	if (lp->slaves[0] && lp->slaves[1]) {
++		emac0_ndev = lp->slaves[0];
++		emac1_ndev = lp->slaves[1];
++
++		for (i = 0; i < ETH_ALEN; i++)
++			hw_addr_mask[i] = 0xFF;
++		hw_addr_mask[5] &= 0x000000F0;
++		if (!ether_addr_equal_masked(emac0_ndev->dev_addr, emac1_ndev->dev_addr,
++					     hw_addr_mask))
++			netdev_warn(ndev,
++				    "MSB 44 bits of the MAC addresses of TSN EMAC0 and TSN EMAC1 are different");
++		if (!ether_addr_equal_masked(emac0_ndev->dev_addr, ndev->dev_addr, hw_addr_mask))
++			netdev_warn(ndev, "MSB 44 bits of the MAC addresses of TSN EMAC0 and TSN EP are different");
++		if (!ether_addr_equal_masked(emac0_ndev->dev_addr, ndev->dev_addr, hw_addr_mask))
++			netdev_warn(ndev, "MSB 44 bits of the MAC addresses of TSN EMAC1 and TSN EP are different");
++	}
 +
 +	netif_tx_start_all_queues(ndev);
 +	return 0;
@@ -6613,7 +6660,7 @@ index 000000000..52c00675a
 +{
 +	if (address)
 +		eth_hw_addr_set(ndev, address);
-+	if (!is_valid_ether_addr(ndev->dev_addr))
++	if (!address || !is_valid_ether_addr(ndev->dev_addr))
 +		eth_hw_addr_random(ndev);
 +}
 +
@@ -6887,10 +6934,8 @@ index 000000000..52c00675a
 +
 +	/* Retrieve the MAC address */
 +	ret = of_get_mac_address(pdev->dev.of_node, mac_addr);
-+	if (ret) {
++	if (ret)
 +		dev_err(&pdev->dev, "could not find MAC address\n");
-+		goto free_netdev;
-+	}
 +	tsn_ep_set_mac_address(ndev, mac_addr);
 +	ret = tsn_mcdma_probe(pdev, lp, ndev);
 +	if (ret) {
@@ -7136,10 +7181,10 @@ index 000000000..b1112c787
 +MODULE_LICENSE("GPL v2");
 diff --git a/drivers/staging/xilinx-tsn/xilinx_tsn_ip.c b/drivers/staging/xilinx-tsn/xilinx_tsn_ip.c
 new file mode 100644
-index 000000000..827cfb2f4
+index 000000000..188426d3b
 --- /dev/null
 +++ b/drivers/staging/xilinx-tsn/xilinx_tsn_ip.c
-@@ -0,0 +1,403 @@
+@@ -0,0 +1,434 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
 +/* Xilinx FPGA Xilinx TSN IP driver.
@@ -7341,6 +7386,12 @@ index 000000000..827cfb2f4
 +	if (ep_node)
 +		lp->master = of_find_net_device_by_node(ep_node);
 +
++	if (!lp->master) {
++		netdev_err(ndev, "Defer probe as EP is not probed\n");
++		ret = -EPROBE_DEFER;
++		goto err_1;
++	}
++
 +	lp->abl_reg = axienet_ior(lp, XAE_TSN_ABL_OFFSET);
 +
 +	/* in ep only case tie the data path to eth1 */
@@ -7393,7 +7444,10 @@ index 000000000..827cfb2f4
 +
 +	return 0;
 +err_1:
-+	return -EINVAL;
++	if (lp->timer_priv)
++		axienet_ptp_timer_remove(lp->timer_priv);
++	of_node_put(ep_node);
++	return ret;
 +}
 +
 +/**
@@ -7465,6 +7519,11 @@ index 000000000..827cfb2f4
 +	int ret;
 +	struct axienet_local *lp = netdev_priv(ndev);
 +	struct phy_device *phydev = NULL;
++	struct net_device *emac0_ndev;
++	struct net_device *emac1_ndev;
++	struct axienet_local *ep_node;
++	u8 hw_addr_mask[ETH_ALEN];
++	int i;
 +
 +	axienet_device_reset(ndev);
 +
@@ -7499,6 +7558,23 @@ index 000000000..827cfb2f4
 +
 +	if (lp->abl_reg & TSN_BRIDGEEP_EPONLY)
 +		tsn_data_path_open(ndev);
++
++	if (lp->master) {
++		ep_node = netdev_priv(lp->master);
++		emac0_ndev = ep_node->slaves[0];
++		emac1_ndev = ep_node->slaves[1];
++
++		for (i = 0; i < ETH_ALEN; i++)
++			hw_addr_mask[i] = 0xFF;
++		hw_addr_mask[5] &= 0x000000F0;
++		if (!ether_addr_equal_masked(emac0_ndev->dev_addr, emac1_ndev->dev_addr,
++					     hw_addr_mask))
++			netdev_warn(ndev, "MSB 44 bits of the MAC addresses of TSN EMAC0 and TSN EMAC1 are different");
++		if (!ether_addr_equal_masked(emac0_ndev->dev_addr, ndev->dev_addr, hw_addr_mask))
++			netdev_warn(ndev, "MSB 44 bits of the MAC addresses of TSN EMAC0 and TSN EP are different");
++		if (!ether_addr_equal_masked(emac0_ndev->dev_addr, ndev->dev_addr, hw_addr_mask))
++			netdev_warn(ndev, "MSB 44 bits of the MAC addresses of TSN EMAC1 and TSN EP are different");
++	}
 +
 +	netif_tx_start_all_queues(ndev);
 +
@@ -7545,10 +7621,10 @@ index 000000000..827cfb2f4
 +MODULE_LICENSE("GPL v2");
 diff --git a/drivers/staging/xilinx-tsn/xilinx_tsn_preemption.c b/drivers/staging/xilinx-tsn/xilinx_tsn_preemption.c
 new file mode 100644
-index 000000000..01554a823
+index 000000000..1522f2626
 --- /dev/null
 +++ b/drivers/staging/xilinx-tsn/xilinx_tsn_preemption.c
-@@ -0,0 +1,258 @@
+@@ -0,0 +1,360 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Xilinx FPGA Xilinx TSN QBU/QBR - Frame Preemption module.
@@ -7589,6 +7665,53 @@ index 000000000..01554a823
 +}
 +
 +/**
++ * axienet_preemption_ctrl_ethtool -  Configure Frame Preemption Control register
++ * @ndev: Pointer to the net_device structure
++ * @config_data: Pointer to the mm cfg data struct
++ * @extack: Pointer to the netlink_ext_ack struct
++ * Return: 0 on success, Non-zero error value on failure
++ */
++int axienet_preemption_ctrl_ethtool(struct net_device *ndev, struct ethtool_mm_cfg *config_data,
++				    struct netlink_ext_ack *extack)
++{
++	struct axienet_local *lp = netdev_priv(ndev);
++	bool preemption_support;
++	int add_frag_size, err;
++	u32 value;
++
++	value = axienet_ior(lp, XAE_TSN_ABL_OFFSET);
++	preemption_support = (value & PREEMPTION_SUPPORT) ? 1 : 0;
++	if (!preemption_support)
++		return -EOPNOTSUPP;
++
++	err = ethtool_mm_frag_size_min_to_add(config_data->tx_min_frag_size,
++					      &add_frag_size, extack);
++	if (err)
++		return err;
++
++	if (config_data->tx_enabled) {
++		value = axienet_ior(lp, PREEMPTION_ENABLE_REG);
++		value = value | config_data->tx_enabled;
++		axienet_iow(lp, PREEMPTION_ENABLE_REG, value);
++	}
++
++	value = axienet_ior(lp, PREEMPTION_CTRL_STS_REG);
++
++	value &= ~(VERIFY_TIMER_VALUE_MASK << VERIFY_TIMER_VALUE_SHIFT);
++	value |= (config_data->verify_time << VERIFY_TIMER_VALUE_SHIFT);
++	value &= ~(ADDITIONAL_FRAG_SIZE_MASK << ADDITIONAL_FRAG_SIZE_SHIFT);
++	value |= (add_frag_size << ADDITIONAL_FRAG_SIZE_SHIFT);
++
++	if (!config_data->verify_enabled) {
++		value &= ~(DISABLE_PREEMPTION_VERIFY);
++		value |= !(config_data->verify_enabled);
++	}
++
++	axienet_iow(lp, PREEMPTION_CTRL_STS_REG, value);
++	return 0;
++}
++
++/**
 + * axienet_preemption_ctrl -  Configure Frame Preemption Control register
 + * @ndev: Pointer to the net_device structure
 + * @useraddr: Value to be programmed
@@ -7612,6 +7735,41 @@ index 000000000..01554a823
 +	value |= (data.disable_preemp_verify);
 +
 +	axienet_iow(lp, PREEMPTION_CTRL_STS_REG, value);
++	return 0;
++}
++
++/**
++ * axienet_preemption_sts_ethtool -  Get Frame Preemption Status
++ * @ndev: Pointer to the net_device structure
++ * @state: Pointer to ethtool_mm_state struct
++ * Return: 0 on success, Non-zero error value on failure
++ */
++int axienet_preemption_sts_ethtool(struct net_device *ndev, struct ethtool_mm_state *state)
++{
++	struct axienet_local *lp = netdev_priv(ndev);
++	u32 value;
++
++	value = axienet_ior(lp, XAE_TSN_ABL_OFFSET);
++	state->pmac_enabled = (value & PREEMPTION_SUPPORT) ? 1 : 0;
++	if (!state->pmac_enabled)
++		return -EOPNOTSUPP;
++
++	state->max_verify_time = MAX_VERIFY_TIME;
++	value = axienet_ior(lp, PREEMPTION_ENABLE_REG);
++	state->tx_enabled = value & PREEMPTION_ENABLE;
++
++	value = axienet_ior(lp, PREEMPTION_CTRL_STS_REG);
++	state->tx_active = (value & TX_PREEMPTION_STS) ? 1 : 0;
++	state->verify_status = ((value >> MAC_MERGE_TX_VERIFY_STS_SHIFT)
++				 & MAC_MERGE_TX_VERIFY_STS_MASK) + 1;
++	state->verify_time = (value >> VERIFY_TIMER_VALUE_SHIFT) &
++					VERIFY_TIMER_VALUE_MASK;
++	state->tx_min_frag_size = ethtool_mm_frag_size_add_to_min((value
++								   >> ADDITIONAL_FRAG_SIZE_SHIFT)
++								   & ADDITIONAL_FRAG_SIZE_MASK);
++	state->rx_min_frag_size = ETH_ZLEN;
++	state->verify_enabled = ~(value & DISABLE_PREEMPTION_VERIFY);
++
 +	return 0;
 +}
 +
@@ -7686,6 +7844,26 @@ index 000000000..01554a823
 +}
 +
 +/**
++ * axienet_preemption_cnt_ethtool -  Get Frame Preemption Statistics counter
++ * @ndev: Pointer to the net_device structure
++ * @stats: return value, containing counters value
++ * Return: 0 on success, Non-zero error value on failure
++ */
++void axienet_preemption_cnt_ethtool(struct net_device *ndev, struct ethtool_mm_stats *stats)
++{
++	struct axienet_local *lp = netdev_priv(ndev);
++
++	stats->MACMergeFrameAssErrorCount = axienet_ior64(lp,
++							  MAC_MERGE_FRAME_ASSEMBLY_ERROR_COUNT_REG);
++	stats->MACMergeFrameSmdErrorCount = axienet_ior64(lp, MAC_MERGE_FRAME_SMD_ERROR_COUNT_REG);
++	stats->MACMergeFrameAssOkCount = axienet_ior64(lp,
++						       MAC_MERGE_FRAME_ASSEMBLY_OK_COUNT_RX_REG);
++	stats->MACMergeFragCountRx = axienet_ior64(lp, MAC_MERGE_FRAG_COUNT_RX_REG);
++	stats->MACMergeFragCountTx = axienet_ior64(lp, MAC_MERGE_FRAG_COUNT_TX_REG);
++	stats->MACMergeHoldCount = axienet_ior64(lp, MAC_MERGE_HOLD_COUNT_REG);
++}
++
++/**
 + * axienet_preemption_cnt -  Get Frame Preemption Statistics counter
 + * @ndev: Pointer to the net_device structure
 + * @useraddr: return value, containing counters value
@@ -7707,7 +7885,7 @@ index 000000000..01554a823
 +			       RX_BYTES_PMAC_REG);
 +		statistic_cnts(ndev, &stats.pmac.merge,
 +			       sizeof(struct mac_merge_counters) / 4,
-+			       TX_HOLD_REG);
++			       MAC_MERGE_HOLD_COUNT_REG);
 +	}
 +
 +	if (copy_to_user(useraddr, &stats, sizeof(struct emac_pmac_stats)))
@@ -7809,10 +7987,10 @@ index 000000000..01554a823
 +}
 diff --git a/drivers/staging/xilinx-tsn/xilinx_tsn_preemption.h b/drivers/staging/xilinx-tsn/xilinx_tsn_preemption.h
 new file mode 100644
-index 000000000..31090764b
+index 000000000..bd01d3ca8
 --- /dev/null
 +++ b/drivers/staging/xilinx-tsn/xilinx_tsn_preemption.h
-@@ -0,0 +1,171 @@
+@@ -0,0 +1,177 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
 + * Xilinx TSN QBU/QBR - Frame Preemption header
@@ -7838,9 +8016,14 @@ index 000000000..31090764b
 +#define PREEMPTION_CTRL_STS_REG			0x00000444
 +#define QBU_USER_OVERRIDE_REG			0x00000448
 +#define QBU_CORE_STS_REG			0x0000044c
-+#define TX_HOLD_REG				0x00000910
 +#define RX_BYTES_EMAC_REG			0x00000200
 +#define RX_BYTES_PMAC_REG			0x00000800
++#define MAC_MERGE_HOLD_COUNT_REG		0x00000910
++#define MAC_MERGE_FRAG_COUNT_TX_REG		0x00000918
++#define MAC_MERGE_FRAME_ASSEMBLY_OK_COUNT_RX_REG	0x00000920
++#define MAC_MERGE_FRAME_ASSEMBLY_ERROR_COUNT_REG	0x00000928
++#define MAC_MERGE_FRAME_SMD_ERROR_COUNT_REG		0x00000930
++#define MAC_MERGE_FRAG_COUNT_RX_REG			0x00000938
 +
 +#define PREEMPTION_ENABLE			BIT(0)
 +#define PREEMPTION_SUPPORT			BIT(15)
@@ -7853,6 +8036,7 @@ index 000000000..31090764b
 +#define ADDITIONAL_FRAG_SIZE_MASK		0x3
 +#define ADDITIONAL_FRAG_SIZE_SHIFT		4
 +#define DISABLE_PREEMPTION_VERIFY		BIT(0)
++#define MAX_VERIFY_TIME				0x7F	/* 7-bit field */
 +
 +#define USER_HOLD_REL_ENABLE_VALUE		BIT(31)
 +#define USER_HOLD_TIME_MASK			0x1FF
@@ -9329,10 +9513,10 @@ index 000000000..2ebd19e22
 +#endif /* XILINX_TSN_SHAPER_H */
 diff --git a/drivers/staging/xilinx-tsn/xilinx_tsn_switch.c b/drivers/staging/xilinx-tsn/xilinx_tsn_switch.c
 new file mode 100644
-index 000000000..5e53f5acc
+index 000000000..4eb3716c0
 --- /dev/null
 +++ b/drivers/staging/xilinx-tsn/xilinx_tsn_switch.c
-@@ -0,0 +1,1859 @@
+@@ -0,0 +1,1870 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Xilinx FPGA Xilinx TSN Switch Controller driver.
@@ -11136,6 +11320,11 @@ index 000000000..5e53f5acc
 +	data = axienet_ior(&lp, XAE_EP_EXT_CTRL_OFFSET);
 +	pr_info("Data in Endpoint Extension Control Register is %x\n", data);
 +	ndev = of_find_net_device_by_node(ep_node);
++	if (!ndev) {
++		dev_err(&pdev->dev, "Defer Switch probe as EP is not probed\n");
++		ret = -EPROBE_DEFER;
++		goto err;
++	}
 +	ep_lp = netdev_priv(ndev);
 +	if (ep_lp->ex_ep) {
 +		if (num_tc == 3) {
@@ -11168,6 +11357,12 @@ index 000000000..5e53f5acc
 +		}
 +	}
 +
++	return ret;
++err:
++	if (!inband_mgmt_tag)
++		xlnx_switchdev_remove();
++	misc_deregister(&switch_dev);
++	of_node_put(ep_node);
 +	return ret;
 +}
 +
@@ -13042,20 +13237,21 @@ index 000000000..779f9574a
 +F:	drivers/staging/xilinx_hdcp
 diff --git a/drivers/staging/xilinx_hdcp/Makefile b/drivers/staging/xilinx_hdcp/Makefile
 new file mode 100644
-index 000000000..8418d4e2f
+index 000000000..1f6d80c1d
 --- /dev/null
 +++ b/drivers/staging/xilinx_hdcp/Makefile
-@@ -0,0 +1,4 @@
+@@ -0,0 +1,5 @@
 +obj-$(CONFIG_XILINX_HDCP_COMMON) += xlnx_hdcp_rng.o \
-+         xlnx_timer.o \
-+         xlnx_hdcp_bigdigits.o \
-+         xlnx_hdcp2x_cipher.o \
++	xlnx_timer.o \
++	xlnx_hdcp_bigdigits.o \
++	xlnx_hdcp2x_cipher.o \
++	xlnx_hdcp2x_mmult.o \
 diff --git a/drivers/staging/xilinx_hdcp/xlnx_hdcp2x_cipher.c b/drivers/staging/xilinx_hdcp/xlnx_hdcp2x_cipher.c
 new file mode 100644
-index 000000000..87ea940e0
+index 000000000..a42c8d716
 --- /dev/null
 +++ b/drivers/staging/xilinx_hdcp/xlnx_hdcp2x_cipher.c
-@@ -0,0 +1,89 @@
+@@ -0,0 +1,96 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Xilinx HDCP2X Cipher driver
@@ -13103,6 +13299,13 @@ index 000000000..87ea940e0
 +	xlnx_hdcp2x_cipher_disable(cipher_cfg->cipher_coreaddress);
 +}
 +
++void xlnx_hdcp2x_rx_cipher_init(struct xlnx_hdcp2x_cipher_hw *cipher_cfg)
++{
++	xlnx_hdcp2x_cipher_enable(cipher_cfg->cipher_coreaddress);
++	xlnx_hdcp2x_cipher_set_rxmode(cipher_cfg->cipher_coreaddress);
++	xlnx_hdcp2x_cipher_disable(cipher_cfg->cipher_coreaddress);
++}
++
 +int xlnx_hdcp2x_cipher_cfg_init(struct xlnx_hdcp2x_cipher_hw *cipher_cfg)
 +{
 +	u32 reg_read;
@@ -13145,12 +13348,126 @@ index 000000000..87ea940e0
 +				 XHDCP2X_CIPHER_REG_CTRL_SET_OFFSET,
 +				 lanecount << XHDCP2X_CIPHER_REG_CTRL_LANE_CNT_BIT_POS);
 +}
+diff --git a/drivers/staging/xilinx_hdcp/xlnx_hdcp2x_mmult.c b/drivers/staging/xilinx_hdcp/xlnx_hdcp2x_mmult.c
+new file mode 100644
+index 000000000..5b52e5a06
+--- /dev/null
++++ b/drivers/staging/xilinx_hdcp/xlnx_hdcp2x_mmult.c
+@@ -0,0 +1,108 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Xilinx HDCP2X Random Number Generator driver
++ *
++ * Copyright (C) 2023, Advanced Micro Devices, Inc. All rights reserved.
++ *
++ * Author: Kunal Vasant Rane <kunal.rane@amd.com>
++ *
++ * This driver initializes Montogomery Multiplier IP, which is used to
++ * exchange of the master key during authentication and key exchange is performed using
++ * the public key cryptography system which is based on the RSA algorithm.
++ * reference: https://docs.xilinx.com/v/u/en-US/pg249-hdcp22
++ */
++
++#include <linux/bitfield.h>
++#include <linux/xlnx/xlnx_hdcp2x_mmult.h>
++
++int arr[XHDCP2X_MMULT_MAX_TYPES][XHDCP2X_MMULT_ADDR] = {
++	{XHDCP2X_MMULT_A_BASE, XHDCP2X_MMULT_A_HIGH},
++	{XHDCP2X_MMULT_B_BASE, XHDCP2X_MMULT_B_HIGH},
++	{XHDCP2X_MMULT_N_BASE, XHDCP2X_MMULT_N_HIGH},
++	{XHDCP2X_MMULT_NPRIME_BASE, XHDCP2X_MMULT_NPRIME_HIGH},
++};
++
++static int xlnx_hdcp2x_mmult_read(void __iomem *mmult_coreaddress, int reg_offset)
++{
++	return readl(mmult_coreaddress + reg_offset);
++}
++
++static void xlnx_hdcp2x_mmult_write(void __iomem *mmult_coreaddress, int reg_offset, u32 data)
++{
++	writel(data, mmult_coreaddress + reg_offset);
++}
++
++int xlnx_hdcp2x_mmult_cfginit(struct xlnx_hdcp2x_mmult_hw *mmult_cfg)
++{
++	int reg_read;
++
++	reg_read = xlnx_hdcp2x_mmult_read(mmult_cfg->mmult_coreaddress,
++					  XHDCP2X_MMULT_ADDR_AP);
++
++	return reg_read;
++}
++
++void xlnx_hdcp2x_mmult_enable(struct xlnx_hdcp2x_mmult_hw *mmult_cfg)
++{
++	u32 data;
++
++	data = xlnx_hdcp2x_mmult_read(mmult_cfg->mmult_coreaddress,
++				      XHDCP2X_MMULT_ADDR_AP) & XHDCP2X_MMULT_ADDR_AP_RD;
++	xlnx_hdcp2x_mmult_write(mmult_cfg->mmult_coreaddress,
++				XHDCP2X_MMULT_ADDR_AP, data | XHDCP2X_MMULT_ADDR_AP_WR);
++}
++
++u32 xlnx_hdcp2x_mmult_is_done(struct xlnx_hdcp2x_mmult_hw *mmult_cfg)
++{
++	u32 data;
++
++	data = xlnx_hdcp2x_mmult_read(mmult_cfg->mmult_coreaddress,
++				      XHDCP2X_MMULT_ADDR_AP);
++
++	return (data & XHDCP2X_MMULT_DONE) ? 1 : 0;
++}
++
++u32 xlnx_hdcp2x_mmult_is_ready(struct xlnx_hdcp2x_mmult_hw *mmult_cfg)
++{
++	u32 data;
++
++	data = xlnx_hdcp2x_mmult_read(mmult_cfg->mmult_coreaddress,
++				      XHDCP2X_MMULT_ADDR_AP);
++
++	return !(data & XHDCP2X_MMULT_READY);
++}
++
++u32 xlnx_hdcp2x_mmult_read_u_words(struct xlnx_hdcp2x_mmult_hw *mmult_cfg,
++				   int offset, int *data, int length)
++{
++	int i;
++
++	if ((offset + length) * XHDCP2X_MMULT_OFFSET_MULT
++			> (XHDCP2X_MMULT_ADDR_U_HIGH - XHDCP2X_MMULT_ADDR_U_BASE + 1))
++		return 0;
++
++	for (i = 0; i < length; i++)
++		*(data + i) =
++			xlnx_hdcp2x_mmult_read(mmult_cfg->mmult_coreaddress,
++					       XHDCP2X_MMULT_ADDR_U_BASE
++					       + (offset + i) * XHDCP2X_MMULT_OFFSET_MULT);
++
++	return length;
++}
++
++int xlnx_hdcp2x_mmult_write_type(struct xlnx_hdcp2x_mmult_hw *mmult_cfg, int offset, int *data,
++				 int length, int type)
++{
++	int i, base, high;
++
++	base = arr[type][0];
++	high = arr[type][1];
++
++	if ((offset +  length) * XHDCP2X_MMULT_OFFSET_MULT > (high - base + 1))
++		return 0;
++
++	for (i = 0; i < length; i++)
++		xlnx_hdcp2x_mmult_write(mmult_cfg->mmult_coreaddress, base +
++			(offset + i) * XHDCP2X_MMULT_OFFSET_MULT, *(data + i));
++	return length;
++}
 diff --git a/drivers/staging/xilinx_hdcp/xlnx_hdcp_bigdigits.c b/drivers/staging/xilinx_hdcp/xlnx_hdcp_bigdigits.c
 new file mode 100644
-index 000000000..9081cf426
+index 000000000..056d12347
 --- /dev/null
 +++ b/drivers/staging/xilinx_hdcp/xlnx_hdcp_bigdigits.c
-@@ -0,0 +1,919 @@
+@@ -0,0 +1,1150 @@
 +// SPDX-License-Identifier: GPL-2.0
 +// Id: bigdigits.c
 +
@@ -13187,6 +13504,14 @@ index 000000000..9081cf426
 +#define XBIGDIG_LOHALF(x) ((unsigned int)((x) & MAX_HALF_DIGIT))
 +#define XBIGDIG_HIHALF(x) ((unsigned int)((x) >> XBITS_PER_HALF_DIGIT & MAX_HALF_DIGIT))
 +#define XBIGDIG_TOHALF(x) ((unsigned int)((x) << XBITS_PER_HALF_DIGIT))
++
++#define IS_NONZERO_DIGIT(x) \
++({\
++	typeof(x) _x = x;\
++	((_x) | ((~(_x)) + 1)) >> (XBITS_PER_DIGIT - 1); \
++})
++
++#define IS_ZERO_DIGIT(x) (1 ^ IS_NONZERO_DIGIT((x)))
 +
 +static void mp_next_bit_mask(unsigned int *mask, unsigned int *n)
 +{
@@ -13384,8 +13709,8 @@ index 000000000..9081cf426
 +	return q2;
 +}
 +
-+static unsigned int mp_add(unsigned int w[], const unsigned int u[],
-+			   const unsigned int v[], size_t ndigits)
++unsigned int mp_add(unsigned int w[], const unsigned int u[], const unsigned int v[],
++		    size_t ndigits)
 +{
 +	/*
 +	 *	Calculates w = u + v
@@ -13414,8 +13739,7 @@ index 000000000..9081cf426
 +	return k;
 +}
 +
-+static int mp_multiply(unsigned int w[], const unsigned int u[],
-+		       const unsigned int v[], size_t ndigits)
++int mp_multiply(unsigned int w[], const unsigned int u[], const unsigned int v[], size_t ndigits)
 +{
 +	/*
 +	 *	Computes product w = u * v
@@ -13520,6 +13844,18 @@ index 000000000..9081cf426
 +	return 0;
 +}
 +
++/** Returns 1 if a == 0, else 0 (constant-time) */
++static int mp_is_zero(const u32 a[], size_t ndigits)
++{
++	u32 dif = 0;
++	const u32 ZERO = 0;
++
++	while (ndigits--)
++		dif |= a[ndigits] ^ ZERO;
++
++	return IS_ZERO_DIGIT(dif);
++}
++
 +static int mp_compare(const unsigned int a[], const unsigned int b[],
 +		      size_t ndigits)
 +{
@@ -13580,47 +13916,6 @@ index 000000000..9081cf426
 +	for (i = 1; i < ndigits; i++)
 +		a[i] = 0;
 +	a[0] = d;
-+}
-+
-+static unsigned int mp_shift_left(unsigned int a[], const unsigned int *b,
-+				  size_t shift, size_t ndigits)
-+{
-+	/* Computes a = b << shift */
-+	/* [v2.1] Modified to cope with shift > BITS_PERDIGIT */
-+	size_t i, y, nw, bits;
-+	unsigned int mask, carry, nextcarry;
-+	u8 shift_bit = 0;
-+
-+	/* Do we shift whole digits? */
-+	if (shift >= XBITS_PER_DIGIT) {
-+		nw = shift / XBITS_PER_DIGIT;
-+		i = ndigits;
-+		while (i--) {
-+			if (i >= nw)
-+				a[i] = b[i - nw];
-+			else
-+				a[i] = 0;
-+		}
-+		/* Call again to shift bits inside digits */
-+		bits = shift % XBITS_PER_DIGIT;
-+		carry = b[ndigits - nw] << bits;
-+		if (bits)
-+			carry |= mp_shift_left(a, a, bits, ndigits);
-+		return carry;
-+	}
-+	bits = shift;
-+	/* Construct mask = high bits set */
-+	mask = ~(~(unsigned int)shift_bit >> bits);
-+
-+	y = XBITS_PER_DIGIT - bits;
-+	carry = 0;
-+	for (i = 0; i < ndigits; i++) {
-+		nextcarry = (b[i] & mask) >> y;
-+		a[i] = b[i] << bits | carry;
-+		carry = nextcarry;
-+	}
-+
-+	return carry;
 +}
 +
 +static unsigned int mp_short_div(unsigned int q[], const unsigned int u[], unsigned int v,
@@ -13702,8 +13997,8 @@ index 000000000..9081cf426
 +	return carry;
 +}
 +
-+static int mp_divide(unsigned int q[], unsigned int r[], const unsigned int u[],
-+		     size_t udigits, unsigned int v[], size_t vdigits)
++int mp_divide(unsigned int q[], unsigned int r[], const unsigned int u[],
++	      size_t udigits, unsigned int v[], size_t vdigits)
 +{
 +	size_t shift;
 +	int n, m, j;
@@ -13821,6 +14116,259 @@ index 000000000..9081cf426
 +	mp_shift_right(v, v, shift, n);
 +
 +	return 0;
++}
++
++int mp_mod_inv(u32 inv[], const u32 u[], const u32 v[], size_t ndigits)
++{
++	/* Computes inv = u^(-1) mod v */
++
++	/*
++	 * Ref: Knuth Algorithm X Vol 2 p 342
++	 * ignoring u2, v2, t2
++	 * and avoiding negative numbers.
++	 * Returns non-zero if inverse undefined.
++	 */
++	int b_iter;
++	int result;
++
++	/* 1 * ndigits each, except w = 2 * ndigits */
++	u32 *u1, *u3, *v1, *v3, *t1, *t3, *q, *w;
++	/* allocate 9 * ndigits */
++	u1 = kzalloc(9 * ndigits * sizeof(u32), GFP_KERNEL);
++	if (!u1)
++		return -ENOMEM;
++
++	u3 = &u1[1 * ndigits];
++	v1 = &u1[2 * ndigits];
++	v3 = &u1[3 * ndigits];
++	t1 = &u1[4 * ndigits];
++	t3 = &u1[5 * ndigits];
++	q = &u1[6 * ndigits];
++	/* 2 * ndigits each */
++	w = &u1[7 * ndigits];
++
++	/* Step X1. Initialise */
++	mp_set_digit(u1, 1, ndigits);
++	mp_set_equal(u3, u, ndigits);
++	mp_set_zero(v1, ndigits);
++	mp_set_equal(v3, v, ndigits);
++
++	b_iter = 1;
++	while (!mp_is_zero(v3, ndigits)) {
++		mp_divide(q, t3, u3, ndigits, v3, ndigits);
++		mp_multiply(w, q, v1, ndigits);
++		mp_add(t1, u1, w, ndigits);
++		/* Swap u1 = v1; v1 = t1; u3 = v3; v3 = t3 */
++		mp_set_equal(u1, v1, ndigits);
++		mp_set_equal(v1, t1, ndigits);
++		mp_set_equal(u3, v3, ndigits);
++		mp_set_equal(v3, t3, ndigits);
++
++		b_iter = -b_iter;
++	}
++
++	if (b_iter < 0)
++		mp_subtract(inv, v, u1, ndigits);/* inv = v - u1 */
++	else
++		mp_set_equal(inv, u1, ndigits);	/* inv = u1 */
++
++	/* Make sure u3 = gcd(u,v) == 1 */
++	if (mp_short_cmp(u3, 1, ndigits) != 0) {
++		result = 1;
++		mp_set_zero(inv, ndigits);
++	} else {
++		result = 0;
++	}
++	/* Clear up */
++	kfree(u1);
++
++	return result;
++}
++
++int mp_modulo(u32 r[], const u32 u[], size_t udigits,
++	      u32 v[], size_t vdigits)
++{
++	/*
++	 * Computes r = u mod v
++	 * where r, v are multiprecision integers of length vdigits
++	 * and u is a multiprecision integer of length udigits.
++	 * r may overlap v.
++	 * Note that r here is only vdigits long,
++	 * whereas in mpDivide it is udigits long.
++	 * Use remainder from mpDivide function.
++	 */
++	u32 *qq, *rr;
++	size_t nn = max(udigits, vdigits);
++
++	qq = kcalloc(udigits, udigits * sizeof(u32), GFP_KERNEL);
++	if (!qq)
++		return -ENOMEM;
++
++	rr = kcalloc(nn, nn * sizeof(u32), GFP_KERNEL);
++	if (!rr) {
++		kfree(qq);
++		return -ENOMEM;
++	}
++	/* rr[nn] = u mod v */
++	mp_divide(qq, rr, u, udigits, v, vdigits);
++
++	/* Final r is only vdigits long */
++	mp_set_equal(r, rr, vdigits);
++
++	kfree(rr);
++	kfree(qq);
++
++	return 0;
++}
++
++int mp_get_bit(u32 a[], size_t ndigits, size_t ibit)
++{
++	/* Returns value 1 or 0 of bit n (0..nbits-1); or -1 if out of range */
++
++	size_t idigit, bit_to_get;
++	u32 mask;
++
++	/* Which digit? (0-based) */
++	idigit = ibit / XBITS_PER_DIGIT;
++	if (idigit >= ndigits)
++		return -1;
++
++	/* Set mask */
++	bit_to_get = ibit % XBITS_PER_DIGIT;
++	mask = 0x01 << bit_to_get;
++
++	return ((a[idigit] & mask) ? 1 : 0);
++}
++
++int mp_mod_mult(u32 a[], const u32 x[], const u32 y[], u32 m[], size_t ndigits)
++{
++	/* Computes a = (x * y) mod m */
++	/* Double-length temp variable p */
++	u32 *p;
++
++	p = kzalloc(ndigits * 2 * sizeof(u32), GFP_KERNEL);
++	if (!p)
++		return -ENOMEM;
++
++	/* Calc p[2n] = x * y */
++	mp_multiply(p, x, y, ndigits);
++
++	/* Then modulo (NOTE: a is OK at only ndigits long) */
++	mp_modulo(a, p, ndigits * 2, m, ndigits);
++
++	kfree(p);
++
++	return 0;
++}
++
++/** Returns 1 if a == b, else 0 (constant-time) */
++int mp_equal(const u32 a[], const u32 b[], size_t ndigits)
++{
++	u32 dif = 0;
++
++	while (ndigits--)
++		dif |= a[ndigits] ^ b[ndigits];
++
++	return IS_ZERO_DIGIT(dif);
++}
++
++u32 mp_subtract(u32 w[], const u32 u[], const u32 v[], size_t ndigits)
++{
++	/*
++	 * Calculates w = u - v where u >= v
++	 * w, u, v are multiprecision integers of ndigits each
++	 * Returns 0 if OK, or 1 if v > u.
++	 * Ref: Knuth Vol 2 Ch 4.3.1 p 267 Algorithm S.
++	 */
++
++	u32 k;
++	size_t j;
++
++	/* Step S1. Initialise */
++	k = 0;
++
++	for (j = 0; j < ndigits; j++) {
++		/*
++		 * Step S2. Subtract digits w_j = (u_j - v_j - k)
++		 * Set k = 1 if borrow occurs.
++		 */
++
++		w[j] = u[j] - k;
++		if (w[j] > MAX_DIGIT - k)
++			k = 1;
++		else
++			k = 0;
++
++		w[j] -= v[j];
++		if (w[j] > MAX_DIGIT - v[j])
++			k++;
++	}
++	/* Step S3. Loop on j */
++	/* Should be zero if u >= v */
++	return k;
++}
++
++/** Returns sign of (a - d) where d is a single digit */
++int mp_short_cmp(const u32 a[], u32 d, size_t ndigits)
++{
++	size_t i;
++	int gt = 0;
++	int lt = 0;
++
++	/* Zero-length a => a is zero */
++	if (ndigits == 0)
++		return (d ? -1 : 0);
++
++	/* If |a| > 1 then a > d */
++	for (i = 1; i < ndigits; i++) {
++		if (a[i] != 0)
++			return 1;	/* GT */
++	}
++
++	lt = (a[0] < d);
++	gt = (a[0] > d);
++
++	return gt - lt;	/* EQ=0 GT=+1 LT=-1 */
++}
++
++unsigned int mp_shift_left(unsigned int a[], const unsigned int *b, size_t shift, size_t ndigits)
++{
++	/* Computes a = b << shift */
++	/* [v2.1] Modified to cope with shift > BITS_PERDIGIT */
++	size_t i, y, nw, bits;
++	unsigned int mask, carry, nextcarry;
++	u8 shift_bit = 0;
++
++	/* Do we shift whole digits? */
++	if (shift >= XBITS_PER_DIGIT) {
++		nw = shift / XBITS_PER_DIGIT;
++		i = ndigits;
++		while (i--) {
++			if (i >= nw)
++				a[i] = b[i - nw];
++			else
++				a[i] = 0;
++		}
++		/* Call again to shift bits inside digits */
++		bits = shift % XBITS_PER_DIGIT;
++		carry = b[ndigits - nw] << bits;
++		if (bits)
++			carry |= mp_shift_left(a, a, bits, ndigits);
++		return carry;
++	}
++	bits = shift;
++	/* Construct mask = high bits set */
++	mask = ~(~(unsigned int)shift_bit >> bits);
++
++	y = XBITS_PER_DIGIT - bits;
++	carry = 0;
++	for (i = 0; i < ndigits; i++) {
++		nextcarry = (b[i] & mask) >> y;
++		a[i] = b[i] << bits | carry;
++		carry = nextcarry;
++	}
++
++	return carry;
 +}
 +
 +static int mp_square(unsigned int w[], const unsigned int x[], size_t ndigits)
@@ -14434,10 +14982,10 @@ index 000000000..b500fb1a1
 +obj-y += xilinx-hdcp1x-cipher.o
 diff --git a/drivers/staging/xlnx_hdcp1x/xilinx-hdcp1x-cipher.c b/drivers/staging/xlnx_hdcp1x/xilinx-hdcp1x-cipher.c
 new file mode 100644
-index 000000000..9450a8d5f
+index 000000000..fde5fed0c
 --- /dev/null
 +++ b/drivers/staging/xlnx_hdcp1x/xilinx-hdcp1x-cipher.c
-@@ -0,0 +1,717 @@
+@@ -0,0 +1,949 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Xilinx HDCP1X Cipher driver
@@ -14448,113 +14996,7 @@ index 000000000..9450a8d5f
 + */
 +
 +#include <linux/bitfield.h>
-+#include <linux/xilinx-hdcp1x-cipher.h>
-+
-+/* HDCP Cipher register offsets */
-+#define XHDCP1X_CIPHER_REG_VERSION		0x00
-+#define XHDCP1X_CIPHER_REG_TYPE			0x04
-+#define XHDCP1X_CIPHER_REG_SCRATCH		0x08
-+#define XHDCP1X_CIPHER_REG_CONTROL		0x0C
-+#define XHDCP1X_CIPHER_REG_STATUS		0x10
-+#define XHDCP1X_CIPHER_REG_INTERRUPT_MASK	0x14
-+#define XHDCP1X_CIPHER_REG_INTERRUPT_STATUS	0x18
-+#define XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_H	0x20
-+#define XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_L	0x24
-+#define XHDCP1X_CIPHER_REG_KEYMGMT_CONTROL	0x2C
-+#define XHDCP1X_CIPHER_REG_KEYMGMT_STATUS	0x30
-+#define XHDCP1X_CIPHER_REG_KSV_LOCAL_H		0x38
-+#define XHDCP1X_CIPHER_REG_KSV_LOCAL_L		0x3C
-+#define XHDCP1X_CIPHER_REG_KSV_REMOTE_H		0x40
-+#define XHDCP1X_CIPHER_REG_KSV_REMOTE_L		0x44
-+#define XHDCP1X_CIPHER_REG_KM_H			0x48
-+#define XHDCP1X_CIPHER_REG_KM_L			0x4C
-+#define XHDCP1X_CIPHER_REG_CIPHER_CONTROL	0x50
-+#define XHDCP1X_CIPHER_REG_CIPHER_STATUS	0x54
-+#define XHDCP1X_CIPHER_REG_CIPHER_BX		0x58
-+#define XHDCP1X_CIPHER_REG_CIPHER_BY		0x5C
-+#define XHDCP1X_CIPHER_REG_CIPHER_BZ		0x60
-+#define XHDCP1X_CIPHER_REG_CIPHER_KX		0x64
-+#define XHDCP1X_CIPHER_REG_CIPHER_KY		0x68
-+#define XHDCP1X_CIPHER_REG_CIPHER_KZ		0x6C
-+#define XHDCP1X_CIPHER_REG_CIPHER_MI_H		0x70
-+#define XHDCP1X_CIPHER_REG_CIPHER_MI_L		0x74
-+#define XHDCP1X_CIPHER_REG_CIPHER_RI		0x78
-+#define XHDCP1X_CIPHER_REG_CIPHER_RO		0x7C
-+#define XHDCP1X_CIPHER_REG_CIPHER_MO_H		0x80
-+#define XHDCP1X_CIPHER_REG_CIPHER_MO_L		0x84
-+#define XHDCP1X_CIPHER_REG_BLANK_VALUE		0xBC
-+#define XHDCP1X_CIPHER_REG_BLANK_SEL		0xC0
-+
-+/* HDCP Cipher register bit mask definitions */
-+#define XHDCP1X_CIPHER_BITMASK_TYPE_PROTOCOL			GENMASK(1, 0)
-+#define XHDCP1X_CIPHER_BITMASK_TYPE_DIRECTION			BIT(2)
-+#define XHDCP1X_CIPHER_BITMASK_CONTROL_ENABLE			BIT(0)
-+#define XHDCP1X_CIPHER_BITMASK_CONTROL_UPDATE			BIT(1)
-+#define XHDCP1X_CIPHER_BITMASK_CONTROL_NUM_LANES		GENMASK(6, 4)
-+#define XHDCP1X_CIPHER_BITMASK_CONTROL_RESET			BIT(31)
-+#define XHDCP1X_CIPHER_BITMASK_INTERRUPT_LINK_FAIL		BIT(0)
-+#define XHDCP1X_CIPHER_BITMASK_INTERRUPT_RI_UPDATE		BIT(1)
-+#define XHDCP1X_CIPHER_BITMASK_KEYMGMT_CONTROL_LOCAL_KSV	BIT(0)
-+#define XHDCP1X_CIPHER_BITMASK_KEYMGMT_CONTROL_BEGIN_KM		BIT(1)
-+#define XHDCP1X_CIPHER_BITMASK_KEYMGMT_CONTROL_ABORT_KM		BIT(2)
-+#define XHDCP1X_CIPHER_BITMASK_KEYMGMT_CONTROL_SET_SELECT	GENMASK(18, 16)
-+#define XHDCP1X_CIPHER_BITMASK_KEYMGMT_STATUS_KSV_READY		BIT(0)
-+#define XHDCP1X_CIPHER_BITMASK_KEYMGMT_STATUS_KM_READY		BIT(1)
-+#define XHDCP1X_CIPHER_BITMASK_CIPHER_CONTROL_XOR_ENABLE	BIT(0)
-+#define XHDCP1X_CIPHER_BITMASK_CIPHER_CONTROL_REQUEST		GENMASK(10, 8)
-+#define XHDCP1X_CIPHER_BITMASK_CIPHER_STATUS_XOR_IN_PROG	BIT(0)
-+#define XHDCP1X_CIPHER_BITMASK_CIPHER_STATUS_REQUEST_IN_PROG	GENMASK(10, 8)
-+#define XHDCP1X_CIPHER_BITMASK_BLANK_VALUE			GENMASK(31, 0)
-+#define XHDCP1X_CIPHER_BITMASK_BLANK_SEL			BIT(0)
-+
-+/* HDCP Cipher register bit value definitions */
-+#define XHDCP1X_CIPHER_VALUE_TYPE_PROTOCOL_DP			0
-+#define XHDCP1X_CIPHER_VALUE_TYPE_PROTOCOL_HDMI			1
-+#define XHDCP1X_CIPHER_VALUE_TYPE_DIRECTION_MASK		BIT(2)
-+#define XHDCP1X_CIPHER_VALUE_TYPE_DIRECTION_RX			0
-+#define XHDCP1X_CIPHER_VALUE_TYPE_DIRECTION_TX			1
-+#define XHDCP1X_CIPHER_VALUE_CIPHER_CONTROL_REQUEST_BLOCK	BIT(8)
-+#define XHDCP1X_CIPHER_VALUE_CIPHER_CONTROL_REQUEST_REKEY	BIT(9)
-+#define XHDCP1X_CIPHER_VALUE_CIPHER_CONTROL_REQUEST_RNG		BIT(10)
-+
-+#define XHDCP1X_CIPHER_SIZE_LOCAL_KSV				5
-+#define XHDCP1X_CIPHER_KSV_RETRIES				1024
-+#define XHDCP1X_CIPHER_SHIFT_NUM_LANES				4
-+#define XHDCP1X_CIPHER_MAX_LANES				4
-+#define XHDCP1X_CIPHER_INTR_ALL					GENMASK(31, 0)
-+#define XHDCP1X_CIPHER_KEYSELECT_MAX_VALUE			8
-+#define XHDCP1X_CIPHER_SHIFT_KEYMGMT_CONTROL_SET_SELECT		16
-+#define XHDCP1X_CIPHER_NUM_LANES_1				1
-+#define XHDCP1X_CIPHER_NUM_LANES_2				2
-+#define XHDCP1X_CIPHER_NUM_LANES_4				4
-+#define XHDCP1X_CIPHER_BITMASK_CIPHER_BX			GENMASK(27, 0)
-+#define XHDCP1X_CIPHER_BITMASK_CIPHER_BY			GENMASK(27, 0)
-+#define XHDCP1X_CIPHER_BITMASK_CIPHER_BZ_REPEATER		BIT(8)
-+#define XHDCP1X_CIPHER_BITMASK_CIPHER_BZ			GENMASK(7, 0)
-+#define XHDCP1X_CIPHER_SHIFT_CIPHER_B				28
-+
-+enum xhdcp1x_cipher_request_type {
-+	XHDCP1X_CIPHER_REQUEST_BLOCK = 0,
-+	XHDCP1X_CIPHER_REQUEST_REKEY = 1,
-+	XHDCP1X_CIPHER_REQUEST_RNG = 2,
-+	XHDCP1X_CIPHER_REQUEST_MAX = 3,
-+};
-+
-+/**
-+ * struct xhdcp1x_cipher - hdcp1x cipher driver structure
-+ * @interface_base: iommu base of interface driver
-+ * @dev: Platform data
-+ * @is_tx: flag for tx, 1 for tx and 0 for rx
-+ * @is_hdmi: flag for HDMI, 1 for HDMI and 0 for DP
-+ * @num_lanes: number of active lanes in interface driver, possible lanes are 1, 2 and 4
-+ */
-+struct xhdcp1x_cipher {
-+	void __iomem *interface_base;
-+	struct device *dev;
-+	u8 is_tx;
-+	u8 is_hdmi;
-+	u8 num_lanes;
-+};
++#include <linux/xlnx/xilinx-hdcp1x-cipher.h>
 +
 +/********************** Static function definations ***************************/
 +static void xhdcp1x_cipher_write(struct xhdcp1x_cipher *cipher,
@@ -14606,7 +15048,7 @@ index 000000000..9450a8d5f
 +				    XHDCP1X_CIPHER_BITMASK_KEYMGMT_STATUS_KM_READY);
 +}
 +
-+static u64 xhdcp1x_cipher_get_localksv(struct xhdcp1x_cipher *cipher)
++u64 xhdcp1x_cipher_get_localksv(struct xhdcp1x_cipher *cipher)
 +{
 +	u64 ksv;
 +	u32 val;
@@ -14662,8 +15104,8 @@ index 000000000..9450a8d5f
 +	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_CONTROL, value);
 +}
 +
-+static int xhdcp1x_cipher_do_request(void *ref,
-+				     enum xhdcp1x_cipher_request_type request)
++int xhdcp1x_cipher_do_request(void *ref,
++			      enum xhdcp1x_cipher_request_type request)
 +{
 +	struct xhdcp1x_cipher *cipher = (struct xhdcp1x_cipher *)ref;
 +	u32 value;
@@ -15073,6 +15515,39 @@ index 000000000..9450a8d5f
 +EXPORT_SYMBOL_GPL(xhdcp1x_cipher_is_request_complete);
 +
 +/**
++ * xhdcp1x_cipher_set_ri - Enable/Disable Ri Update Check
++ * @ref: reference to cipher instance
++ * @enable: Flag (True / False)
++ *
++ * Return: 0 on success, error otherwise
++ */
++int xhdcp1x_cipher_set_ri(void *ref, bool enable)
++{
++	struct xhdcp1x_cipher *cipher = (struct xhdcp1x_cipher *)ref;
++
++	if (!cipher)
++		return -EINVAL;
++
++	if (!cipher->is_hdmi)
++		return -EINVAL;
++
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_INTERRUPT_STATUS,
++			     XHDCP1X_CIPHER_BITMASK_INTERRUPT_RI_UPDATE);
++
++	if (enable)
++		xhdcp1x_cipher_clr_mask(cipher,
++					XHDCP1X_CIPHER_REG_INTERRUPT_MASK,
++					XHDCP1X_CIPHER_BITMASK_INTERRUPT_RI_UPDATE);
++	else
++		xhdcp1x_cipher_set_mask(cipher,
++					XHDCP1X_CIPHER_REG_INTERRUPT_MASK,
++					XHDCP1X_CIPHER_BITMASK_INTERRUPT_RI_UPDATE);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xhdcp1x_cipher_set_ri);
++
++/**
 + * xhdcp1x_cipher_set_link_state_check - Enable/Disable link status check
 + * @ref: reference to cipher instance
 + * @is_enabled: 1 for enable, 0 for disable
@@ -15106,6 +15581,28 @@ index 000000000..9450a8d5f
 +EXPORT_SYMBOL_GPL(xhdcp1x_cipher_set_link_state_check);
 +
 +/**
++ * xhdcp1x_cipher_is_request_to_change_ri - Check if ri update is required
++ * @ref: reference to cipher instance
++ *
++ * Return: 0 if ri update change is needed, error value otherwise
++ */
++int xhdcp1x_cipher_is_request_to_change_ri(void *ref)
++{
++	struct xhdcp1x_cipher *cipher = (struct xhdcp1x_cipher *)ref;
++	u32 value;
++
++	if (!cipher || !xhdcp1x_cipher_is_enabled(cipher))
++		return -EINVAL;
++
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_STATUS);
++	if (!(value & XHDCP1X_CIPHER_BITMASK_INTERRUPT_RI_UPDATE))
++		return -EINVAL;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xhdcp1x_cipher_is_request_to_change_ri);
++
++/**
 + * xhdcp1x_cipher_get_interrupts - Read and clear the interrupts and return same
 + * @ref: reference to cipher instance
 + * @interrupts: reference to interrupts data
@@ -15122,8 +15619,7 @@ index 000000000..9450a8d5f
 +	/* Read and clear the interrupts */
 +	*interrupts = xhdcp1x_cipher_read(cipher,
 +					  XHDCP1X_CIPHER_REG_INTERRUPT_STATUS);
-+	*interrupts &= xhdcp1x_cipher_read(cipher,
-+					   XHDCP1X_CIPHER_REG_INTERRUPT_MASK);
++
 +	if (*interrupts)
 +		xhdcp1x_cipher_write(cipher,
 +				     XHDCP1X_CIPHER_REG_INTERRUPT_STATUS,
@@ -15155,6 +15651,290 @@ index 000000000..9450a8d5f
 +	return 0;
 +}
 +EXPORT_SYMBOL_GPL(xhdcp1x_cipher_is_linkintegrity_failed);
++
++/**
++ * xhdcp1x_cipher_get_ri - Read Ri from cipher
++ * @ref: reference to cipher instance
++ * @ri: reference to ri data
++ *
++ * Return: 0 on success, error otherwise
++ */
++int xhdcp1x_cipher_get_ri(void *ref, u16 *ri)
++{
++	struct xhdcp1x_cipher *cipher = (struct xhdcp1x_cipher *)ref;
++
++	if (!cipher || !ri || !xhdcp1x_cipher_is_enabled(cipher))
++		return -EINVAL;
++
++	*ri = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CIPHER_RI);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xhdcp1x_cipher_get_ri);
++
++/**
++ * xhdcp1x_cipher_load_aksv - load local ksv from cipher to buf
++ * @ref: reference to cipher instance
++ * @buf: 5 byte buffer to store the local KSV
++ *
++ * Return: 0 on success, error otherwise.
++ */
++int xhdcp1x_cipher_load_aksv(void *ref, u8 *buf)
++{
++	struct xhdcp1x_cipher *cipher = (struct xhdcp1x_cipher *)ref;
++	u64 my_ksv;
++	u32 is_enabled;
++
++	if (!cipher || !buf)
++		return -EINVAL;
++
++	is_enabled = xhdcp1x_cipher_is_enabled(cipher);
++
++	xhdcp1x_cipher_enable(cipher);
++	my_ksv = xhdcp1x_cipher_get_localksv(cipher);
++	if (!is_enabled)
++		xhdcp1x_cipher_disable(cipher);
++	if (!my_ksv)
++		return -EAGAIN;
++	memcpy(buf, &my_ksv, XHDCP1X_CIPHER_SIZE_LOCAL_KSV);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xhdcp1x_cipher_load_aksv);
++
++/**
++ * xhdcp1x_cipher_getencryption - This Function retrives the current encryption Stream Map.
++ * @ref: reference to cipher instance
++ *
++ * Return: streammap based on request, 0/error value otherwise.
++ */
++int xhdcp1x_cipher_getencryption(void *ref)
++{
++	struct xhdcp1x_cipher *cipher = (struct xhdcp1x_cipher *)ref;
++	u32 value = 0;
++	u64 streammap = 0;
++
++	if (!cipher)
++		return -EINVAL;
++
++	if (!(xhdcp1x_cipher_is_enabled(cipher)))
++		return streammap;
++
++	streammap = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_H);
++	streammap <<= XHDCP1X_CIPHER_VALUE_SHIFT;
++	streammap |= xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_L);
++
++	/* Determine if there is a request in progress */
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CIPHER_STATUS);
++	value &= XHDCP1X_CIPHER_BITMASK_CIPHER_STATUS_XOR_IN_PROG;
++
++	if (!streammap && value)
++		streammap = XHDCP1X_CIPHER_DEFAULT_STREAMMAP;
++
++	return streammap;
++}
++EXPORT_SYMBOL_GPL(xhdcp1x_cipher_getencryption);
++
++/**
++ * xhdcp1x_cipher_disableencryption - This function disables encryption on a set of streams.
++ * @ref: reference to cipher instance
++ * @streammap: Streammap for display Audio/video content encyption
++ *
++ * Return: 0 for succes, error value otherwise.
++ */
++int xhdcp1x_cipher_disableencryption(void *ref, u64 streammap)
++{
++	u32 value = 0, checkxor = 1;
++	struct xhdcp1x_cipher *cipher = (struct xhdcp1x_cipher *)ref;
++
++	if (!(xhdcp1x_cipher_is_enabled(cipher)))
++		return -EINVAL;
++
++	if (!streammap)
++		return 0;
++
++	/* Clear the Register update bit */
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CONTROL);
++	value &= ~XHDCP1X_CIPHER_BITMASK_CONTROL_UPDATE;
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_CONTROL, value);
++
++	/* Update the LS 32-bits */
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_L);
++	value &= ~((u32)(streammap & XHDCP1X_CIPHER_DWORD_VALUE));
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_L, value);
++	if (value)
++		checkxor = 0;
++
++	/* Update the MS 32-bits */
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_H);
++	value &= ~((u32)((streammap >> XHDCP1X_CIPHER_VALUE_SHIFT) & XHDCP1X_CIPHER_DWORD_VALUE));
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_H, value);
++	if (value)
++		checkxor = 0;
++
++	if (checkxor) {
++		value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CIPHER_CONTROL);
++		value &= ~XHDCP1X_CIPHER_BITMASK_CIPHER_CONTROL_XOR_ENABLE;
++		xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_CIPHER_CONTROL, value);
++	}
++	/* Set the register update bit */
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CONTROL);
++	value |= XHDCP1X_CIPHER_BITMASK_CONTROL_UPDATE;
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_CONTROL, value);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xhdcp1x_cipher_disableencryption);
++
++/**
++ * xhdcp1x_cipher_setb - This function writes the contents of the B register in BM0.
++ * @ref: reference to cipher instance
++ * @x: is the value to be written to bx.
++ * @y: is the value to be written to by.
++ * @z: is the value to be written to bz.
++ *
++ * @return:
++ *		- SUCCESS if successful.
++ *		- NON_ZERO otherwise.
++ */
++int xhdcp1x_cipher_setb(void *ref, u32 bx, u32 by, u32 bz)
++{
++	struct xhdcp1x_cipher *cipher = (struct xhdcp1x_cipher *)ref;
++	u32 value = 0;
++
++	if (!(xhdcp1x_cipher_is_enabled(cipher)))
++		return -EINVAL;
++
++	/* Clear the register update bit */
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CONTROL);
++	value &= ~XHDCP1X_CIPHER_BITMASK_CONTROL_UPDATE;
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_CONTROL, value);
++
++	/* Update the Bx */
++	value = (bx & XHDCP1X_CIPHER_SET_B);
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_CIPHER_BX, value);
++
++	/* Update the By */
++	value = (by & XHDCP1X_CIPHER_SET_B);
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_CIPHER_BY, value);
++
++	/* Update the Bz */
++	value = (bz & XHDCP1X_CIPHER_SET_B);
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_CIPHER_BZ, value);
++
++	/* Set the register update bit */
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CONTROL);
++	value |= XHDCP1X_CIPHER_BITMASK_CONTROL_UPDATE;
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_CONTROL, value);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xhdcp1x_cipher_setb);
++
++/**
++ * xhdcp1x_cipher_enable_encryption - This function enables the encryption on a set of streams.
++ * @ref: reference to cipher instance
++ * @streammap: Streammap for display Audio/video content encyption
++ *
++ * Return: 0 for succes, error value otherwise.
++ */
++int xhdcp1x_cipher_enable_encryption(void *ref, u64 streammap)
++{
++	struct xhdcp1x_cipher *cipher = (struct xhdcp1x_cipher *)ref;
++	u32 value;
++
++	if (!cipher)
++		return -EINVAL;
++
++	if (!(xhdcp1x_cipher_is_enabled(cipher)))
++		return -EINVAL;
++
++	/* Check for nothing to do */
++	if (!streammap)
++		return 0;
++
++	/* Clear the register update bit */
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CONTROL);
++	value &= ~XHDCP1X_CIPHER_BITMASK_CONTROL_UPDATE;
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_CONTROL, value);
++
++	/* Update the LS 32-bits */
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_L);
++	value |= ((u32)(streammap & XHDCP1X_CIPHER_DWORD_VALUE));
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_L, value);
++
++	/* Write the MS 32-bits */
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_H);
++	value |= ((u32)((streammap >> XHDCP1X_CIPHER_VALUE_SHIFT) &
++			 XHDCP1X_CIPHER_DWORD_VALUE));
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_H, value);
++	/* Ensure that the XOR is enabled */
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CIPHER_CONTROL);
++	value |= XHDCP1X_CIPHER_BITMASK_CIPHER_CONTROL_XOR_ENABLE;
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_CIPHER_CONTROL, value);
++
++	/* Set the register update bit */
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CONTROL);
++	value |= XHDCP1X_CIPHER_BITMASK_CONTROL_UPDATE;
++	xhdcp1x_cipher_write(cipher, XHDCP1X_CIPHER_REG_CONTROL, value);
++	/* Check if XORInProgress bit is set in the status register*/
++	value = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CIPHER_STATUS);
++	if ((value & XHDCP1X_CIPHER_BITMASK_CIPHER_STATUS_XOR_IN_PROG)) {
++		/* Do nothing for now. We can depend on the Cipher
++		 * to set the XorInProgress in status register when
++		 * we receive protected content.
++		 */
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xhdcp1x_cipher_enable_encryption);
++
++/**
++ * xhdcp1x_cipher_get_mi: This function reads the contents of the Mi/An register of BM0.
++ * @ref: is the device to query.
++ *
++ * @return: The contents of the register.
++ */
++u64 xhdcp1x_cipher_get_mi(void *ref)
++{
++	struct xhdcp1x_cipher *cipher = (struct xhdcp1x_cipher *)ref;
++	u64 mi = 0;
++
++	/* Check that it is not disabled */
++	if (!(xhdcp1x_cipher_is_enabled(cipher)))
++		return -EINVAL;
++
++	/* Update Mi */
++	mi = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CIPHER_MI_H);
++	mi <<= XHDCP1X_CIPHER_VALUE_SHIFT;
++	mi |= xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CIPHER_MI_L);
++
++	return mi;
++}
++EXPORT_SYMBOL_GPL(xhdcp1x_cipher_get_mi);
++
++/**
++ * xhdcp1x_cipher_get_mo: This function reads the contents of the Mo register of the device.
++ * @ref: reference to cipher instance.
++ *
++ * @return: The contents of the Mo register.
++ */
++u64 xhdcp1x_cipher_get_mo(void *ref)
++{
++	struct xhdcp1x_cipher *cipher = (struct xhdcp1x_cipher *)ref;
++	u64 mo = 0;
++
++	/* Check that it is not disabled */
++	if (!(xhdcp1x_cipher_is_enabled(cipher)))
++		return -EINVAL;
++
++	/* Determine Mo */
++	mo = xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CIPHER_MO_H);
++	mo <<= XHDCP1X_CIPHER_VALUE_SHIFT;
++	mo |= xhdcp1x_cipher_read(cipher, XHDCP1X_CIPHER_REG_CIPHER_MO_L);
++
++	return mo;
++}
 diff --git a/drivers/staging/xlnx_tsmux/Kconfig b/drivers/staging/xlnx_tsmux/Kconfig
 new file mode 100644
 index 000000000..0c1d9498e
@@ -15225,7 +16005,7 @@ index 000000000..e4a7095d9
 +	};
 diff --git a/drivers/staging/xlnx_tsmux/xlnx_mpg2tsmux.c b/drivers/staging/xlnx_tsmux/xlnx_mpg2tsmux.c
 new file mode 100644
-index 000000000..60041864d
+index 000000000..2eae0172b
 --- /dev/null
 +++ b/drivers/staging/xlnx_tsmux/xlnx_mpg2tsmux.c
 @@ -0,0 +1,1568 @@
@@ -15354,7 +16134,7 @@ index 000000000..60041864d
 +};
 +
 +/**
-+ * struct strm_node - struct to describe stream node in linked list
++ * struct stream_context_node - struct to describe stream node in linked list
 + * @node_number: node number to handle streams
 + * @node_status: status of stream node
 + * @element: stream context info
@@ -15378,7 +16158,7 @@ index 000000000..60041864d
 +};
 +
 +/**
-+ * struct strm_info - struct to describe streamid node in streamid table
++ * struct stream_info - struct to describe streamid node in streamid table
 + * @pid: identification number of stream
 + * @continuity_counter: counter to maintain packet count for a stream
 + * @usageflag: flag to know free or under use for allocating streamid node
@@ -19585,7 +20365,7 @@ index 000000000..162c49a9b
 +#define STATS_USER_CTRL_RX_PKTS_RATE_DEFAULT 0x0 /* 0 */
 diff --git a/drivers/staging/xroeframer/sysfs_xroe.c b/drivers/staging/xroeframer/sysfs_xroe.c
 new file mode 100644
-index 000000000..54a57d343
+index 000000000..837283abd
 --- /dev/null
 +++ b/drivers/staging/xroeframer/sysfs_xroe.c
 @@ -0,0 +1,562 @@
@@ -19681,7 +20461,7 @@ index 000000000..54a57d343
 +}
 +
 +/**
-+ * version_store - Writes to the framer's enable status register
++ * enable_store - Writes to the framer's enable status register
 + * @kobj:	The kernel object of the entry
 + * @attr:	The attributes of the kernel object
 + * @buff:	The buffer containing the enable status
@@ -20126,7 +20906,7 @@ index 000000000..54a57d343
 +}
 +
 +/**
-+ * utils_sysfs_store_wrapper - Wraps the storing function for sysfs entries
++ * utils_sysfs_show_wrapper - Wraps the storing function for sysfs entries
 + * @address:	The address of the register to be read
 + * @offset:	The offset from the address of the register
 + * @mask:	The mask to be used on the value to be read
@@ -20877,7 +21657,7 @@ index 000000000..aaaefb10c
 +}
 diff --git a/drivers/staging/xroeframer/sysfs_xroe_framer_ipv6.c b/drivers/staging/xroeframer/sysfs_xroe_framer_ipv6.c
 new file mode 100644
-index 000000000..c26eae426
+index 000000000..c58e53279
 --- /dev/null
 +++ b/drivers/staging/xroeframer/sysfs_xroe_framer_ipv6.c
 @@ -0,0 +1,571 @@
@@ -21377,7 +22157,7 @@ index 000000000..c26eae426
 +}
 +
 +/**
-+ * xroe_sysfs_ipv4_exit - Deletes the xroe sysfs "ipv6" subdirectory & entries
++ * xroe_sysfs_ipv6_exit - Deletes the xroe sysfs "ipv6" subdirectory & entries
 + *
 + * Deletes the xroe sysfs "ipv6" subdirectory and entries,
 + * under the "xroe" entry
@@ -21861,7 +22641,7 @@ index 000000000..063664bb9
 +}
 diff --git a/drivers/staging/xroeframer/sysfs_xroe_framer_udp.c b/drivers/staging/xroeframer/sysfs_xroe_framer_udp.c
 new file mode 100644
-index 000000000..8f8a77b25
+index 000000000..73f17ffdc
 --- /dev/null
 +++ b/drivers/staging/xroeframer/sysfs_xroe_framer_udp.c
 @@ -0,0 +1,181 @@
@@ -22033,7 +22813,7 @@ index 000000000..8f8a77b25
 +}
 +
 +/**
-+ * xroe_sysfs_ipv6_exit - Deletes the xroe sysfs "udp" subdirectory & entries
++ * xroe_sysfs_udp_exit - Deletes the xroe sysfs "udp" subdirectory & entries
 + *
 + * Deletes the xroe sysfs "udp" subdirectory and entries,
 + * under the "xroe" entry
@@ -23526,12 +24306,12 @@ index 000000000..55d968d89
 +
 +int xroe_traffic_gen_sysfs_init(struct device *dev);
 +void xroe_traffic_gen_sysfs_exit(struct device *dev);
-diff --git a/include/linux/xilinx-hdcp1x-cipher.h b/include/linux/xilinx-hdcp1x-cipher.h
+diff --git a/include/linux/xlnx/xilinx-hdcp1x-cipher.h b/include/linux/xlnx/xilinx-hdcp1x-cipher.h
 new file mode 100644
-index 000000000..a1d59e1f3
+index 000000000..dced332d9
 --- /dev/null
-+++ b/include/linux/xilinx-hdcp1x-cipher.h
-@@ -0,0 +1,105 @@
++++ b/include/linux/xlnx/xilinx-hdcp1x-cipher.h
+@@ -0,0 +1,288 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * Xilinx HDCP1X Cipher driver
@@ -23548,6 +24328,117 @@ index 000000000..a1d59e1f3
 +#include <linux/io.h>
 +#include <linux/types.h>
 +
++/* HDCP Cipher register offsets */
++#define XHDCP1X_CIPHER_REG_VERSION		0x00
++#define XHDCP1X_CIPHER_REG_TYPE			0x04
++#define XHDCP1X_CIPHER_REG_SCRATCH		0x08
++#define XHDCP1X_CIPHER_REG_CONTROL		0x0C
++#define XHDCP1X_CIPHER_REG_STATUS		0x10
++#define XHDCP1X_CIPHER_REG_INTERRUPT_MASK	0x14
++#define XHDCP1X_CIPHER_REG_INTERRUPT_STATUS	0x18
++#define XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_H	0x20
++#define XHDCP1X_CIPHER_REG_ENCRYPT_ENABLE_L	0x24
++#define XHDCP1X_CIPHER_REG_KEYMGMT_CONTROL	0x2C
++#define XHDCP1X_CIPHER_REG_KEYMGMT_STATUS	0x30
++#define XHDCP1X_CIPHER_REG_KSV_LOCAL_H		0x38
++#define XHDCP1X_CIPHER_REG_KSV_LOCAL_L		0x3C
++#define XHDCP1X_CIPHER_REG_KSV_REMOTE_H		0x40
++#define XHDCP1X_CIPHER_REG_KSV_REMOTE_L		0x44
++#define XHDCP1X_CIPHER_REG_KM_H			0x48
++#define XHDCP1X_CIPHER_REG_KM_L			0x4C
++#define XHDCP1X_CIPHER_REG_CIPHER_CONTROL	0x50
++#define XHDCP1X_CIPHER_REG_CIPHER_STATUS	0x54
++#define XHDCP1X_CIPHER_REG_CIPHER_BX		0x58
++#define XHDCP1X_CIPHER_REG_CIPHER_BY		0x5C
++#define XHDCP1X_CIPHER_REG_CIPHER_BZ		0x60
++#define XHDCP1X_CIPHER_REG_CIPHER_KX		0x64
++#define XHDCP1X_CIPHER_REG_CIPHER_KY		0x68
++#define XHDCP1X_CIPHER_REG_CIPHER_KZ		0x6C
++#define XHDCP1X_CIPHER_REG_CIPHER_MI_H		0x70
++#define XHDCP1X_CIPHER_REG_CIPHER_MI_L		0x74
++#define XHDCP1X_CIPHER_REG_CIPHER_RI		0x78
++#define XHDCP1X_CIPHER_REG_CIPHER_RO		0x7C
++#define XHDCP1X_CIPHER_REG_CIPHER_MO_H		0x80
++#define XHDCP1X_CIPHER_REG_CIPHER_MO_L		0x84
++#define XHDCP1X_CIPHER_REG_BLANK_VALUE		0xBC
++#define XHDCP1X_CIPHER_REG_BLANK_SEL		0xC0
++
++/* HDCP Cipher register bit mask definitions */
++#define XHDCP1X_CIPHER_BITMASK_TYPE_PROTOCOL			GENMASK(1, 0)
++#define XHDCP1X_CIPHER_BITMASK_TYPE_DIRECTION			BIT(2)
++#define XHDCP1X_CIPHER_BITMASK_CONTROL_ENABLE			BIT(0)
++#define XHDCP1X_CIPHER_BITMASK_CONTROL_UPDATE			BIT(1)
++#define XHDCP1X_CIPHER_BITMASK_CONTROL_NUM_LANES		GENMASK(6, 4)
++#define XHDCP1X_CIPHER_BITMASK_CONTROL_RESET			BIT(31)
++#define XHDCP1X_CIPHER_BITMASK_INTERRUPT_LINK_FAIL		BIT(0)
++#define XHDCP1X_CIPHER_BITMASK_INTERRUPT_RI_UPDATE		BIT(1)
++#define XHDCP1X_CIPHER_BITMASK_KEYMGMT_CONTROL_LOCAL_KSV	BIT(0)
++#define XHDCP1X_CIPHER_BITMASK_KEYMGMT_CONTROL_BEGIN_KM		BIT(1)
++#define XHDCP1X_CIPHER_BITMASK_KEYMGMT_CONTROL_ABORT_KM		BIT(2)
++#define XHDCP1X_CIPHER_BITMASK_KEYMGMT_CONTROL_SET_SELECT	GENMASK(18, 16)
++#define XHDCP1X_CIPHER_BITMASK_KEYMGMT_STATUS_KSV_READY		BIT(0)
++#define XHDCP1X_CIPHER_BITMASK_KEYMGMT_STATUS_KM_READY		BIT(1)
++#define XHDCP1X_CIPHER_BITMASK_CIPHER_CONTROL_XOR_ENABLE	BIT(0)
++#define XHDCP1X_CIPHER_BITMASK_CIPHER_CONTROL_REQUEST		GENMASK(10, 8)
++#define XHDCP1X_CIPHER_BITMASK_CIPHER_STATUS_XOR_IN_PROG	BIT(0)
++#define XHDCP1X_CIPHER_BITMASK_CIPHER_STATUS_REQUEST_IN_PROG	GENMASK(10, 8)
++#define XHDCP1X_CIPHER_BITMASK_BLANK_VALUE			GENMASK(31, 0)
++#define XHDCP1X_CIPHER_BITMASK_BLANK_SEL			BIT(0)
++
++/* HDCP Cipher register bit value definitions */
++#define XHDCP1X_CIPHER_VALUE_TYPE_PROTOCOL_DP			0
++#define XHDCP1X_CIPHER_VALUE_TYPE_PROTOCOL_HDMI			1
++#define XHDCP1X_CIPHER_VALUE_TYPE_DIRECTION_MASK		BIT(2)
++#define XHDCP1X_CIPHER_VALUE_TYPE_DIRECTION_RX			0
++#define XHDCP1X_CIPHER_VALUE_TYPE_DIRECTION_TX			1
++#define XHDCP1X_CIPHER_VALUE_CIPHER_CONTROL_REQUEST_BLOCK	BIT(8)
++#define XHDCP1X_CIPHER_VALUE_CIPHER_CONTROL_REQUEST_REKEY	BIT(9)
++#define XHDCP1X_CIPHER_VALUE_CIPHER_CONTROL_REQUEST_RNG		BIT(10)
++
++#define XHDCP1X_CIPHER_SIZE_LOCAL_KSV				5
++#define XHDCP1X_CIPHER_KSV_RETRIES				1024
++#define XHDCP1X_CIPHER_SHIFT_NUM_LANES				4
++#define XHDCP1X_CIPHER_MAX_LANES				4
++#define XHDCP1X_CIPHER_INTR_ALL					GENMASK(31, 0)
++#define XHDCP1X_CIPHER_KEYSELECT_MAX_VALUE			8
++#define XHDCP1X_CIPHER_SHIFT_KEYMGMT_CONTROL_SET_SELECT		16
++#define XHDCP1X_CIPHER_NUM_LANES_1				1
++#define XHDCP1X_CIPHER_NUM_LANES_2				2
++#define XHDCP1X_CIPHER_NUM_LANES_4				4
++#define XHDCP1X_CIPHER_BITMASK_CIPHER_BX			GENMASK(27, 0)
++#define XHDCP1X_CIPHER_BITMASK_CIPHER_BY			GENMASK(27, 0)
++#define XHDCP1X_CIPHER_BITMASK_CIPHER_BZ_REPEATER		BIT(8)
++#define XHDCP1X_CIPHER_BITMASK_CIPHER_BZ			GENMASK(7, 0)
++#define XHDCP1X_CIPHER_SHIFT_CIPHER_B				28
++#define XHDCP1X_CIPHER_VALUE_SHIFT				32
++#define XHDCP1X_CIPHER_DWORD_VALUE				0xFFFFFFFFul
++#define XHDCP1X_CIPHER_SET_B					0x0FFFFFFFul
++#define XHDCP1X_CIPHER_DEFAULT_STREAMMAP			0x01ul
++#define XHDCP1X_CIPHER_KSV_VAL					0xFF
++
++enum xhdcp1x_cipher_request_type {
++	XHDCP1X_CIPHER_REQUEST_BLOCK = 0,
++	XHDCP1X_CIPHER_REQUEST_REKEY = 1,
++	XHDCP1X_CIPHER_REQUEST_RNG = 2,
++	XHDCP1X_CIPHER_REQUEST_MAX = 3,
++};
++
++/**
++ * struct xhdcp1x_cipher - hdcp1x cipher driver structure
++ * @interface_base: iommu base of interface driver
++ * @dev: Platform data
++ * @is_tx: flag for tx, 1 for tx and 0 for rx
++ * @is_hdmi: flag for HDMI, 1 for HDMI and 0 for DP
++ * @num_lanes: number of active lanes in interface driver, possible lanes are 1, 2 and 4
++ */
++struct xhdcp1x_cipher {
++	void __iomem *interface_base;
++	struct device *dev;
++	u8 is_tx;
++	u8 is_hdmi;
++	u8 num_lanes;
++};
++
 +#if IS_ENABLED(CONFIG_XLNX_HDCP1X_CIPHER)
 +void *xhdcp1x_cipher_init(struct device *dev, void __iomem *hdcp1x_base);
 +int xhdcp1x_cipher_reset(void *ref);
@@ -23563,6 +24454,18 @@ index 000000000..a1d59e1f3
 +int xhdcp1x_cipher_set_link_state_check(void *ref, bool is_enabled);
 +int xhdcp1x_cipher_get_interrupts(void *ref, u32 *interrupts);
 +int xhdcp1x_cipher_is_linkintegrity_failed(void *ref);
++int xhdcp1x_cipher_set_ri(void *ref, bool enable);
++int xhdcp1x_cipher_is_request_to_change_ri(void *ref);
++int xhdcp1x_cipher_get_ri(void *ref, u16 *ri);
++int xhdcp1x_cipher_load_aksv(void *ref, u8 *buf);
++int xhdcp1x_cipher_do_request(void *ref, enum xhdcp1x_cipher_request_type request);
++u64 xhdcp1x_cipher_get_localksv(struct xhdcp1x_cipher *cipher);
++int xhdcp1x_cipher_getencryption(void *ref);
++int xhdcp1x_cipher_disableencryption(void *ref, u64 streammap);
++int xhdcp1x_cipher_setb(void *ref, u32 bx, u32 by, u32 bz);
++int xhdcp1x_cipher_enable_encryption(void *ref, u64 streammap);
++u64 xhdcp1x_cipher_get_mi(void *ref);
++u64 xhdcp1x_cipher_get_mo(void *ref);
 +#else
 +static inline void *xhdcp1x_cipher_init(struct device *dev,
 +					void __iomem *hdcp1x_base)
@@ -23634,15 +24537,75 @@ index 000000000..a1d59e1f3
 +{
 +	return -EINVAL;
 +}
++
++static inline int xhdcp1x_cipher_get_ri(void *ref, u16 *ri)
++{
++	return -EINVAL;
++}
++
++static inline int xhdcp1x_cipher_is_request_to_change_ri(void *ref)
++{
++	return -EINVAL;
++}
++
++static inline int xhdcp1x_cipher_set_ri(void *ref, bool enable)
++{
++	return -EINVAL;
++}
++
++static inline int xhdcp1x_cipher_load_aksv(void *ref, u8 *buf)
++{
++	return -EINVAL;
++}
++
++static inline int xhdcp1x_cipher_do_request(void *ref, xhdcp1x_cipher_request_type request)
++{
++	return -EINVAL;
++}
++
++static inline u64 xhdcp1x_cipher_get_localksv(struct xhdcp1x_cipher *cipher)
++{
++	return -EINVAL;
++}
++
++static inline int xhdcp1x_cipher_getencryption(void *ref)
++{
++	return -EINVAL;
++}
++
++static inline int xhdcp1x_cipher_disableencryption(void *ref, u64 streammap)
++{
++	return -EINVAL;
++}
++
++static inline int xhdcp1x_cipher_setb(void *ref, u32 bx, u32 by, u32 bz)
++{
++	return -EINVAL;
++}
++
++static inline int xhdcp1x_cipher_enable_encryption(void *ref, u64 streammap)
++{
++	return -EINVAL;
++}
++
++static inline u64 xhdcp1x_cipher_get_mi(void *ref)
++{
++	return -EINVAL;
++}
++
++static inline u64 xhdcp1x_cipher_get_mo(void *ref)
++{
++	return -EINVAL;
++}
 +#endif /* CONFIG_XLNX_HDCP1X_CIPHER */
 +
 +#endif /* __XILINX_HDCP1X_CIPHER_H__ */
 diff --git a/include/linux/xlnx/xlnx_hdcp2x_cipher.h b/include/linux/xlnx/xlnx_hdcp2x_cipher.h
 new file mode 100644
-index 000000000..24bada8f0
+index 000000000..d125c2bf1
 --- /dev/null
 +++ b/include/linux/xlnx/xlnx_hdcp2x_cipher.h
-@@ -0,0 +1,93 @@
+@@ -0,0 +1,103 @@
 +/* SPDX-License-Identifier: GPL-2.0*/
 +/*
 + * Xilinx HDCP2X Cipher driver
@@ -23694,7 +24657,7 @@ index 000000000..24bada8f0
 +
 +#define XHDCP2X_CIPHER_KEY_LENGTH		16
 +#define XHDCP2X_CIPHER_SHIFT_16			16
-+#define XHDCP2X_CIPHER_MASK_16			GENMASK(15, 0)
++#define XHDCP2X_CIPHER_MASK_16			GENMASK(31, 16)
 +#define XHDCP2X_CIPHER_VER_ID			0x2200
 +
 +/**
@@ -23714,6 +24677,11 @@ index 000000000..24bada8f0
 +#define xlnx_hdcp2x_cipher_get_status(cipher_address) \
 +	xlnx_hdcp2x_cipher_read(cipher_address, XHDCP2X_CIPHER_REG_STA_OFFSET)
 +
++#define xlnx_hdcp2x_cipher_is_encrypted(cipher_address) \
++	((xlnx_hdcp2x_cipher_get_status(cipher_address) \
++	& XHDCP2X_CIPHER_REG_STA_ENCRYPTED_MASK) == \
++	XHDCP2X_CIPHER_REG_STA_ENCRYPTED_MASK)
++
 +#define xlnx_hdcp2x_cipher_enable(cipher_address) \
 +	xlnx_hdcp2x_cipher_write(cipher_address, \
 +	(XHDCP2X_CIPHER_REG_CTRL_SET_OFFSET), (XHDCP2X_CIPHER_REG_CTRL_RUN_MASK))
@@ -23726,22 +24694,92 @@ index 000000000..24bada8f0
 +	xlnx_hdcp2x_cipher_write(cipher_address, \
 +	(XHDCP2X_CIPHER_REG_CTRL_CLR_OFFSET), (XHDCP2X_CIPHER_REG_CTRL_MODE_MASK))
 +
++#define xlnx_hdcp2x_cipher_set_rxmode(cipher_address) \
++		xlnx_hdcp2x_cipher_write(cipher_address, \
++		(XHDCP2X_CIPHER_REG_CTRL_SET_OFFSET), (XHDCP2X_CIPHER_REG_CTRL_MODE_MASK))
++
 +int xlnx_hdcp2x_cipher_cfg_init(struct xlnx_hdcp2x_cipher_hw *cipher_cfg);
 +void xlnx_hdcp2x_cipher_set_keys(struct xlnx_hdcp2x_cipher_hw *cipher_cfg,
 +				 const u8 *buf, u32 offset, u16 len);
 +void xlnx_hdcp2x_cipher_set_lanecount(struct xlnx_hdcp2x_cipher_hw *cipher_cfg,
 +				      u8 lanecount);
 +void xlnx_hdcp2x_cipher_init(struct xlnx_hdcp2x_cipher_hw *cipher_cfg);
++void xlnx_hdcp2x_rx_cipher_init(struct xlnx_hdcp2x_cipher_hw *cipher_cfg);
 +void  xlnx_hdcp2x_tx_cipher_update_encryption(struct xlnx_hdcp2x_cipher_hw *cipher_cfg,
 +					      u8 enable);
 +
 +#endif
+diff --git a/include/linux/xlnx/xlnx_hdcp2x_mmult.h b/include/linux/xlnx/xlnx_hdcp2x_mmult.h
+new file mode 100644
+index 000000000..976223a6c
+--- /dev/null
++++ b/include/linux/xlnx/xlnx_hdcp2x_mmult.h
+@@ -0,0 +1,59 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Xilinx HDCP 2X Montgomery Modular Multiplier Driver
++ *
++ * Copyright (C) 2023, Advanced Micro Devices, Inc. All rights reserved.
++ *
++ * Author: Kunal Rane <kunal.rane@amd.com>
++ */
++
++#ifndef __XLNX_HDCP2X_MMULT_H__
++#define __XLNX_HDCP2X_MMULT_H__
++
++#include <linux/device.h>
++#include <linux/io.h>
++#include <linux/platform_device.h>
++#include <linux/types.h>
++
++#define XHDCP2X_MMULT_ADDR_AP		0x000
++#define XHDCP2X_MMULT_ADDR_U_BASE	0x040
++#define XHDCP2X_MMULT_ADDR_U_HIGH	0x07f
++#define XHDCP2X_MMULT_A_BASE		0x080
++#define XHDCP2X_MMULT_A_HIGH		0x0bf
++#define XHDCP2X_MMULT_B_BASE		0x0c0
++#define XHDCP2X_MMULT_B_HIGH		0x0ff
++#define XHDCP2X_MMULT_N_BASE		0x100
++#define XHDCP2X_MMULT_N_HIGH		0x13f
++#define XHDCP2X_MMULT_NPRIME_BASE	0x140
++#define XHDCP2X_MMULT_NPRIME_HIGH	0x17f
++#define XHDCP2X_MMULT_OFFSET_MULT	0x4
++#define XHDCP2X_MMULT_ADDR_AP_RD	0x80
++#define XHDCP2X_MMULT_ADDR_AP_WR	0x01
++#define XHDCP2X_MMULT_CHECK_CONST	0x1
++#define XHDCP2X_MMULT_MAX_TYPES		4
++#define XHDCP2X_MMULT_ADDR		2
++
++#define XHDCP2X_MMULT_DONE		BIT(1)
++#define XHDCP2X_MMULT_READY		BIT(0)
++
++struct xlnx_hdcp2x_mmult_hw {
++	void __iomem *mmult_coreaddress;
++};
++
++enum xhdcp2x_mmult_type {
++	XHDCP2X_MMULT_A = 0,
++	XHDCP2X_MMULT_B = 1,
++	XHDCP2X_MMULT_N = 2,
++	XHDCP2X_MMULT_NPRIME = 3
++};
++
++u32 xlnx_hdcp2x_mmult_is_done(struct xlnx_hdcp2x_mmult_hw *mmult_cfg);
++u32 xlnx_hdcp2x_mmult_is_ready(struct xlnx_hdcp2x_mmult_hw *mmult_cfg);
++u32 xlnx_hdcp2x_mmult_read_u_words(struct xlnx_hdcp2x_mmult_hw *mmult_cfg,
++				   int offset, int *data, int length);
++int xlnx_hdcp2x_mmult_write_type(struct xlnx_hdcp2x_mmult_hw *mmult_cfg,
++				 int offset, int *data, int length, int type);
++int xlnx_hdcp2x_mmult_cfginit(struct xlnx_hdcp2x_mmult_hw *mmult_cfg);
++void xlnx_hdcp2x_mmult_enable(struct xlnx_hdcp2x_mmult_hw *mmult_cfg);
++
++#endif  /* __XLNX_HDCP2X_MMULT_H__ */
 diff --git a/include/linux/xlnx/xlnx_hdcp_common.h b/include/linux/xlnx/xlnx_hdcp_common.h
 new file mode 100644
-index 000000000..e828896c0
+index 000000000..93c25cb1b
 --- /dev/null
 +++ b/include/linux/xlnx/xlnx_hdcp_common.h
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,34 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * Xilinx HDCP Common driver
@@ -23762,11 +24800,23 @@ index 000000000..e828896c0
 +			 size_t nbytes);
 +size_t mp_conv_from_octets(unsigned int a[], size_t ndigits, const unsigned char *c,
 +			   size_t nbytes);
-+
++u32 mp_subtract(u32 w[], const u32 u[], const u32 v[], size_t ndigits);
++unsigned int mp_add(unsigned int w[], const unsigned int u[], const unsigned int v[],
++		    size_t ndigits);
++unsigned int mp_shift_left(unsigned int a[], const unsigned int *b, size_t shift, size_t ndigits);
++int mp_multiply(unsigned int w[], const unsigned int u[], const unsigned int v[], size_t ndigits);
++int mp_mod_mult(u32 a[], const u32 x[], const u32 y[], u32 m[], size_t ndigits);
++int mp_modulo(u32 r[], const u32 u[], size_t udigits, u32 v[], size_t vdigits);
++int mp_mod_inv(u32 inv[], const u32 u[], const u32 v[], size_t ndigits);
++int mp_equal(const u32 a[], const u32 b[], size_t ndigits);
++int mp_get_bit(u32 a[], size_t ndigits, size_t ibit);
++int mp_short_cmp(const u32 a[], u32 d, size_t ndigits);
++int mp_divide(unsigned int q[], unsigned int r[], const unsigned int u[],
++	      size_t udigits, unsigned int v[], size_t vdigits);
 +#endif
 diff --git a/include/linux/xlnx/xlnx_hdcp_rng.h b/include/linux/xlnx/xlnx_hdcp_rng.h
 new file mode 100644
-index 000000000..65ce3eb92
+index 000000000..cb3e14ff5
 --- /dev/null
 +++ b/include/linux/xlnx/xlnx_hdcp_rng.h
 @@ -0,0 +1,43 @@
@@ -23802,7 +24852,7 @@ index 000000000..65ce3eb92
 +#define XHDCP2X_RNG_REG_STA_OFFSET		((XHDCP2X_RNG_REG_BASE) + (3 * 4))
 +#define XHDCP2X_RNG_REG_RN_1_OFFSET		((XHDCP2X_RNG_REG_BASE) + (4 * 4))
 +#define XHDCP2X_RNG_SHIFT_16			16
-+#define XHDCP2X_RNG_MASK_16			GENMASK(15, 0)
++#define XHDCP2X_RNG_MASK_16			GENMASK(31, 16)
 +#define XHDCP2X_RNG_VER_ID			0x2200
 +#define XHDCP2X_RNG_REG_CTRL_RUN_MASK		BIT(0)
 +
