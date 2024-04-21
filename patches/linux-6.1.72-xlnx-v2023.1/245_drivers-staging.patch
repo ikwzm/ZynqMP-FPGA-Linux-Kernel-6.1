@@ -14697,10 +14697,10 @@ index 000000000..87ab23e5f
 +}
 diff --git a/drivers/staging/xilinx_hdcp/xlnx_timer.c b/drivers/staging/xilinx_hdcp/xlnx_timer.c
 new file mode 100644
-index 000000000..629c2f1bc
+index 000000000..afaa6bb60
 --- /dev/null
 +++ b/drivers/staging/xilinx_hdcp/xlnx_timer.c
-@@ -0,0 +1,248 @@
+@@ -0,0 +1,259 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Xilinx AXI Timer driver
@@ -14763,11 +14763,13 @@ index 000000000..629c2f1bc
 +	xtimercntr->handler = funcptr;
 +	xtimercntr->callbackref = callbackref;
 +}
++EXPORT_SYMBOL_GPL(xlnx_hdcp_tmrcntr_set_handler);
 +
 +void xlnx_hdcp_tmrcntr_cfg_init(struct xlnx_hdcp_timer_config *xtimercntr)
 +{
 +	xtimercntr->callbackref = xtimercntr;
 +}
++EXPORT_SYMBOL_GPL(xlnx_hdcp_tmrcntr_cfg_init);
 +
 +static int xlnx_hdcp_timer_init(struct xlnx_hdcp_timer_config *xtimercntr)
 +{
@@ -14805,6 +14807,7 @@ index 000000000..629c2f1bc
 +
 +	return xlnx_hdcp_timer_init(xtimercntr);
 +}
++EXPORT_SYMBOL_GPL(xlnx_hdcp_tmrcntr_init);
 +
 +void xlnx_hdcp_tmrcntr_start(struct xlnx_hdcp_timer_config *xtimercntr,
 +			     u8 tmr_cntr_number)
@@ -14830,6 +14833,7 @@ index 000000000..629c2f1bc
 +						     tmr_cntr_number,
 +						     XTC_TCSR_OFFSET);
 +}
++EXPORT_SYMBOL_GPL(xlnx_hdcp_tmrcntr_start);
 +
 +void xlnx_hdcp_tmrcntr_stop(struct xlnx_hdcp_timer_config *xtimercntr,
 +			    u8 tmr_cntr_number)
@@ -14850,6 +14854,7 @@ index 000000000..629c2f1bc
 +	else
 +		xtimercntr->is_tmrcntr1_started = 0;
 +}
++EXPORT_SYMBOL_GPL(xlnx_hdcp_tmrcntr_stop);
 +
 +u32 xlnx_hdcp_tmrcntr_get_value(struct xlnx_hdcp_timer_config *xtimercntr,
 +				u8 tmr_cntr_number)
@@ -14860,6 +14865,7 @@ index 000000000..629c2f1bc
 +					  tmr_cntr_number,
 +					  XTC_TCR_OFFSET);
 +}
++EXPORT_SYMBOL_GPL(xlnx_hdcp_tmrcntr_get_value);
 +
 +void xlnx_hdcp_tmrcntr_set_reset_value(struct xlnx_hdcp_timer_config *xtimercntr,
 +				       u8 tmr_cntr_number, u32 reset_value)
@@ -14869,6 +14875,7 @@ index 000000000..629c2f1bc
 +	xlnx_hdcp_tmrcntr_write_reg(hw_config->coreaddress, tmr_cntr_number,
 +				    XTC_TLR_OFFSET, reset_value);
 +}
++EXPORT_SYMBOL_GPL(xlnx_hdcp_tmrcntr_set_reset_value);
 +
 +void xlnx_hdcp_tmrcntr_reset(struct xlnx_hdcp_timer_config *xtimercntr,
 +			     u8 tmr_cntr_number)
@@ -14886,6 +14893,7 @@ index 000000000..629c2f1bc
 +	xlnx_hdcp_tmrcntr_write_reg(hw_config->coreaddress, tmr_cntr_number,
 +				    XTC_TCSR_OFFSET, counter_cntrl_reg);
 +}
++EXPORT_SYMBOL_GPL(xlnx_hdcp_tmrcntr_reset);
 +
 +void xlnx_hdcp_tmrcntr_set_options(struct xlnx_hdcp_timer_config *xtimercntr,
 +				   u8 tmr_cntr_number, u32 options)
@@ -14903,7 +14911,8 @@ index 000000000..629c2f1bc
 +	xlnx_hdcp_tmrcntr_write_reg(hw_config->coreaddress, tmr_cntr_number,
 +				    XTC_TCSR_OFFSET, counter_cntrl_reg);
 +}
-+
++EXPORT_SYMBOL_GPL(xlnx_hdcp_tmrcntr_set_options);
++    
 +/**
 + * xlnx_hdcp_tmrcntr_interrupt_handler - HDCP timercntr interrupt handler
 + * @xtimercntr: timercounter configuration structure
@@ -14949,6 +14958,8 @@ index 000000000..629c2f1bc
 +		}
 +	}
 +}
++EXPORT_SYMBOL_GPL(xlnx_hdcp_tmrcntr_interrupt_handler);
++
 diff --git a/drivers/staging/xlnx_hdcp1x/Kconfig b/drivers/staging/xlnx_hdcp1x/Kconfig
 new file mode 100644
 index 000000000..f1da9a7c2

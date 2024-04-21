@@ -18333,10 +18333,10 @@ index 000000000..0f926531a
 +}
 diff --git a/drivers/media/platform/xilinx/xilinx-hdcp2x-rx.c b/drivers/media/platform/xilinx/xilinx-hdcp2x-rx.c
 new file mode 100644
-index 000000000..a8bf08295
+index 000000000..407750891
 --- /dev/null
 +++ b/drivers/media/platform/xilinx/xilinx-hdcp2x-rx.c
-@@ -0,0 +1,1140 @@
+@@ -0,0 +1,1151 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Xilinx HDCP2X Protocol Driver
@@ -18500,7 +18500,8 @@ index 000000000..a8bf08295
 +
 +	return (void *)xhdcp2x_rx;
 +}
-+
++EXPORT_SYMBOL_GPL(xhdcp2x_rx_init);
++                  
 +void *xhdcp2x_timer_init(struct device *dev, void __iomem *timer_base_address)
 +{
 +	struct xlnx_hdcp_timer_config *tmr_config;
@@ -18521,7 +18522,8 @@ index 000000000..a8bf08295
 +
 +	return tmr_config;
 +}
-+
++EXPORT_SYMBOL_GPL(xhdcp2x_timer_init);
++                  
 +void xhdcp2x_timer_attach(struct xlnx_hdcp2x_config *xhdcp2x_rx,
 +			  struct xlnx_hdcp_timer_config *tmrcntr)
 +{
@@ -18532,6 +18534,7 @@ index 000000000..a8bf08295
 +	xlnx_hdcp_tmrcntr_set_options(&xhdcp2x_rx->tmr_config, XHDCP2X_RX_TMR_CNTR_1,
 +				      XTC_INT_MODE_OPTION | XTC_DOWN_COUNT_OPTION);
 +}
++EXPORT_SYMBOL_GPL(xhdcp2x_timer_attach);
 +
 +int xhdcp2x_rx_disable(struct xlnx_hdcp2x_config *xhdcp2x_rx)
 +{
@@ -18561,7 +18564,8 @@ index 000000000..a8bf08295
 +
 +	return 0;
 +}
-+
++EXPORT_SYMBOL_GPL(xhdcp2x_rx_disable);
++                  
 +int xhdcp2x_rx_reset(struct xlnx_hdcp2x_config *xhdcp2x_rx)
 +{
 +	memset(&xhdcp2x_rx->msg_buffer, 0, sizeof(union xhdcp2x_rx_message));
@@ -18588,6 +18592,7 @@ index 000000000..a8bf08295
 +
 +	return 0;
 +}
++EXPORT_SYMBOL_GPL(xhdcp2x_rx_reset);
 +
 +static int xhdcp2x_rx_set_rx_caps(struct xlnx_hdcp2x_config *xhdcp2x_rx, u8 enable)
 +{
@@ -18623,7 +18628,8 @@ index 000000000..a8bf08295
 +
 +	return ret;
 +}
-+
++EXPORT_SYMBOL_GPL(xhdcp2x_rx_enable);
++                  
 +int xhdcp2x_rx_set_callback(void *ref, u32 handler_type, void *callbackfunc)
 +{
 +	struct xlnx_hdcp2x_config *xhdcp2x_rx = (struct xlnx_hdcp2x_config *)ref;
@@ -18654,7 +18660,8 @@ index 000000000..a8bf08295
 +
 +	return 0;
 +}
-+
++EXPORT_SYMBOL_GPL(xhdcp2x_rx_set_callback);
++                  
 +static int xhdcp2x_rx_calc_nprime(struct xlnx_hdcp2x_config *xhdcp2x_rx, const u8 *private_key_ptr)
 +{
 +	int status = 0;
@@ -18702,7 +18709,8 @@ index 000000000..a8bf08295
 +
 +	return status;
 +}
-+
++EXPORT_SYMBOL_GPL(xhdcp2x_rx_set_key);
++                  
 +void xhdcp2x_rx_timer_handler(void *callbackref, u8 tmr_cnt_number)
 +{
 +	struct xlnx_hdcp2x_config *xhdcp2x_rx = (struct xlnx_hdcp2x_config *)callbackref;
@@ -18713,6 +18721,7 @@ index 000000000..a8bf08295
 +	xhdcp2x_rx->info.timer_expired = 1;
 +	xhdcp2x_rx->info.msg_event &= ~XHDCP2X_RX_TIMER_EVENT;
 +}
++EXPORT_SYMBOL_GPL(xhdcp2x_rx_timer_handler);
 +
 +void xhdcp2x_rx_set_stream_type(struct xlnx_hdcp2x_config *xhdcp2x_rx)
 +{
@@ -18730,6 +18739,7 @@ index 000000000..a8bf08295
 +					    buf, XHDCP2X_CIPHER_REG_RIV_1_OFFSET, R_IV_SIZE);
 +	}
 +}
++EXPORT_SYMBOL_GPL(xhdcp2x_rx_set_stream_type);
 +
 +/**
 + * xhdcp2x_rx_push_events - Pushes events from interface driver to HDCP driver
@@ -18755,7 +18765,8 @@ index 000000000..a8bf08295
 +
 +	return 0;
 +}
-+
++EXPORT_SYMBOL_GPL(xhdcp2x_rx_push_events);
++                  
 +static void xhdcp2x_rx_reset_params(struct xlnx_hdcp2x_config *xhdcp2x_rx)
 +{
 +	memset(xhdcp2x_rx->param.km,		0, sizeof(xhdcp2x_rx->param.km));
