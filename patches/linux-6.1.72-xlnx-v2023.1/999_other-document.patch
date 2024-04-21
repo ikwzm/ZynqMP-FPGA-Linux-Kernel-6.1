@@ -1,5 +1,5 @@
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 07a9c274c..bf0367802 100644
+index 13d107880..8e93d090f 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
 @@ -937,6 +937,15 @@ Q:	https://patchwork.kernel.org/project/linux-rdma/list/
@@ -49,7 +49,7 @@ index 07a9c274c..bf0367802 100644
  INDUSTRY PACK SUBSYSTEM (IPACK)
  M:	Samuel Iglesias Gonsalvez <siglesias@igalia.com>
  M:	Jens Taprogge <jens.taprogge@taprogge.org>
-@@ -13420,6 +13446,20 @@ W:	http://www.monstr.eu/fdt/
+@@ -13422,6 +13448,20 @@ W:	http://www.monstr.eu/fdt/
  T:	git git://git.monstr.eu/linux-2.6-microblaze.git
  F:	arch/microblaze/
  
@@ -70,7 +70,7 @@ index 07a9c274c..bf0367802 100644
  MICROCHIP AT91 DMA DRIVERS
  M:	Ludovic Desroches <ludovic.desroches@microchip.com>
  M:	Tudor Ambarus <tudor.ambarus@microchip.com>
-@@ -17648,6 +17688,12 @@ S:	Maintained
+@@ -17650,6 +17690,12 @@ S:	Maintained
  F:	Documentation/devicetree/bindings/clock/renesas,versaclock7.yaml
  F:	drivers/clk/clk-versaclock7.c
  
@@ -83,7 +83,7 @@ index 07a9c274c..bf0367802 100644
  RESET CONTROLLER FRAMEWORK
  M:	Philipp Zabel <p.zabel@pengutronix.de>
  S:	Maintained
-@@ -22573,6 +22619,14 @@ M:	Radhey Shyam Pandey <radhey.shyam.pandey@xilinx.com>
+@@ -22575,6 +22621,14 @@ M:	Radhey Shyam Pandey <radhey.shyam.pandey@xilinx.com>
  S:	Maintained
  F:	drivers/net/ethernet/xilinx/xilinx_axienet*
  
@@ -98,7 +98,7 @@ index 07a9c274c..bf0367802 100644
  XILINX CAN DRIVER
  M:	Appana Durga Kedareswara rao <appana.durga.rao@xilinx.com>
  R:	Naga Sureshkumar Relli <naga.sureshkumar.relli@xilinx.com>
-@@ -22608,6 +22662,23 @@ S:	Maintained
+@@ -22610,6 +22664,23 @@ S:	Maintained
  F:	drivers/pwm/pwm-xilinx.c
  F:	include/clocksource/timer-xilinx.h
  
@@ -122,7 +122,7 @@ index 07a9c274c..bf0367802 100644
  XILINX UARTLITE SERIAL DRIVER
  M:	Peter Korsgaard <jacmet@sunsite.dk>
  L:	linux-serial@vger.kernel.org
-@@ -22647,6 +22718,20 @@ M:	Harsha <harsha.harsha@xilinx.com>
+@@ -22649,6 +22720,20 @@ M:	Harsha <harsha.harsha@xilinx.com>
  S:	Maintained
  F:	drivers/crypto/xilinx/zynqmp-sha.c
  
