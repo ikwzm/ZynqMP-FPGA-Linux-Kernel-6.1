@@ -14,87 +14,24 @@ index dc86b1206..abab2e1ca 100644
  
  	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
-index b9227f41c..97a41aa0d 100644
+index b9227f41c..7e0747f8d 100644
 --- a/drivers/usb/chipidea/core.c
 +++ b/drivers/usb/chipidea/core.c
-@@ -326,7 +326,8 @@ static int _ci_usb_phy_init(struct ci_hdrc *ci)
- 
- 		ret = phy_power_on(ci->phy);
- 		if (ret) {
--			phy_exit(ci->phy);
-+			if (phy_exit(ci->phy) < 0)
-+				dev_dbg(ci->dev, "phy exit failed\r\n");
- 			return ret;
- 		}
- 	} else {
-@@ -343,12 +344,20 @@ static int _ci_usb_phy_init(struct ci_hdrc *ci)
-  */
- static void ci_usb_phy_exit(struct ci_hdrc *ci)
- {
-+	int ret;
-+
- 	if (ci->platdata->flags & CI_HDRC_OVERRIDE_PHY_CONTROL)
- 		return;
- 
- 	if (ci->phy) {
--		phy_power_off(ci->phy);
--		phy_exit(ci->phy);
-+		ret = phy_power_off(ci->phy);
-+		if (ret < 0)
-+			dev_dbg(ci->dev, "phy poweroff failed\r\n");
-+
-+		ret = phy_exit(ci->phy);
-+		if (ret < 0)
-+			dev_dbg(ci->dev, "phy exit failed\r\n");
-+
- 	} else {
- 		usb_phy_shutdown(ci->usb_phy);
- 	}
-@@ -711,13 +720,16 @@ static int ci_get_platdata(struct device *dev,
- 	if (usb_get_maximum_speed(dev) == USB_SPEED_FULL)
+@@ -712,12 +712,12 @@ static int ci_get_platdata(struct device *dev,
  		platdata->flags |= CI_HDRC_FORCE_FULLSPEED;
  
--	of_property_read_u32(dev->of_node, "phy-clkgate-delay-us",
+ 	of_property_read_u32(dev->of_node, "phy-clkgate-delay-us",
 -				     &platdata->phy_clkgate_delay_us);
-+	if (of_property_read_u32(dev->of_node, "phy-clkgate-delay-us",
-+				 &platdata->phy_clkgate_delay_us))
-+		dev_dbg(dev, "Missing phy-clkgate-delay-us property\n");
++			     &platdata->phy_clkgate_delay_us);
  
  	platdata->itc_setting = 1;
  
--	of_property_read_u32(dev->of_node, "itc-setting",
+ 	of_property_read_u32(dev->of_node, "itc-setting",
 -					&platdata->itc_setting);
-+	if (of_property_read_u32(dev->of_node, "itc-setting",
-+				 &platdata->itc_setting))
-+		dev_dbg(dev, "Missing itc-setting property\n");
-+
++			     &platdata->itc_setting);
  
  	ret = of_property_read_u32(dev->of_node, "ahb-burst-config",
  				&platdata->ahb_burst_config);
-diff --git a/drivers/usb/chipidea/otg.c b/drivers/usb/chipidea/otg.c
-index 10f8cc44a..de1860731 100644
---- a/drivers/usb/chipidea/otg.c
-+++ b/drivers/usb/chipidea/otg.c
-@@ -168,6 +168,7 @@ static int hw_wait_vbus_lower_bsv(struct ci_hdrc *ci)
- static void ci_handle_id_switch(struct ci_hdrc *ci)
- {
- 	enum ci_role role;
-+	int ret;
- 
- 	mutex_lock(&ci->mutex);
- 	role = ci_otg_role(ci);
-@@ -195,7 +196,10 @@ static void ci_handle_id_switch(struct ci_hdrc *ci)
- 			 */
- 			hw_wait_vbus_lower_bsv(ci);
- 
--		ci_role_start(ci, role);
-+		ret = ci_role_start(ci, role);
-+		if (ret < 0)
-+			dev_dbg(ci->dev, "switching err %d\n", ret);
-+
- 		/* vbus change may have already occurred */
- 		if (role == CI_ROLE_GADGET)
- 			ci_handle_vbus_change(ci);
 diff --git a/drivers/usb/chipidea/udc.c b/drivers/usb/chipidea/udc.c
 index 8c3e3a635..da62b4801 100644
 --- a/drivers/usb/chipidea/udc.c
