@@ -9896,7 +9896,7 @@ CONFIG_DRM_XLNX_BRIDGE_DEBUG_FS=y
 ####
 #### Xilinx DRM DisplayPort Subsystem Driver
 ####
-#### CONFIG_DRM_XLNX_DPTX is not set
+CONFIG_DRM_XLNX_DPTX=y
 
 ####
 #### Xilinx DRM DSI Subsystem Driver
@@ -9906,7 +9906,7 @@ CONFIG_DRM_XLNX_DSI=y
 ####
 #### Xilinx DRM HDMI Subsystem Driver
 ####
-#### CONFIG_DRM_XLNX_HDMITX is not set
+CONFIG_DRM_XLNX_HDMITX=y
 
 ####
 #### Xilinx DRM Mixer Driver
@@ -14088,7 +14088,7 @@ CONFIG_PHY_XILINX_ZYNQMP=y
 ####
 #### Xilinx HDMI PHY driver
 ####
-#### CONFIG_PHY_XILINX_HDMIPHY is not set
+CONFIG_PHY_XILINX_HDMIPHY=y
 
 ### end of PHY Subsystem
 
