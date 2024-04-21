@@ -186,6 +186,125 @@ index 7bd940bae..ead9efb61 100644
  	{ PHY_ID_VSC8540, 0xfffffff0, },
  	{ PHY_ID_VSC8541, 0xfffffff0, },
  	{ PHY_ID_VSC8552, 0xfffffff0, },
+diff --git a/drivers/net/phy/phy-core.c b/drivers/net/phy/phy-core.c
+index 2c8bf438e..a64186dc5 100644
+--- a/drivers/net/phy/phy-core.c
++++ b/drivers/net/phy/phy-core.c
+@@ -13,7 +13,7 @@
+  */
+ const char *phy_speed_to_str(int speed)
+ {
+-	BUILD_BUG_ON_MSG(__ETHTOOL_LINK_MODE_MASK_NBITS != 93,
++	BUILD_BUG_ON_MSG(__ETHTOOL_LINK_MODE_MASK_NBITS != 102,
+ 		"Enum ethtool_link_mode_bit_indices and phylib are out of sync. "
+ 		"If a speed or mode has been added please update phy_speed_to_str "
+ 		"and the PHY settings array.\n");
+@@ -49,6 +49,8 @@ const char *phy_speed_to_str(int speed)
+ 		return "200Gbps";
+ 	case SPEED_400000:
+ 		return "400Gbps";
++	case SPEED_800000:
++		return "800Gbps";
+ 	case SPEED_UNKNOWN:
+ 		return "Unknown";
+ 	default:
+@@ -157,6 +159,13 @@ EXPORT_SYMBOL_GPL(phy_interface_num_ports);
+ 			       .bit = ETHTOOL_LINK_MODE_ ## b ## _BIT}
+ 
+ static const struct phy_setting settings[] = {
++	/* 800G */
++	PHY_SETTING( 800000, FULL, 800000baseCR8_Full		),
++	PHY_SETTING( 800000, FULL, 800000baseKR8_Full		),
++	PHY_SETTING( 800000, FULL, 800000baseDR8_Full		),
++	PHY_SETTING( 800000, FULL, 800000baseDR8_2_Full		),
++	PHY_SETTING( 800000, FULL, 800000baseSR8_Full		),
++	PHY_SETTING( 800000, FULL, 800000baseVR8_Full		),
+ 	/* 400G */
+ 	PHY_SETTING( 400000, FULL, 400000baseCR8_Full		),
+ 	PHY_SETTING( 400000, FULL, 400000baseKR8_Full		),
+@@ -251,6 +260,9 @@ static const struct phy_setting settings[] = {
+ 	PHY_SETTING(     10, FULL,     10baseT_Full		),
+ 	PHY_SETTING(     10, HALF,     10baseT_Half		),
+ 	PHY_SETTING(     10, FULL,     10baseT1L_Full		),
++	PHY_SETTING(     10, FULL,     10baseT1S_Full		),
++	PHY_SETTING(     10, HALF,     10baseT1S_Half		),
++	PHY_SETTING(     10, HALF,     10baseT1S_P2MP_Half	),
+ };
+ #undef PHY_SETTING
+ 
+diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
+index d1aea767e..a8bf3c752 100644
+--- a/drivers/net/phy/phy.c
++++ b/drivers/net/phy/phy.c
+@@ -79,6 +79,7 @@ static void phy_link_down(struct phy_device *phydev)
+ {
+ 	phydev->phy_link_change(phydev, false);
+ 	phy_led_trigger_change_speed(phydev);
++	WRITE_ONCE(phydev->link_down_events, phydev->link_down_events + 1);
+ }
+ 
+ static const char *phy_pause_str(struct phy_device *phydev)
+diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+index 944f76e6f..6176a902a 100644
+--- a/drivers/net/phy/phy_device.c
++++ b/drivers/net/phy/phy_device.c
+@@ -45,6 +45,9 @@ EXPORT_SYMBOL_GPL(phy_basic_features);
+ __ETHTOOL_DECLARE_LINK_MODE_MASK(phy_basic_t1_features) __ro_after_init;
+ EXPORT_SYMBOL_GPL(phy_basic_t1_features);
+ 
++__ETHTOOL_DECLARE_LINK_MODE_MASK(phy_basic_t1s_p2mp_features) __ro_after_init;
++EXPORT_SYMBOL_GPL(phy_basic_t1s_p2mp_features);
++
+ __ETHTOOL_DECLARE_LINK_MODE_MASK(phy_gbit_features) __ro_after_init;
+ EXPORT_SYMBOL_GPL(phy_gbit_features);
+ 
+@@ -98,6 +101,12 @@ const int phy_basic_t1_features_array[3] = {
+ };
+ EXPORT_SYMBOL_GPL(phy_basic_t1_features_array);
+ 
++const int phy_basic_t1s_p2mp_features_array[2] = {
++	ETHTOOL_LINK_MODE_TP_BIT,
++	ETHTOOL_LINK_MODE_10baseT1S_P2MP_Half_BIT,
++};
++EXPORT_SYMBOL_GPL(phy_basic_t1s_p2mp_features_array);
++
+ const int phy_gbit_features_array[2] = {
+ 	ETHTOOL_LINK_MODE_1000baseT_Half_BIT,
+ 	ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
+@@ -138,6 +147,11 @@ static void features_init(void)
+ 			       ARRAY_SIZE(phy_basic_t1_features_array),
+ 			       phy_basic_t1_features);
+ 
++	/* 10 half, P2MP, TP */
++	linkmode_set_bit_array(phy_basic_t1s_p2mp_features_array,
++			       ARRAY_SIZE(phy_basic_t1s_p2mp_features_array),
++			       phy_basic_t1s_p2mp_features);
++
+ 	/* 10/100 half/full + 1000 half/full */
+ 	linkmode_set_bit_array(phy_basic_ports_array,
+ 			       ARRAY_SIZE(phy_basic_ports_array),
+diff --git a/drivers/net/phy/phylink.c b/drivers/net/phy/phylink.c
+index fc58e4afb..0330ac003 100644
+--- a/drivers/net/phy/phylink.c
++++ b/drivers/net/phy/phylink.c
+@@ -241,12 +241,16 @@ void phylink_caps_to_linkmodes(unsigned long *linkmodes, unsigned long caps)
+ 	if (caps & MAC_ASYM_PAUSE)
+ 		__set_bit(ETHTOOL_LINK_MODE_Asym_Pause_BIT, linkmodes);
+ 
+-	if (caps & MAC_10HD)
++	if (caps & MAC_10HD) {
+ 		__set_bit(ETHTOOL_LINK_MODE_10baseT_Half_BIT, linkmodes);
++		__set_bit(ETHTOOL_LINK_MODE_10baseT1S_Half_BIT, linkmodes);
++		__set_bit(ETHTOOL_LINK_MODE_10baseT1S_P2MP_Half_BIT, linkmodes);
++	}
+ 
+ 	if (caps & MAC_10FD) {
+ 		__set_bit(ETHTOOL_LINK_MODE_10baseT_Full_BIT, linkmodes);
+ 		__set_bit(ETHTOOL_LINK_MODE_10baseT1L_Full_BIT, linkmodes);
++		__set_bit(ETHTOOL_LINK_MODE_10baseT1S_Full_BIT, linkmodes);
+ 	}
+ 
+ 	if (caps & MAC_100HD) {
 diff --git a/drivers/net/phy/xilinx_phy.c b/drivers/net/phy/xilinx_phy.c
 new file mode 100644
 index 000000000..aec23976c

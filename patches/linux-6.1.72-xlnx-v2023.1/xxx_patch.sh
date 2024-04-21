@@ -36,6 +36,7 @@ run_patch 030_arch-microblaze.patch
 run_patch 040_arch-powerpc.patch
 run_patch 100_kernel-irq.patch
 run_patch 101_net-ipv4.patch
+run_patch 102_net-ethtool.patch
 run_patch 200_drivers-bluetooth.patch
 run_patch 201_drivers-cdx.patch
 run_patch 202_drivers-clk.patch
