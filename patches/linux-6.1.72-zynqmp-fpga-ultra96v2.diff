@@ -1,5 +1,5 @@
 diff --git a/arch/arm64/boot/dts/xilinx/Makefile b/arch/arm64/boot/dts/xilinx/Makefile
-index 80a24e8aa..bc0566473 100644
+index eab4b7b6d..7b03c040f 100644
 --- a/arch/arm64/boot/dts/xilinx/Makefile
 +++ b/arch/arm64/boot/dts/xilinx/Makefile
 @@ -1,5 +1,6 @@
@@ -11,10 +11,10 @@ index 80a24e8aa..bc0566473 100644
  dtb-$(CONFIG_ARCH_ZYNQMP) += zynqmp-zc1751-xm015-dc1.dtb
 diff --git a/arch/arm64/boot/dts/xilinx/avnet-ultra96v2-rev1.dts b/arch/arm64/boot/dts/xilinx/avnet-ultra96v2-rev1.dts
 new file mode 100644
-index 000000000..d49ab39fa
+index 000000000..54f6dc3e7
 --- /dev/null
 +++ b/arch/arm64/boot/dts/xilinx/avnet-ultra96v2-rev1.dts
-@@ -0,0 +1,630 @@
+@@ -0,0 +1,638 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * dts file for Avnet Ultra96-V2 rev1
@@ -75,7 +75,7 @@ index 000000000..d49ab39fa
 +			label = "sw4";
 +			gpios = <&gpio 23 GPIO_ACTIVE_LOW>;
 +			linux,code = <KEY_POWER>;
-+			gpio-key,wakeup;
++			wakeup-source;
 +			autorepeat;
 +		};
 +	};
@@ -91,27 +91,27 @@ index 000000000..d49ab39fa
 +
 +	leds {
 +		compatible = "gpio-leds";
-+		ds2 {
++		led-ds2 {
 +			label = "ds2";
 +			gpios = <&gpio 20 GPIO_ACTIVE_HIGH>;
 +			linux,default-trigger = "heartbeat";
 +		};
 +
-+		ds3 {
++		led_ds3 {
 +			label = "ds3";
 +			gpios = <&gpio 19 GPIO_ACTIVE_HIGH>;
 +			linux,default-trigger = "phy0tx"; /* WLAN tx */
 +			default-state = "off";
 +		};
 +
-+		ds4 {
++		led-ds4 {
 +			label = "ds4";
 +			gpios = <&gpio 18 GPIO_ACTIVE_HIGH>;
 +			linux,default-trigger = "phy0rx"; /* WLAN rx */
 +			default-state = "off";
 +		};
 +
-+		ds5 {
++		led-ds5 {
 +			label = "ds5";
 +			gpios = <&gpio 17 GPIO_ACTIVE_HIGH>;
 +			linux,default-trigger = "bluetooth-power";
@@ -211,8 +211,8 @@ index 000000000..d49ab39fa
 +	pinctrl-names = "default", "gpio";
 +	pinctrl-0 = <&pinctrl_i2c1_default>;
 +	pinctrl-1 = <&pinctrl_i2c1_gpio>;
-+	scl-gpios = <&gpio 4 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio 5 GPIO_ACTIVE_HIGH>;
++	scl-gpios = <&gpio 4 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
++	sda-gpios = <&gpio 5 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 +	clock-frequency = <100000>;
 +	i2c-mux@75 { /* u11 */
 +		compatible = "nxp,pca9548";
@@ -464,19 +464,22 @@ index 000000000..d49ab39fa
 +
 +		conf {
 +			groups = "usb0_0_grp";
-+			slew-rate = <SLEW_RATE_SLOW>;
 +			power-source = <IO_STANDARD_LVCMOS18>;
 +		};
 +
 +		conf-rx {
 +			pins = "MIO52", "MIO53", "MIO55";
 +			bias-high-impedance;
++			drive-strength = <12>;
++			slew-rate = <SLEW_RATE_FAST>;
 +		};
 +
 +		conf-tx {
 +			pins = "MIO54", "MIO56", "MIO57", "MIO58", "MIO59",
 +			       "MIO60", "MIO61", "MIO62", "MIO63";
 +			bias-disable;
++			drive-strength = <4>;
++			slew-rate = <SLEW_RATE_SLOW>;
 +		};
 +	};
 +
@@ -488,19 +491,22 @@ index 000000000..d49ab39fa
 +
 +		conf {
 +			groups = "usb1_0_grp";
-+			slew-rate = <SLEW_RATE_SLOW>;
 +			power-source = <IO_STANDARD_LVCMOS18>;
 +		};
 +
 +		conf-rx {
 +			pins = "MIO64", "MIO65", "MIO67";
 +			bias-high-impedance;
++			drive-strength = <12>;
++			slew-rate = <SLEW_RATE_FAST>;
 +		};
 +
 +		conf-tx {
 +			pins = "MIO66", "MIO68", "MIO69", "MIO70", "MIO71",
 +			       "MIO72", "MIO73", "MIO74", "MIO75";
 +			bias-disable;
++			drive-strength = <4>;
++			slew-rate = <SLEW_RATE_SLOW>;
 +		};
 +	};
 +};
@@ -582,13 +588,14 @@ index 000000000..d49ab39fa
 +	status = "okay";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&pinctrl_usb0_default>;
++	phy-names = "usb3-phy";
++	phys = <&psgtr 2 PHY_TYPE_USB3 0 0>;
++	/delete-property/ reset-gpios;
 +};
 +
 +&dwc3_0 {
 +	status = "okay";
 +	dr_mode = "peripheral";
-+	phy-names = "usb3-phy";
-+	phys = <&psgtr 2 PHY_TYPE_USB3 0 0>;
 +	maximum-speed = "super-speed";
 +};
 +
@@ -597,13 +604,14 @@ index 000000000..d49ab39fa
 +	status = "okay";
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&pinctrl_usb1_default>;
++	phy-names = "usb3-phy";
++	phys = <&psgtr 3 PHY_TYPE_USB3 1 0>;
++	reset-gpios = <&modepin_gpio 1 GPIO_ACTIVE_LOW>;
 +};
 +
 +&dwc3_1 {
 +	status = "okay";
 +	dr_mode = "host";
-+	phy-names = "usb3-phy";
-+	phys = <&psgtr 3 PHY_TYPE_USB3 1 0>;
 +	maximum-speed = "super-speed";
 +};
 +
