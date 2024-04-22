@@ -1,0 +1,150 @@
+diff --git a/drivers/gpu/drm/lima/lima_device.c b/drivers/gpu/drm/lima/lima_device.c
+index 02cef0cea..cf26400c2 100644
+--- a/drivers/gpu/drm/lima/lima_device.c
++++ b/drivers/gpu/drm/lima/lima_device.c
+@@ -4,6 +4,7 @@
+ #include <linux/regulator/consumer.h>
+ #include <linux/reset.h>
+ #include <linux/clk.h>
++#include <linux/clk-provider.h>
+ #include <linux/slab.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/platform_device.h>
+@@ -86,13 +87,14 @@ static int lima_clk_enable(struct lima_device *dev)
+ {
+ 	int err;
+ 
+-	err = clk_prepare_enable(dev->clk_bus);
+-	if (err)
+-		return err;
+-
+-	err = clk_prepare_enable(dev->clk_gpu);
+-	if (err)
+-		goto error_out0;
++	if (dev->clks) {
++		err = clk_bulk_prepare_enable(dev->num_clks, dev->clks);
++		if (err) {
++			dev_err(dev->dev,
++				"clock controller enable failed %d\n", err);
++			return err;
++		}
++	}
+ 
+ 	if (dev->reset) {
+ 		err = reset_control_deassert(dev->reset);
+@@ -106,9 +108,8 @@ static int lima_clk_enable(struct lima_device *dev)
+ 	return 0;
+ 
+ error_out1:
+-	clk_disable_unprepare(dev->clk_gpu);
+-error_out0:
+-	clk_disable_unprepare(dev->clk_bus);
++	if (dev->clks)
++		clk_bulk_disable_unprepare(dev->num_clks, dev->clks);
+ 	return err;
+ }
+ 
+@@ -116,30 +117,44 @@ static void lima_clk_disable(struct lima_device *dev)
+ {
+ 	if (dev->reset)
+ 		reset_control_assert(dev->reset);
+-	clk_disable_unprepare(dev->clk_gpu);
+-	clk_disable_unprepare(dev->clk_bus);
++	if (dev->clks)
++		clk_bulk_disable_unprepare(dev->num_clks, dev->clks);
++}
++
++static void lima_clk_info(struct lima_device *dev)
++{
++	int i;
++	for (i = 0 ; i < dev->num_clks ; i++) {
++		const char* id     = dev->clks[i].id;
++                const char* name   = __clk_get_name(dev->clks[i].clk);
++		unsigned long rate = clk_get_rate(dev->clks[i].clk);
++		bool enabled       = __clk_is_enabled(dev->clks[i].clk);
++		dev_info(dev->dev, "%s(%s) rate = %lu, enable = %d",
++                         id, (name)? name: "", rate, (enabled)? 1 : 0);
++	}
+ }
+ 
+ static int lima_clk_init(struct lima_device *dev)
+ {
+ 	int err;
++	int i;
+ 
+-	dev->clk_bus = devm_clk_get(dev->dev, "bus");
+-	if (IS_ERR(dev->clk_bus)) {
+-		err = PTR_ERR(dev->clk_bus);
+-		if (err != -EPROBE_DEFER)
+-			dev_err(dev->dev, "get bus clk failed %d\n", err);
+-		dev->clk_bus = NULL;
+-		return err;
+-	}
+-
+-	dev->clk_gpu = devm_clk_get(dev->dev, "core");
+-	if (IS_ERR(dev->clk_gpu)) {
+-		err = PTR_ERR(dev->clk_gpu);
+-		if (err != -EPROBE_DEFER)
+-			dev_err(dev->dev, "get core clk failed %d\n", err);
+-		dev->clk_gpu = NULL;
++	dev->clks = NULL;
++	dev->num_clks = devm_clk_bulk_get_all(dev->dev, &dev->clks);
++	if (dev->num_clks < 0) {
++		err = dev->num_clks;
++		dev->num_clks = 0;
++		dev_err(dev->dev, "get clock controllser failed %d\n", err);
+ 		return err;
++	} 
++
++	dev->clk_gpu = NULL;
++	for (i = 0 ; i < dev->num_clks ; i++) {
++		if ((strcmp(dev->clks[i].id, "core") == 0) ||
++		    (strcmp(dev->clks[i].id, "gpu" ) == 0)) {
++			dev->clk_gpu = dev->clks[i].clk;
++			break;
++		}
+ 	}
+ 
+ 	dev->reset = devm_reset_control_array_get_optional_shared(dev->dev);
+@@ -361,9 +376,15 @@ int lima_device_init(struct lima_device *ldev)
+ 	dma_set_max_seg_size(ldev->dev, UINT_MAX);
+ 
+ 	err = lima_clk_init(ldev);
+-	if (err)
++	if (err) {
++		dev_err(ldev->dev, "fail to lima_clk_init()\n");
+ 		return err;
+-
++	}
++	if (ldev->num_clks > 0)
++		lima_clk_info(ldev);
++	else
++		dev_info(ldev->dev, "not found clocks");
++        
+ 	err = lima_regulator_init(ldev);
+ 	if (err)
+ 		goto err_out0;
+@@ -414,9 +435,6 @@ int lima_device_init(struct lima_device *ldev)
+ 	INIT_LIST_HEAD(&ldev->error_task_list);
+ 	mutex_init(&ldev->error_task_list_lock);
+ 
+-	dev_info(ldev->dev, "bus rate = %lu\n", clk_get_rate(ldev->clk_bus));
+-	dev_info(ldev->dev, "mod rate = %lu", clk_get_rate(ldev->clk_gpu));
+-
+ 	return 0;
+ 
+ err_out5:
+diff --git a/drivers/gpu/drm/lima/lima_device.h b/drivers/gpu/drm/lima/lima_device.h
+index 41b9d7b4b..6ce3a3f98 100644
+--- a/drivers/gpu/drm/lima/lima_device.h
++++ b/drivers/gpu/drm/lima/lima_device.h
+@@ -85,7 +85,8 @@ struct lima_device {
+ 	int num_pp;
+ 
+ 	void __iomem *iomem;
+-	struct clk *clk_bus;
++	int num_clks;
++	struct clk_bulk_data *clks;
+ 	struct clk *clk_gpu;
+ 	struct reset_control *reset;
+ 	struct regulator *regulator;

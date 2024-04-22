@@ -3,7 +3,7 @@
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 REPO_DIR=$(cd $(dirname $0); cd .. ; pwd)
 KERNEL_VERSION=6.1.72
-LOCAL_VERSION=zynqmp-fpga-generic
+LOCAL_VERSION=zynqmp-fpga-trial
 BUILD_VERSION=1
 
 . "$SCRIPT_DIR/install-variables-zynqmp-fpga.sh"

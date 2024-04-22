@@ -1,0 +1,293 @@
+diff --git a/drivers/gpu/drm/xlnx/Kconfig b/drivers/gpu/drm/xlnx/Kconfig
+index 628f96c0e..dfff48dad 100644
+--- a/drivers/gpu/drm/xlnx/Kconfig
++++ b/drivers/gpu/drm/xlnx/Kconfig
+@@ -36,6 +36,21 @@ config DRM_XLNX
+ 	  provides the kernel mode setting functionalities
+ 	  for Xilinx display drivers.
+ 
++config DRM_XLNX_DUMB_ALIGNMENT_DEFAULT_SIZE
++	int "Xilinx DRM Dumb Buffer Alignment Default Size"
++	range 0 4096
++	default 0
++	depends on DRM_XLNX
++	help
++	  This specifies the default value for dumb buffer alignment size 
++	  of the Xilinx DRM Driver. The dumb buffer alignment size can 
++	  also be set in the module parameter. If not set by module 
++	  parameter, this value will be set to dumb buffer alignment size.
++	  If 0 is specified for the dumb buffer alignment size, Xilinx 
++	  DRM forces the alignment size to 256, which is the ZYNQMP_DPDMA 
++	  alignment size. When used with the Lima DRM driver, the dumb 
++	  buffer alignment size must be set to 8.
++
+ config DRM_XLNX_BRIDGE
+ 	tristate "Xilinx DRM KMS bridge"
+ 	depends on DRM_XLNX
+diff --git a/drivers/gpu/drm/xlnx/xlnx_drv.c b/drivers/gpu/drm/xlnx/xlnx_drv.c
+index 4079349b8..694ed1eb8 100644
+--- a/drivers/gpu/drm/xlnx/xlnx_drv.c
++++ b/drivers/gpu/drm/xlnx/xlnx_drv.c
+@@ -26,6 +26,7 @@
+ #include <drm/drm_gem_dma_helper.h>
+ #include <drm/drm_of.h>
+ #include <drm/drm_probe_helper.h>
++#include <drm/xlnx_drm.h>
+ 
+ #include <linux/component.h>
+ #include <linux/device.h>
+@@ -43,9 +44,9 @@
+ 
+ #define DRIVER_NAME	"xlnx"
+ #define DRIVER_DESC	"Xilinx DRM KMS Driver"
+-#define DRIVER_DATE	"20130509"
++#define DRIVER_DATE	"20200801"
+ #define DRIVER_MAJOR	1
+-#define DRIVER_MINOR	0
++#define DRIVER_MINOR	1
+ 
+ #define MAX_CRTC	3
+ 
+@@ -54,6 +55,14 @@ module_param_named(fbdev_vres, xlnx_fbdev_vres, uint, 0444);
+ MODULE_PARM_DESC(fbdev_vres,
+ 		 "fbdev virtual resolution multiplier for fb (default: 2)");
+ 
++#ifdef CONFIG_DRM_XLNX_DUMB_ALIGNMENT_DEFAULT_SIZE
++static uint       xlnx_dumb_alignment_size = CONFIG_DRM_XLNX_DUMB_ALIGNMENT_DEFAULT_SIZE;
++#else
++static uint       xlnx_dumb_alignment_size = 0;
++#endif
++module_param_named(dumb_alignment_size, xlnx_dumb_alignment_size, uint, S_IRUGO|S_IWUSR);
++MODULE_PARM_DESC(  dumb_alignment_size, "xlnx dumb buffer alignment size");
++
+ /**
+  * struct xlnx_drm - Xilinx DRM private data
+  * @drm: DRM core
+@@ -72,6 +81,57 @@ struct xlnx_drm {
+ 	u32 master_count;
+ };
+ 
++static int xlnx_ioctl_get_param(struct drm_device *drm, void *data, struct drm_file *file)
++{
++	struct xlnx_drm *xlnx_drm = drm->dev_private;
++	struct drm_xlnx_get_param *args = data;
++
++	if (args->pad)
++		return -EINVAL;
++
++	switch (args->param) {
++	case DRM_XLNX_PARAM_DRIVER_IDENTIFIER:
++		args->value = (__u64)DRM_XLNX_DRIVER_IDENTIFIER;
++		break;
++	case DRM_XLNX_PARAM_SCANOUT_ALIGNMENT_SIZE:
++		args->value = (__u64)xlnx_crtc_helper_get_align(xlnx_drm->crtc);
++		break;
++	case DRM_XLNX_PARAM_DUMB_ALIGNMENT_SIZE:
++		args->value = (__u64)xlnx_dumb_alignment_size;
++		break;
++	case DRM_XLNX_PARAM_DUMB_ALIGNMENT_MODE:
++		args->value = 1;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++		
++static int xlnx_ioctl_set_param(struct drm_device *drm, void *data, struct drm_file *file)
++{
++	struct drm_xlnx_set_param *args = data;
++
++	if (args->pad)
++		return -EINVAL;
++
++	switch (args->param) {
++	case DRM_XLNX_PARAM_DUMB_ALIGNMENT_SIZE:
++		xlnx_dumb_alignment_size = (uint)args->value;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++		
++static const struct drm_ioctl_desc xlnx_drm_driver_ioctls[] = {
++	DRM_IOCTL_DEF_DRV(XLNX_GET_PARAM, xlnx_ioctl_get_param, DRM_RENDER_ALLOW),
++	DRM_IOCTL_DEF_DRV(XLNX_SET_PARAM, xlnx_ioctl_set_param, DRM_RENDER_ALLOW),
++};
++
+ /**
+  * xlnx_get_crtc_helper - Return the crtc helper instance
+  * @drm: DRM device
+@@ -88,14 +148,18 @@ struct xlnx_crtc_helper *xlnx_get_crtc_helper(struct drm_device *drm)
+ /**
+  * xlnx_get_align - Return the align requirement through CRTC helper
+  * @drm: DRM device
++ * @scanout: SCANOUT 
+  *
+  * Return: the alignment requirement
+  */
+-unsigned int xlnx_get_align(struct drm_device *drm)
++unsigned int xlnx_get_align(struct drm_device *drm, bool scanout)
+ {
+ 	struct xlnx_drm *xlnx_drm = drm->dev_private;
+ 
+-	return xlnx_crtc_helper_get_align(xlnx_drm->crtc);
++	if (scanout || xlnx_dumb_alignment_size == 0)
++		return xlnx_crtc_helper_get_align(xlnx_drm->crtc);
++	else
++		return xlnx_dumb_alignment_size;
+ }
+ 
+ /**
+@@ -199,6 +263,8 @@ static struct drm_driver xlnx_drm_driver = {
+ 	.lastclose			= xlnx_lastclose,
+ 
+ 	DRM_GEM_DMA_DRIVER_OPS_VMAP_WITH_DUMB_CREATE(xlnx_gem_cma_dumb_create),
++	.ioctls	                        = xlnx_drm_driver_ioctls,
++	.num_ioctls                     = ARRAY_SIZE(xlnx_drm_driver_ioctls),
+ 
+ 	.fops				= &xlnx_fops,
+ 
+diff --git a/drivers/gpu/drm/xlnx/xlnx_drv.h b/drivers/gpu/drm/xlnx/xlnx_drv.h
+index d016e169f..a262d192e 100644
+--- a/drivers/gpu/drm/xlnx/xlnx_drv.h
++++ b/drivers/gpu/drm/xlnx/xlnx_drv.h
+@@ -26,7 +26,7 @@ struct platform_device *xlnx_drm_pipeline_init(struct platform_device *parent);
+ void xlnx_drm_pipeline_exit(struct platform_device *pipeline);
+ 
+ uint32_t xlnx_get_format(struct drm_device *drm);
+-unsigned int xlnx_get_align(struct drm_device *drm);
++unsigned int xlnx_get_align(struct drm_device *drm, bool scanout);
+ struct xlnx_crtc_helper *xlnx_get_crtc_helper(struct drm_device *drm);
+ struct xlnx_bridge_helper *xlnx_get_bridge_helper(struct drm_device *drm);
+ 
+diff --git a/drivers/gpu/drm/xlnx/xlnx_gem.c b/drivers/gpu/drm/xlnx/xlnx_gem.c
+index 98419cecc..307f57831 100644
+--- a/drivers/gpu/drm/xlnx/xlnx_gem.c
++++ b/drivers/gpu/drm/xlnx/xlnx_gem.c
+@@ -17,6 +17,7 @@
+  */
+ 
+ #include <drm/drm_drv.h>
++#include <drm/xlnx_drm.h>
+ #include <drm/drm_gem_dma_helper.h>
+ 
+ #include "xlnx_drv.h"
+@@ -26,7 +27,7 @@
+  * xlnx_gem_cma_dumb_create - (struct drm_driver)->dumb_create callback
+  * @file_priv: drm_file object
+  * @drm: DRM object
+- * @args: info for dumb scanout buffer creation
++ * @args: info for dumb buffer creation
+  *
+  * This function is for dumb_create callback of drm_driver struct. Simply
+  * it wraps around drm_gem_dma_dumb_create() and sets the pitch value
+@@ -37,11 +38,14 @@
+ int xlnx_gem_cma_dumb_create(struct drm_file *file_priv, struct drm_device *drm,
+ 			     struct drm_mode_create_dumb *args)
+ {
+-	int pitch = DIV_ROUND_UP(args->width * args->bpp, 8);
+-	unsigned int align = xlnx_get_align(drm);
++	bool scanout = (((args->flags) & DRM_XLNX_GEM_DUMB_SCANOUT_MASK) == DRM_XLNX_GEM_DUMB_SCANOUT);
++	int  align   = (((args->flags) & DRM_XLNX_GEM_DUMB_ALIGN_MODE_MASK) == DRM_XLNX_GEM_DUMB_ALIGN_NOCHECK)? 1 : xlnx_get_align(drm, scanout);
+ 
+ 	if (!args->pitch || !IS_ALIGNED(args->pitch, align))
+-		args->pitch = ALIGN(pitch, align);
++		args->pitch = ALIGN(DIV_ROUND_UP(args->width * args->bpp, 8), align);
+ 
++	DRM_DEBUG("width=%d, height=%d, bpp=%d, pitch=%d, align=%d\n",
++                  args->width, args->height, args->bpp, args->pitch, align);
++                  
+ 	return drm_gem_dma_dumb_create_internal(file_priv, drm, args);
+ }
+diff --git a/include/uapi/drm/xlnx_drm.h b/include/uapi/drm/xlnx_drm.h
+new file mode 100644
+index 000000000..1f392bccb
+--- /dev/null
++++ b/include/uapi/drm/xlnx_drm.h
+@@ -0,0 +1,82 @@
++/* SPDX-License-Identifier: GPL-2.0+ WITH Linux-syscall-note */
++/* xrt_drm.h 
++ *
++ * Xilinx DRM KMS Driver Public Header
++ *
++ * Copyright (c) 2022-2024 ikwzm <ichiro_k@ca2.so-net.ne.jp> 
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#ifndef __XLNX_DRM_H__
++#define __XLNX_DRM_H__
++
++#include "drm.h"
++
++#if defined(__cplusplus)
++extern "C" {
++#endif
++
++/**
++ * Parameter identifier of various information
++ */	
++enum drm_xlnx_param {
++	DRM_XLNX_PARAM_DRIVER_IDENTIFIER      = 0,
++	DRM_XLNX_PARAM_SCANOUT_ALIGNMENT_SIZE = 1,
++	DRM_XLNX_PARAM_DUMB_ALIGNMENT_SIZE    = 2,
++	DRM_XLNX_PARAM_DUMB_ALIGNMENT_MODE    = 5,
++};
++
++/**
++ * Get various information of the Xilinx DRM KMS Driver
++ */
++struct drm_xlnx_get_param {
++	__u32 param; /* in , value in enum drm_xlnx_param */
++	__u32 pad;   /* pad, must be zero */
++	__u64 value; /* out, parameter value */
++};
++	
++/**
++ * Set various information of the Xilinx DRM KMS Driver
++ */
++struct drm_xlnx_set_param {
++	__u32 param; /* in , value in enum drm_xlnx_param */
++	__u32 pad;   /* pad, must be zero */
++	__u64 value; /* in , parameter value */
++};
++
++/**
++ * Xilinx DRM KMS Driver specific ioctls.
++ */
++#define DRM_XLNX_GET_PARAM   0x00
++#define DRM_XLNX_SET_PARAM   0x01
++
++#define DRM_IOCTL_XLNX_GET_PARAM DRM_IOWR(DRM_COMMAND_BASE+DRM_XLNX_GET_PARAM, struct drm_xlnx_get_param)
++#define DRM_IOCTL_XLNX_SET_PARAM DRM_IOWR(DRM_COMMAND_BASE+DRM_XLNX_SET_PARAM, struct drm_xlnx_set_param)
++
++/**
++ * Xilinx DRM KMS Driver Identifier
++ */
++#define DRM_XLNX_DRIVER_IDENTIFIER      (0x53620C75)
++
++/**
++ * Xilinx DRM KMS Driver Create Dumb Flags
++ */
++#define DRM_XLNX_GEM_DUMB_SCANOUT_BIT       (0)
++#define DRM_XLNX_GEM_DUMB_SCANOUT_MASK      (1 << DRM_XLNX_GEM_DUMB_SCANOUT_BIT)
++#define DRM_XLNX_GEM_DUMB_SCANOUT           (1 << DRM_XLNX_GEM_DUMB_SCANOUT_BIT)
++#define DRM_XLNX_GEM_DUMB_NON_SCANOUT       (0 << DRM_XLNX_GEM_DUMB_SCANOUT_BIT)
++
++#define DRM_XLNX_GEM_DUMB_ALIGN_MODE_BIT    (3)
++#define DRM_XLNX_GEM_DUMB_ALIGN_MODE_MASK   (1 << DRM_XLNX_GEM_DUMB_ALIGN_MODE_BIT)
++#define DRM_XLNX_GEM_DUMB_ALIGN_NOCHECK     (1 << DRM_XLNX_GEM_DUMB_ALIGN_MODE_BIT)
++#define DRM_XLNX_GEM_DUMB_ALIGN_DEFAULT     (0 << DRM_XLNX_GEM_DUMB_ALIGN_MODE_BIT)
++    
++#if defined(__cplusplus)
++}
++#endif
++
++#endif /* __XLNX_DRM_H__ */
