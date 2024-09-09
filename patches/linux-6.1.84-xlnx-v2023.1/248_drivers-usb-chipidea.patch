@@ -14,10 +14,10 @@ index dc86b1206..abab2e1ca 100644
  
  	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
-index b9227f41c..7e0747f8d 100644
+index 763d6858a..d6e0d07a1 100644
 --- a/drivers/usb/chipidea/core.c
 +++ b/drivers/usb/chipidea/core.c
-@@ -712,12 +712,12 @@ static int ci_get_platdata(struct device *dev,
+@@ -719,12 +719,12 @@ static int ci_get_platdata(struct device *dev,
  		platdata->flags |= CI_HDRC_FORCE_FULLSPEED;
  
  	of_property_read_u32(dev->of_node, "phy-clkgate-delay-us",

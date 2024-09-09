@@ -1,8 +1,8 @@
 diff --git a/drivers/usb/gadget/composite.c b/drivers/usb/gadget/composite.c
-index cb0a4e2cd..67e29800e 100644
+index 247cca46c..6411645eb 100644
 --- a/drivers/usb/gadget/composite.c
 +++ b/drivers/usb/gadget/composite.c
-@@ -741,6 +741,17 @@ static int bos_desc(struct usb_composite_dev *cdev)
+@@ -754,6 +754,17 @@ static int bos_desc(struct usb_composite_dev *cdev)
  						      USB_HIGH_SPEED_OPERATION |
  						      USB_5GBPS_OPERATION);
  		ss_cap->bFunctionalitySupport = USB_LOW_SPEED_OPERATION;

@@ -245,7 +245,7 @@ index d1aea767e..a8bf3c752 100644
  
  static const char *phy_pause_str(struct phy_device *phydev)
 diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index 944f76e6f..6176a902a 100644
+index f25b0d338..dd3df0304 100644
 --- a/drivers/net/phy/phy_device.c
 +++ b/drivers/net/phy/phy_device.c
 @@ -45,6 +45,9 @@ EXPORT_SYMBOL_GPL(phy_basic_features);

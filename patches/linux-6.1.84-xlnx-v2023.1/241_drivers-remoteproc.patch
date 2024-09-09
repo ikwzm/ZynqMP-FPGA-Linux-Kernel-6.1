@@ -262,7 +262,7 @@ index 000000000..8a230dc39
 +		memory-region = <&rproc_0_reserved>, <&rproc_0_dma>;
 +	};
 diff --git a/drivers/remoteproc/Kconfig b/drivers/remoteproc/Kconfig
-index 166019786..ec0d67e90 100644
+index d93113b6f..868648ba8 100644
 --- a/drivers/remoteproc/Kconfig
 +++ b/drivers/remoteproc/Kconfig
 @@ -308,6 +308,15 @@ config ST_REMOTEPROC

@@ -6532,7 +6532,7 @@ index d66b13151..b4fe0b270 100644
  
  	clk_disable_unprepare(xvcu->aclk);
 diff --git a/drivers/clk/zynq/clkc.c b/drivers/clk/zynq/clkc.c
-index 7bdeaff2b..bcc1bddaf 100644
+index c28d3dacf..b841f73de 100644
 --- a/drivers/clk/zynq/clkc.c
 +++ b/drivers/clk/zynq/clkc.c
 @@ -37,6 +37,7 @@ static void __iomem *zynq_clkc_base;
@@ -6543,7 +6543,7 @@ index 7bdeaff2b..bcc1bddaf 100644
  #define SLCR_FPGA0_CLK_CTRL		(zynq_clkc_base + 0x70)
  #define SLCR_621_TRUE			(zynq_clkc_base + 0xc4)
  #define SLCR_SWDT_CLK_SEL		(zynq_clkc_base + 0x204)
-@@ -99,6 +100,48 @@ static const char *const gem1_emio_input_names[] __initconst = {
+@@ -100,6 +101,48 @@ static const char *const gem1_emio_input_names[] __initconst = {
  static const char *const swdt_ext_clk_input_names[] __initconst = {
  	"swdt_ext_clk"};
  
@@ -6592,19 +6592,6 @@ index 7bdeaff2b..bcc1bddaf 100644
  static void __init zynq_clk_register_fclk(enum zynq_clk fclk,
  		const char *clk_name, void __iomem *fclk_ctrl_reg,
  		const char **parents, int enable)
-diff --git a/drivers/clk/zynqmp/clk-mux-zynqmp.c b/drivers/clk/zynqmp/clk-mux-zynqmp.c
-index 60359333f..9b5d3050b 100644
---- a/drivers/clk/zynqmp/clk-mux-zynqmp.c
-+++ b/drivers/clk/zynqmp/clk-mux-zynqmp.c
-@@ -89,7 +89,7 @@ static int zynqmp_clk_mux_set_parent(struct clk_hw *hw, u8 index)
- static const struct clk_ops zynqmp_clk_mux_ops = {
- 	.get_parent = zynqmp_clk_mux_get_parent,
- 	.set_parent = zynqmp_clk_mux_set_parent,
--	.determine_rate = __clk_mux_determine_rate,
-+	.determine_rate = __clk_mux_determine_rate_closest,
- };
- 
- static const struct clk_ops zynqmp_clk_mux_ro_ops = {
 diff --git a/drivers/clk/zynqmp/clkc.c b/drivers/clk/zynqmp/clkc.c
 index 5636ff1ce..1ea5fba20 100644
 --- a/drivers/clk/zynqmp/clkc.c
@@ -6618,7 +6605,7 @@ index 5636ff1ce..1ea5fba20 100644
  };
  MODULE_DEVICE_TABLE(of, zynqmp_clock_of_match);
 diff --git a/drivers/clk/zynqmp/divider.c b/drivers/clk/zynqmp/divider.c
-index 33a3b2a22..fb74b528d 100644
+index 5a00487ae..fb74b528d 100644
 --- a/drivers/clk/zynqmp/divider.c
 +++ b/drivers/clk/zynqmp/divider.c
 @@ -2,7 +2,8 @@
@@ -6631,36 +6618,80 @@ index 33a3b2a22..fb74b528d 100644
   *
   * Adjustable divider clock implementation
   */
-@@ -110,8 +111,7 @@ static unsigned long zynqmp_clk_divider_recalc_rate(struct clk_hw *hw,
+@@ -110,6 +111,51 @@ static unsigned long zynqmp_clk_divider_recalc_rate(struct clk_hw *hw,
  	return DIV_ROUND_UP_ULL(parent_rate, value);
  }
  
--static void zynqmp_get_divider2_val(struct clk_hw *hw,
--				    unsigned long rate,
 +static void zynqmp_get_divider2_val(struct clk_hw *hw, unsigned long rate,
- 				    struct zynqmp_clk_divider *divider,
- 				    u32 *bestdiv)
- {
-@@ -174,6 +174,9 @@ static long zynqmp_clk_divider_round_rate(struct clk_hw *hw,
++				    struct zynqmp_clk_divider *divider,
++				    u32 *bestdiv)
++{
++	int div1;
++	int div2;
++	long error = LONG_MAX;
++	unsigned long div1_prate;
++	struct clk_hw *div1_parent_hw;
++	struct zynqmp_clk_divider *pdivider;
++	struct clk_hw *div2_parent_hw = clk_hw_get_parent(hw);
++
++	if (!div2_parent_hw)
++		return;
++
++	pdivider = to_zynqmp_clk_divider(div2_parent_hw);
++	if (!pdivider)
++		return;
++
++	div1_parent_hw = clk_hw_get_parent(div2_parent_hw);
++	if (!div1_parent_hw)
++		return;
++
++	div1_prate = clk_hw_get_rate(div1_parent_hw);
++	*bestdiv = 1;
++	for (div1 = 1; div1 <= pdivider->max_div;) {
++		for (div2 = 1; div2 <= divider->max_div;) {
++			long new_error = ((div1_prate / div1) / div2) - rate;
++
++			if (abs(new_error) < abs(error)) {
++				*bestdiv = div2;
++				error = new_error;
++			}
++			if (divider->flags & CLK_DIVIDER_POWER_OF_TWO)
++				div2 = div2 << 1;
++			else
++				div2++;
++		}
++		if (pdivider->flags & CLK_DIVIDER_POWER_OF_TWO)
++			div1 = div1 << 1;
++		else
++			div1++;
++	}
++}
++
+ /**
+  * zynqmp_clk_divider_round_rate() - Round rate of divider clock
+  * @hw:			handle between common and hardware-specific interfaces
+@@ -128,7 +174,9 @@ static long zynqmp_clk_divider_round_rate(struct clk_hw *hw,
  	u32 div_type = divider->div_type;
  	u32 bestdiv;
  	int ret;
+-	u8 width;
 +	u8 width = 0;
 +	u16 max;
 +	struct device_node *np;
  
  	/* if read only, just return current value */
  	if (divider->flags & CLK_DIVIDER_READ_ONLY) {
-@@ -193,23 +196,49 @@ static long zynqmp_clk_divider_round_rate(struct clk_hw *hw,
+@@ -148,12 +196,49 @@ static long zynqmp_clk_divider_round_rate(struct clk_hw *hw,
  		return DIV_ROUND_UP_ULL((u64)*prate, bestdiv);
  	}
  
--	bestdiv = zynqmp_divider_get_val(*prate, rate, divider->flags);
+-	width = fls(divider->max_div);
 -
- 	/*
--	 * In case of two divisors, compute best divider values and return
--	 * divider2 value based on compute value. div1 will  be automatically
--	 * set to optimum based on required total divider value.
+-	rate = divider_round_rate(hw, rate, prate, NULL, width, divider->flags);
+-
+-	if (divider->is_frac && (clk_hw_get_flags(hw) & CLK_SET_RATE_PARENT) && (rate % *prate))
+-		*prate = rate;
++	/*
 +	 * Hack to use old algorithm for round rate div clocks. Currently PL
 +	 * rate is getting changed because RPLL_TO_FPD clock is changing RPLL
 +	 * rate for DP audio driver. Using old algorithm RPLL rate change is
@@ -6669,11 +6700,7 @@ index 33a3b2a22..fb74b528d 100644
 +	 *
 +	 * TBD: Remove this hack and use new algorithm for all platform once PL
 +	 * clock issue is fixed with better way.
- 	 */
--	if (div_type == TYPE_DIV2 &&
--	    (clk_hw_get_flags(hw) & CLK_SET_RATE_PARENT)) {
--		zynqmp_get_divider2_val(hw, rate, divider, &bestdiv);
--	}
++	 */
 +	np = of_find_compatible_node(NULL, NULL, "xlnx,versal-net");
 +	if (np) {
 +		max = divider->max_div;
@@ -6682,13 +6709,9 @@ index 33a3b2a22..fb74b528d 100644
 +				width++;
 +			max = max >> 1;
 +		}
- 
--	if ((clk_hw_get_flags(hw) & CLK_SET_RATE_PARENT) && divider->is_frac)
--		bestdiv = rate % *prate ? 1 : bestdiv;
++
 +		rate = divider_round_rate(hw, rate, prate, NULL, width, divider->flags);
- 
--	bestdiv = min_t(u32, bestdiv, divider->max_div);
--	*prate = rate * bestdiv;
++
 +		if (divider->is_frac && (clk_hw_get_flags(hw) & CLK_SET_RATE_PARENT) &&
 +		    (rate % *prate))
 +			*prate = rate;
