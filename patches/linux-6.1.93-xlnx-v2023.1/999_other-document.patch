@@ -1,5 +1,5 @@
 diff --git a/MAINTAINERS b/MAINTAINERS
-index bbfedb0b2..91f77dd64 100644
+index 4b19dfb5d..0c5e00924 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
 @@ -937,6 +937,15 @@ Q:	https://patchwork.kernel.org/project/linux-rdma/list/
@@ -83,7 +83,7 @@ index bbfedb0b2..91f77dd64 100644
  RESET CONTROLLER FRAMEWORK
  M:	Philipp Zabel <p.zabel@pengutronix.de>
  S:	Maintained
-@@ -22582,6 +22628,14 @@ M:	Radhey Shyam Pandey <radhey.shyam.pandey@xilinx.com>
+@@ -22583,6 +22629,14 @@ M:	Radhey Shyam Pandey <radhey.shyam.pandey@xilinx.com>
  S:	Maintained
  F:	drivers/net/ethernet/xilinx/xilinx_axienet*
  
@@ -98,7 +98,7 @@ index bbfedb0b2..91f77dd64 100644
  XILINX CAN DRIVER
  M:	Appana Durga Kedareswara rao <appana.durga.rao@xilinx.com>
  R:	Naga Sureshkumar Relli <naga.sureshkumar.relli@xilinx.com>
-@@ -22617,6 +22671,23 @@ S:	Maintained
+@@ -22618,6 +22672,23 @@ S:	Maintained
  F:	drivers/pwm/pwm-xilinx.c
  F:	include/clocksource/timer-xilinx.h
  
@@ -122,7 +122,7 @@ index bbfedb0b2..91f77dd64 100644
  XILINX UARTLITE SERIAL DRIVER
  M:	Peter Korsgaard <jacmet@sunsite.dk>
  L:	linux-serial@vger.kernel.org
-@@ -22656,6 +22727,20 @@ M:	Harsha <harsha.harsha@xilinx.com>
+@@ -22657,6 +22728,20 @@ M:	Harsha <harsha.harsha@xilinx.com>
  S:	Maintained
  F:	drivers/crypto/xilinx/zynqmp-sha.c
  

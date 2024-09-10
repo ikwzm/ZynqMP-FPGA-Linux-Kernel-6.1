@@ -196,7 +196,7 @@ index b387d39bf..1711d5623 100644
  }
  
 diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
-index 565aba6b9..fa3d3b44b 100644
+index 27e01671d..f8419fbee 100644
 --- a/drivers/usb/host/xhci.c
 +++ b/drivers/usb/host/xhci.c
 @@ -188,7 +188,11 @@ int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us)
@@ -227,10 +227,10 @@ index 565aba6b9..fa3d3b44b 100644
  		return ret;
  
 diff --git a/drivers/usb/host/xhci.h b/drivers/usb/host/xhci.h
-index fc25a5b09..a5e4052c2 100644
+index fa9e87141..9e0a9ec55 100644
 --- a/drivers/usb/host/xhci.h
 +++ b/drivers/usb/host/xhci.h
-@@ -2112,6 +2112,8 @@ void xhci_free_container_ctx(struct xhci_hcd *xhci,
+@@ -2117,6 +2117,8 @@ void xhci_free_container_ctx(struct xhci_hcd *xhci,
  
  /* xHCI host controller glue */
  typedef void (*xhci_get_quirks_t)(struct device *, struct xhci_hcd *);

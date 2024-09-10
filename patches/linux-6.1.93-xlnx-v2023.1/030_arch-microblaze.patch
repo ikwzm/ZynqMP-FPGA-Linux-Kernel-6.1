@@ -2428,10 +2428,10 @@ index 2038168ed..3e35c1f77 100644
  extern void _tlbia(void);
  
 diff --git a/arch/microblaze/kernel/Makefile b/arch/microblaze/kernel/Makefile
-index 4393bee64..28b259a19 100644
+index 85c4d29ef..3a66c06cc 100644
 --- a/arch/microblaze/kernel/Makefile
 +++ b/arch/microblaze/kernel/Makefile
-@@ -26,5 +26,6 @@ obj-y				+= misc.o
+@@ -25,5 +25,6 @@ obj-y				+= misc.o
  obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
  obj-$(CONFIG_FUNCTION_TRACER)	+= ftrace.o mcount.o
  obj-$(CONFIG_KGDB)		+= kgdb.o

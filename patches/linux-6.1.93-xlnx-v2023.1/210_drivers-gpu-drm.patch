@@ -1153,10 +1153,10 @@ index 318122d95..0fae1ef01 100644
        - items:
            - enum:
 diff --git a/drivers/gpu/drm/display/drm_dp_helper.c b/drivers/gpu/drm/display/drm_dp_helper.c
-index 16565a0a5..e9b63c3ad 100644
+index e839981c7..cc5e4c5e3 100644
 --- a/drivers/gpu/drm/display/drm_dp_helper.c
 +++ b/drivers/gpu/drm/display/drm_dp_helper.c
-@@ -2094,8 +2094,6 @@ int drm_dp_aux_register(struct drm_dp_aux *aux)
+@@ -2129,8 +2129,6 @@ int drm_dp_aux_register(struct drm_dp_aux *aux)
  {
  	int ret;
  
@@ -1302,7 +1302,7 @@ index 79730fa1d..352f1321d 100644
  		*val = state->content_protection;
  	} else if (property == config->hdcp_content_type_property) {
 diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
-index 27de2a97f..c6dc173fe 100644
+index 3d18d840e..a8aa79be9 100644
 --- a/drivers/gpu/drm/drm_connector.c
 +++ b/drivers/gpu/drm/drm_connector.c
 @@ -1313,6 +1313,14 @@ static const struct drm_prop_enum_list dp_colorspaces[] = {
@@ -1525,10 +1525,10 @@ index 72ad1715f..b73ebaccd 100644
  		return ERR_PTR(-EINVAL);
  	}
 diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
-index b714ee1bc..546efd1b4 100644
+index acb7f5c20..f1908bf63 100644
 --- a/drivers/gpu/drm/panel/panel-simple.c
 +++ b/drivers/gpu/drm/panel/panel-simple.c
-@@ -4407,6 +4407,33 @@ static const struct panel_desc_dsi auo_b080uan01 = {
+@@ -4410,6 +4410,33 @@ static const struct panel_desc_dsi auo_b080uan01 = {
  	.lanes = 4,
  };
  
@@ -1562,7 +1562,7 @@ index b714ee1bc..546efd1b4 100644
  static const struct drm_display_mode boe_tv080wum_nl0_mode = {
  	.clock = 160000,
  	.hdisplay = 1200,
-@@ -4585,6 +4612,9 @@ static const struct of_device_id dsi_of_match[] = {
+@@ -4588,6 +4615,9 @@ static const struct of_device_id dsi_of_match[] = {
  	{
  		.compatible = "auo,b080uan01",
  		.data = &auo_b080uan01
