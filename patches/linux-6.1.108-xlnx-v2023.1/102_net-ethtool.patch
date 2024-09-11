@@ -896,7 +896,7 @@ index c1779657e..b689ab9b7 100644
 +
  #endif /* _ETHTOOL_COMMON_H */
 diff --git a/net/ethtool/linkstate.c b/net/ethtool/linkstate.c
-index fb676f349..2158c17a0 100644
+index 470582a70..215b3d2eb 100644
 --- a/net/ethtool/linkstate.c
 +++ b/net/ethtool/linkstate.c
 @@ -13,6 +13,7 @@ struct linkstate_reply_data {
@@ -916,7 +916,7 @@ index fb676f349..2158c17a0 100644
  };
  
  static int linkstate_get_sqi(struct net_device *dev)
-@@ -107,6 +108,19 @@ static int linkstate_prepare_data(const struct ethnl_req_info *req_base,
+@@ -122,6 +123,19 @@ static int linkstate_prepare_data(const struct ethnl_req_info *req_base,
  			goto out;
  	}
  
@@ -936,7 +936,7 @@ index fb676f349..2158c17a0 100644
  	ret = 0;
  out:
  	ethnl_ops_complete(dev);
-@@ -134,6 +148,9 @@ static int linkstate_reply_size(const struct ethnl_req_info *req_base,
+@@ -148,6 +162,9 @@ static int linkstate_reply_size(const struct ethnl_req_info *req_base,
  	if (data->ethtool_link_ext_state_info.__link_ext_substate)
  		len += nla_total_size(sizeof(u8)); /* LINKSTATE_EXT_SUBSTATE */
  
@@ -946,7 +946,7 @@ index fb676f349..2158c17a0 100644
  	return len;
  }
  
-@@ -166,6 +183,11 @@ static int linkstate_fill_reply(struct sk_buff *skb,
+@@ -181,6 +198,11 @@ static int linkstate_fill_reply(struct sk_buff *skb,
  			return -EMSGSIZE;
  	}
  

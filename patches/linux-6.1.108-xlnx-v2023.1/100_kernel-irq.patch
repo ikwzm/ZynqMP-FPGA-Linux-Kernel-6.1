@@ -15,7 +15,7 @@ index 9489f93b3..622215a8b 100644
  	if (handle_arch_irq)
  		return -EBUSY;
 diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
-index fd0996274..46197cf93 100644
+index 5b173b790..8f0048dd3 100644
 --- a/kernel/irq/irqdesc.c
 +++ b/kernel/irq/irqdesc.c
 @@ -355,9 +355,7 @@ struct irq_desc *irq_to_desc(unsigned int irq)

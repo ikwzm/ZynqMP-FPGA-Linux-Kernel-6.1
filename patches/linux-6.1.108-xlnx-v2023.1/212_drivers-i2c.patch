@@ -1,5 +1,5 @@
 diff --git a/Documentation/devicetree/bindings/i2c/xlnx,xps-iic-2.00.a.yaml b/Documentation/devicetree/bindings/i2c/xlnx,xps-iic-2.00.a.yaml
-index 8d241a703..92cb9006e 100644
+index f3b53ecae..c28328a9a 100644
 --- a/Documentation/devicetree/bindings/i2c/xlnx,xps-iic-2.00.a.yaml
 +++ b/Documentation/devicetree/bindings/i2c/xlnx,xps-iic-2.00.a.yaml
 @@ -14,7 +14,9 @@ allOf:

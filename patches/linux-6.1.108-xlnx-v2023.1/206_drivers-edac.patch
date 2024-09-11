@@ -414,10 +414,10 @@ index 456602d37..72499ec3c 100644
 +
  endif # EDAC
 diff --git a/drivers/edac/Makefile b/drivers/edac/Makefile
-index 2d1641a27..b19c446c4 100644
+index a98e1981d..4634f4088 100644
 --- a/drivers/edac/Makefile
 +++ b/drivers/edac/Makefile
-@@ -75,12 +75,17 @@ obj-$(CONFIG_EDAC_OCTEON_PCI)		+= octeon_edac-pci.o
+@@ -77,12 +77,17 @@ obj-$(CONFIG_EDAC_OCTEON_PCI)		+= octeon_edac-pci.o
  obj-$(CONFIG_EDAC_THUNDERX)		+= thunderx_edac.o
  
  obj-$(CONFIG_EDAC_ALTERA)		+= altera_edac.o

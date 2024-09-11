@@ -1525,10 +1525,10 @@ index 72ad1715f..b73ebaccd 100644
  		return ERR_PTR(-EINVAL);
  	}
 diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
-index acb7f5c20..f1908bf63 100644
+index b560d62b6..2b85b7b8c 100644
 --- a/drivers/gpu/drm/panel/panel-simple.c
 +++ b/drivers/gpu/drm/panel/panel-simple.c
-@@ -4410,6 +4410,33 @@ static const struct panel_desc_dsi auo_b080uan01 = {
+@@ -4411,6 +4411,33 @@ static const struct panel_desc_dsi auo_b080uan01 = {
  	.lanes = 4,
  };
  
@@ -1562,7 +1562,7 @@ index acb7f5c20..f1908bf63 100644
  static const struct drm_display_mode boe_tv080wum_nl0_mode = {
  	.clock = 160000,
  	.hdisplay = 1200,
-@@ -4588,6 +4615,9 @@ static const struct of_device_id dsi_of_match[] = {
+@@ -4589,6 +4616,9 @@ static const struct of_device_id dsi_of_match[] = {
  	{
  		.compatible = "auo,b080uan01",
  		.data = &auo_b080uan01

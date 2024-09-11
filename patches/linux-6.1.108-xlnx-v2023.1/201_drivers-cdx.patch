@@ -4550,10 +4550,10 @@ index 000000000..c0864ebf4
 +
 +#endif /* _CDX_BUS_H_ */
 diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
-index 549590e9c..23445b163 100644
+index a18b7b43f..000991b12 100644
 --- a/include/linux/mod_devicetable.h
 +++ b/include/linux/mod_devicetable.h
-@@ -911,4 +911,19 @@ struct ishtp_device_id {
+@@ -913,4 +913,19 @@ struct ishtp_device_id {
  	kernel_ulong_t driver_data;
  };
  

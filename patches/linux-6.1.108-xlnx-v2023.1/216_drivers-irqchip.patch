@@ -132,7 +132,7 @@ index 4c7bae0ec..dc29ab699 100644
  /*
   * gic_get_cpu_id - get the CPU interface ID for the specified CPU
 diff --git a/drivers/irqchip/irq-xilinx-intc.c b/drivers/irqchip/irq-xilinx-intc.c
-index 238d3d344..11f5f5c9e 100644
+index 7e08714d5..08490fc84 100644
 --- a/drivers/irqchip/irq-xilinx-intc.c
 +++ b/drivers/irqchip/irq-xilinx-intc.c
 @@ -18,6 +18,8 @@
@@ -478,7 +478,7 @@ index 238d3d344..11f5f5c9e 100644
  	BUG_ON(!irqc->base);
  
 @@ -192,36 +332,45 @@ static int __init xilinx_intc_of_init(struct device_node *intc,
- 	if (irqc->intr_mask >> irqc->nr_irq)
+ 	if ((u64)irqc->intr_mask >> irqc->nr_irq)
  		pr_warn("irq-xilinx: mismatch in kind-of-intr param\n");
  
 -	pr_info("irq-xilinx: %pOF: num_irq=%d, edge=0x%x\n",

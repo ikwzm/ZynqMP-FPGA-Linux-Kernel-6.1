@@ -573,10 +573,10 @@ index 147199002..521fb37ca 100644
  
  	/* Enable the CMD_DONE interrupt */
 diff --git a/drivers/spi/spi-cadence-xspi.c b/drivers/spi/spi-cadence-xspi.c
-index d28b8bd5b..29fbfa32c 100644
+index b8bed8f39..5d92e06e0 100644
 --- a/drivers/spi/spi-cadence-xspi.c
 +++ b/drivers/spi/spi-cadence-xspi.c
-@@ -409,8 +409,8 @@ static int cdns_xspi_mem_op(struct cdns_xspi_dev *cdns_xspi,
+@@ -419,8 +419,8 @@ static int cdns_xspi_mem_op(struct cdns_xspi_dev *cdns_xspi,
  {
  	enum spi_mem_data_dir dir = op->data.dir;
  
@@ -868,10 +868,10 @@ index f7066bef7..b593055e3 100644
  	cs->hw_mode &= ~(CSMODE_CP_BEGIN_EDGECLK | CSMODE_CI_INACTIVEHIGH
  			 | CSMODE_REV);
 diff --git a/drivers/spi/spi-fsl-lpspi.c b/drivers/spi/spi-fsl-lpspi.c
-index 9e324d725..a7abcb42c 100644
+index dd2381ac2..9f661bd30 100644
 --- a/drivers/spi/spi-fsl-lpspi.c
 +++ b/drivers/spi/spi-fsl-lpspi.c
-@@ -424,7 +424,7 @@ static int fsl_lpspi_setup_transfer(struct spi_controller *controller,
+@@ -426,7 +426,7 @@ static int fsl_lpspi_setup_transfer(struct spi_controller *controller,
  	if (fsl_lpspi->is_only_cs1)
  		fsl_lpspi->config.chip_select = 1;
  	else
@@ -1046,7 +1046,7 @@ index bfd12247f..1732e40a0 100644
  	spfi_writel(spfi, xfer->len << SPFI_TRANSACTION_TSIZE_SHIFT,
  		    SPFI_TRANSACTION);
 diff --git a/drivers/spi/spi-imx.c b/drivers/spi/spi-imx.c
-index 2c660a95c..f9232c622 100644
+index 93e83fbc3..fa40704a8 100644
 --- a/drivers/spi/spi-imx.c
 +++ b/drivers/spi/spi-imx.c
 @@ -546,7 +546,7 @@ static int mx51_ecspi_prepare_message(struct spi_imx_data *spi_imx,
@@ -1245,11 +1245,11 @@ index 1b4195c54..7aa3ee6c6 100644
  	/* Default 8bit word */
  	conf |= FIELD_PREP(SPICC_BITLENGTH_MASK, 8 - 1);
 diff --git a/drivers/spi/spi-microchip-core.c b/drivers/spi/spi-microchip-core.c
-index d352844c7..b675983ed 100644
+index bfad0fe74..cef111ff8 100644
 --- a/drivers/spi/spi-microchip-core.c
 +++ b/drivers/spi/spi-microchip-core.c
-@@ -256,8 +256,8 @@ static void mchp_corespi_set_cs(struct spi_device *spi, bool disable)
- 	struct mchp_corespi *corespi = spi_master_get_devdata(spi->master);
+@@ -260,8 +260,8 @@ static void mchp_corespi_set_cs(struct spi_device *spi, bool disable)
+ 	struct mchp_corespi *corespi = spi_controller_get_devdata(spi->controller);
  
  	reg = mchp_corespi_read(corespi, REG_SLAVE_SELECT);
 -	reg &= ~BIT(spi->chip_select);
@@ -1259,7 +1259,7 @@ index d352844c7..b675983ed 100644
  
  	mchp_corespi_write(corespi, REG_SLAVE_SELECT, reg);
  }
-@@ -274,7 +274,7 @@ static int mchp_corespi_setup(struct spi_device *spi)
+@@ -278,7 +278,7 @@ static int mchp_corespi_setup(struct spi_device *spi)
  	 */
  	if (spi->mode & SPI_CS_HIGH) {
  		reg = mchp_corespi_read(corespi, REG_SLAVE_SELECT);
@@ -1356,7 +1356,7 @@ index c4cc8e2f8..3e9d396b3 100644
  	u32 master;
  
 diff --git a/drivers/spi/spi-mux.c b/drivers/spi/spi-mux.c
-index 0709e987b..fa8c1f740 100644
+index 465d5b0e1..804b911f2 100644
 --- a/drivers/spi/spi-mux.c
 +++ b/drivers/spi/spi-mux.c
 @@ -51,22 +51,22 @@ static int spi_mux_select(struct spi_device *spi)
@@ -2093,7 +2093,7 @@ index 843be8036..57aaae39e 100644
  		return -EINVAL;
  	}
 diff --git a/drivers/spi/spi-stm32-qspi.c b/drivers/spi/spi-stm32-qspi.c
-index 9131660c1..b9e61372d 100644
+index 11cd7f20a..ed58f55bf 100644
 --- a/drivers/spi/spi-stm32-qspi.c
 +++ b/drivers/spi/spi-stm32-qspi.c
 @@ -359,7 +359,7 @@ static int stm32_qspi_get_mode(u8 buswidth)
@@ -2132,7 +2132,7 @@ index 9131660c1..b9e61372d 100644
  
  	mutex_unlock(&qspi->lock);
  
-@@ -669,8 +669,8 @@ static int stm32_qspi_setup(struct spi_device *spi)
+@@ -667,8 +667,8 @@ static int stm32_qspi_setup(struct spi_device *spi)
  
  	presc = DIV_ROUND_UP(qspi->clk_rate, spi->max_speed_hz) - 1;
  
@@ -4872,7 +4872,7 @@ index 50fe5aa45..52464412d 100644
  		int ret;
  
 diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
-index 71c3db60e..27e435c3b 100644
+index 477c3578e..abfb3e2af 100644
 --- a/drivers/spi/spidev.c
 +++ b/drivers/spi/spidev.c
 @@ -423,7 +423,7 @@ spidev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
@@ -4884,7 +4884,7 @@ index 71c3db60e..27e435c3b 100644
  				tmp |= SPI_CS_HIGH;
  
  			tmp |= spi->mode & ~SPI_MODE_MASK;
-@@ -790,7 +790,7 @@ static int spidev_probe(struct spi_device *spi)
+@@ -794,7 +794,7 @@ static int spidev_probe(struct spi_device *spi)
  		spidev->devt = MKDEV(SPIDEV_MAJOR, minor);
  		dev = device_create(spidev_class, &spi->dev, spidev->devt,
  				    spidev, "spidev%d.%d",

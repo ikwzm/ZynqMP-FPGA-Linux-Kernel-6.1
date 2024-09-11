@@ -1,5 +1,5 @@
 diff --git a/drivers/media/mc/mc-entity.c b/drivers/media/mc/mc-entity.c
-index 8919df09e..6eea2298c 100644
+index bdb8f512b..fa6ab407f 100644
 --- a/drivers/media/mc/mc-entity.c
 +++ b/drivers/media/mc/mc-entity.c
 @@ -289,7 +289,36 @@ static struct media_entity *stack_pop(struct media_graph *graph)

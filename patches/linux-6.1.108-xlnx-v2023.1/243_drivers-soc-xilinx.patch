@@ -270,10 +270,10 @@ index 2417b13ba..000000000
 -		clock-names = "pll_ref", "aclk";
 -	};
 diff --git a/drivers/soc/xilinx/xlnx_event_manager.c b/drivers/soc/xilinx/xlnx_event_manager.c
-index 8293cc400..257439bb0 100644
+index 82e317474..7cb6e6c27 100644
 --- a/drivers/soc/xilinx/xlnx_event_manager.c
 +++ b/drivers/soc/xilinx/xlnx_event_manager.c
-@@ -35,7 +35,6 @@ static int event_manager_availability = -EACCES;
+@@ -36,7 +36,6 @@ static int event_manager_availability = -EACCES;
  
  #define MAX_BITS	(32U) /* Number of bits available for error mask */
  
@@ -281,7 +281,7 @@ index 8293cc400..257439bb0 100644
  #define REGISTER_NOTIFIER_FIRMWARE_VERSION	(2U)
  
  static DEFINE_HASHTABLE(reg_driver_map, REGISTERED_DRIVER_MAX_ORDER);
-@@ -483,7 +482,7 @@ static void xlnx_call_notify_cb_handler(const u32 *payload)
+@@ -484,7 +483,7 @@ static void xlnx_call_notify_cb_handler(const u32 *payload)
  
  static void xlnx_get_event_callback_data(u32 *buf)
  {
@@ -290,7 +290,7 @@ index 8293cc400..257439bb0 100644
  }
  
  static irqreturn_t xlnx_event_handler(int irq, void *dev_id)
-@@ -656,7 +655,12 @@ static int xlnx_event_manager_probe(struct platform_device *pdev)
+@@ -649,7 +648,12 @@ static int xlnx_event_manager_probe(struct platform_device *pdev)
  
  	ret = zynqmp_pm_register_sgi(sgi_num, 0);
  	if (ret) {
@@ -305,7 +305,7 @@ index 8293cc400..257439bb0 100644
  		return ret;
  	}
 diff --git a/drivers/soc/xilinx/zynqmp_power.c b/drivers/soc/xilinx/zynqmp_power.c
-index 78a8a7545..91c7a3c43 100644
+index 5d4176341..8568e5b5d 100644
 --- a/drivers/soc/xilinx/zynqmp_power.c
 +++ b/drivers/soc/xilinx/zynqmp_power.c
 @@ -50,7 +50,7 @@ static enum pm_suspend_mode suspend_mode = PM_SUSPEND_MODE_STD;
@@ -331,7 +331,7 @@ index 78a8a7545..91c7a3c43 100644
  	}
  
  	return IRQ_HANDLED;
-@@ -251,8 +253,8 @@ static int zynqmp_pm_probe(struct platform_device *pdev)
+@@ -253,8 +255,8 @@ static int zynqmp_pm_probe(struct platform_device *pdev)
  						dev_name(&pdev->dev),
  						&pdev->dev);
  		if (ret) {

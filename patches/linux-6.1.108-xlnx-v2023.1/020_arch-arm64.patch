@@ -138,10 +138,10 @@ index 3a448ab09..927e11976 100644
  #define __SYS_BARRIER_INSN(CRm, op2, Rt) \
  	__emit_inst(0xd5000000 | sys_insn(0, 3, 3, (CRm), (op2)) | ((Rt) & 0x1f))
 diff --git a/arch/arm64/kernel/cpufeature.c b/arch/arm64/kernel/cpufeature.c
-index 770a31c6e..1de9947a7 100644
+index 840cc48b5..a688ce5d0 100644
 --- a/arch/arm64/kernel/cpufeature.c
 +++ b/arch/arm64/kernel/cpufeature.c
-@@ -2104,6 +2104,11 @@ static void cpu_trap_el0_impdef(const struct arm64_cpu_capabilities *__unused)
+@@ -2115,6 +2115,11 @@ static void cpu_trap_el0_impdef(const struct arm64_cpu_capabilities *__unused)
  	sysreg_clear_set(sctlr_el1, 0, SCTLR_EL1_TIDCP);
  }
  
@@ -153,7 +153,7 @@ index 770a31c6e..1de9947a7 100644
  /* Internal helper functions to match cpu capability type */
  static bool
  cpucap_late_cpu_optional(const struct arm64_cpu_capabilities *cap)
-@@ -2667,6 +2672,18 @@ static const struct arm64_cpu_capabilities arm64_features[] = {
+@@ -2678,6 +2683,18 @@ static const struct arm64_cpu_capabilities arm64_features[] = {
  		.matches = has_cpuid_feature,
  		.cpu_enable = cpu_trap_el0_impdef,
  	},
@@ -216,7 +216,7 @@ index 064d996cc..ba0917331 100644
  
  	/*
 diff --git a/arch/arm64/tools/cpucaps b/arch/arm64/tools/cpucaps
-index 2dc7ddee5..6aa4fc193 100644
+index f5c9a4f5f..622fde15f 100644
 --- a/arch/arm64/tools/cpucaps
 +++ b/arch/arm64/tools/cpucaps
 @@ -20,6 +20,7 @@ HAS_CNP
