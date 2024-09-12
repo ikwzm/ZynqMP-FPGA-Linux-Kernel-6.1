@@ -30,6 +30,9 @@ For Linux Kernel image and Debian Packages, please refer to the respective relea
 
 | Version  | Local Name          | Build Version | Release Tag |
 |:---------|:--------------------|:--------------|:------------|
+| 6.1.108  | zynqmp-fpga-generic | 1             | [6.1.108-zynqmp-fpga-generic-1](https://github.com/ikwzm/ZynqMP-FPGA-Linux-Kernel-6.1/tree/6.1.108-zynqmp-fpga-generic-1) |
+| 6.1.93   | zynqmp-fpga-generic | 1             | [6.1.93-zynqmp-fpga-generic-1](https://github.com/ikwzm/ZynqMP-FPGA-Linux-Kernel-6.1/tree/6.1.93-zynqmp-fpga-generic-1) |
+| 6.1.84   | zynqmp-fpga-generic | 1             | [6.1.84-zynqmp-fpga-generic-1](https://github.com/ikwzm/ZynqMP-FPGA-Linux-Kernel-6.1/tree/6.1.84-zynqmp-fpga-generic-1) |
 | 6.1.70   | zynqmp-fpga-trial   | 2             | [6.1.70-zynqmp-fpga-trial-2](https://github.com/ikwzm/ZynqMP-FPGA-Linux-Kernel-6.1/tree/6.1.70-zynqmp-fpga-trial-2) |
 | 6.1.70   | zynqmp-fpga-generic | 2             | [6.1.70-zynqmp-fpga-generic-2](https://github.com/ikwzm/ZynqMP-FPGA-Linux-Kernel-6.1/tree/6.1.70-zynqmp-fpga-generic-2) |
 | 6.1.57   | zynqmp-fpga-trial   | 1             | [6.1.57-zynqmp-fpga-trial-1](https://github.com/ikwzm/ZynqMP-FPGA-Linux-Kernel-6.1/tree/6.1.57-zynqmp-fpga-trial-1) |
