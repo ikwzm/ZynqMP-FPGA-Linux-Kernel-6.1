@@ -1,0 +1,60 @@
+diff --git a/drivers/gpu/drm/lima/Kconfig b/drivers/gpu/drm/lima/Kconfig
+index fa1d4f5df..eed4f2f1c 100644
+--- a/drivers/gpu/drm/lima/Kconfig
++++ b/drivers/gpu/drm/lima/Kconfig
+@@ -14,3 +14,18 @@ config DRM_LIMA
+        select DEVFREQ_GOV_SIMPLE_ONDEMAND
+        help
+ 	 DRM driver for ARM Mali 400/450 GPUs.
++
++config DRM_LIMA_OF_ID_PREFIX
++       string "Device Tree ID prefix"
++       default "arm,mali-"
++       depends on DRM_LIMA
++       help
++	 ID prefix specified in the compatible property of the device tree.
++
++config DRM_LIMA_OF_ID_PARAMETERIZE
++       bool "Parameterize Device Tree ID"
++       default n
++       depends on DRM_LIMA
++       help
++	 Parameterize the device ID of Lima so that it can be changed at boot time.
++	 For example, specify lima.of_400_id=arm,mali-400 as a boot paramater.
+diff --git a/drivers/gpu/drm/lima/lima_drv.c b/drivers/gpu/drm/lima/lima_drv.c
+index 39cab4a55..186ff4d99 100644
+--- a/drivers/gpu/drm/lima/lima_drv.c
++++ b/drivers/gpu/drm/lima/lima_drv.c
+@@ -462,11 +462,30 @@ static int lima_pdev_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_DRM_LIMA_OF_ID_PREFIX
++#define OF_ID_PREFIX CONFIG_DRM_LIMA_OF_ID_PREFIX
++#else
++#define OF_ID_PREFIX "arm,mali-"
++#endif
++
++#ifdef CONFIG_DRM_LIMA_OF_ID_PARAMETERIZE
++static struct of_device_id dt_match[] = {
++	{ .compatible = OF_ID_PREFIX "400", .data = (void *)lima_gpu_mali400 },
++	{ .compatible = OF_ID_PREFIX "450", .data = (void *)lima_gpu_mali450 },
++	{}
++};
++module_param_string(of_400_id, dt_match[0].compatible, sizeof(dt_match[0].compatible), 0);
++MODULE_PARM_DESC(of_400_id, "Openfirmware id of mali-400 to be handled by lima");
++module_param_string(of_450_id, dt_match[1].compatible, sizeof(dt_match[1].compatible), 0);
++MODULE_PARM_DESC(of_450_id, "Openfirmware id of mali-450 to be handled by lima");
++#else
+ static const struct of_device_id dt_match[] = {
+-	{ .compatible = "arm,mali-400", .data = (void *)lima_gpu_mali400 },
+-	{ .compatible = "arm,mali-450", .data = (void *)lima_gpu_mali450 },
++	{ .compatible = OF_ID_PREFIX "400", .data = (void *)lima_gpu_mali400 },
++	{ .compatible = OF_ID_PREFIX "450", .data = (void *)lima_gpu_mali450 },
+ 	{}
+ };
++#endif
++
+ MODULE_DEVICE_TABLE(of, dt_match);
+ 
+ static const struct dev_pm_ops lima_pm_ops = {
